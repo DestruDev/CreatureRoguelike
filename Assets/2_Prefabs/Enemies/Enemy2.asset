@@ -12,14 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89954119df1bccf4d83ec6bb603479fb, type: 3}
   m_Name: Enemy2
   m_EditorClassIdentifier: Assembly-CSharp::EnemyUnitData
-  sprite: {fileID: 0}
-  spriteColor: {r: 1, g: 1, b: 1, a: 1}
+  sprite: {fileID: 7482667652216324306, guid: 1173259d96a2d844985bf267ec853332, type: 3}
+  spriteColor: {r: 0, g: 0, b: 0, a: 1}
   maxHP: 100
   currentHP: 100
   attackDamage: 10
   defense: 5
   speed: 10
   abilities: []
-  healAmount: 20
-  experienceReward: 10
-  goldReward: 5
