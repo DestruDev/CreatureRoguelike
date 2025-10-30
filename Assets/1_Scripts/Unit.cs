@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum UnitType
 {
@@ -15,6 +16,7 @@ public class Unit : MonoBehaviour
     
     [Header("Components")]
     private SpriteRenderer spriteRenderer;
+    [SerializeField] private Image healthFill; // UI Image for health fill
     
     [Header("Runtime Stats")]
     private int currentHP;
@@ -37,6 +39,15 @@ public class Unit : MonoBehaviour
     {
         // Get components
         spriteRenderer = GetComponent<SpriteRenderer>();
+        // Auto-find health fill image if not assigned
+        if (healthFill == null)
+        {
+            var healthTransform = transform.Find("Canvas/HealthBar/Health");
+            if (healthTransform != null)
+            {
+                healthFill = healthTransform.GetComponent<Image>();
+            }
+        }
         
         // Validate unit configuration
         if (!ValidateUnitConfiguration())
@@ -90,6 +101,7 @@ public class Unit : MonoBehaviour
         
         // Initialize HP
         currentHP = MaxHP;
+        UpdateHealthUI();
         
         // Initialize ability cooldowns
         abilityCooldowns = new int[Abilities.Length];
@@ -102,6 +114,7 @@ public class Unit : MonoBehaviour
     {
         int actualDamage = Mathf.Max(1, damage - Defense);
         currentHP = Mathf.Max(0, currentHP - actualDamage);
+        UpdateHealthUI();
         
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage! HP: " + currentHP + "/" + MaxHP);
         
@@ -115,6 +128,7 @@ public class Unit : MonoBehaviour
     {
         currentHP = Mathf.Min(MaxHP, currentHP + healAmount);
         Debug.Log(gameObject.name + " heals for " + healAmount + " HP! HP: " + currentHP + "/" + MaxHP);
+        UpdateHealthUI();
     }
     
     public void Attack(Unit target)
@@ -164,6 +178,14 @@ public class Unit : MonoBehaviour
     public float GetHPPercentage()
     {
         return (float)currentHP / MaxHP;
+    }
+
+    private void UpdateHealthUI()
+    {
+        if (healthFill != null)
+        {
+            healthFill.fillAmount = Mathf.Clamp01(GetHPPercentage());
+        }
     }
     
     public bool CanUseAbility(int abilityIndex)
