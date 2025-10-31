@@ -162,11 +162,41 @@ public class Unit : MonoBehaviour
         // Set cooldown
         skillCooldowns[skillIndex] = skill.cooldownTurns;
         
-        // Execute skill (you'll need to adapt this based on your Skill.Execute method)
+        // Execute skill effects
         Debug.Log(gameObject.name + " uses " + skill.skillName + "!");
         
-        // For now, just log the skill use
-        // You can expand this to actually execute the skill effects
+        // Apply skill effects based on effect type
+        switch (skill.effectType)
+        {
+            case SkillEffectType.Damage:
+                if (target != null && skill.damage > 0)
+                {
+                    target.TakeDamage(skill.damage);
+                }
+                break;
+                
+            case SkillEffectType.Heal:
+                if (target != null && skill.healAmount > 0)
+                {
+                    target.Heal(skill.healAmount);
+                }
+                break;
+                
+            case SkillEffectType.Defend:
+                Debug.Log(gameObject.name + " defends!");
+                // Defense buff could be implemented here
+                break;
+                
+            case SkillEffectType.Buff:
+                Debug.Log(gameObject.name + " applies buff to " + (target != null ? target.gameObject.name : "self") + "!");
+                // Buff could be implemented here
+                break;
+                
+            case SkillEffectType.Debuff:
+                Debug.Log(gameObject.name + " applies debuff to " + (target != null ? target.gameObject.name : "self") + "!");
+                // Debuff could be implemented here
+                break;
+        }
     }
     
     // Utility methods

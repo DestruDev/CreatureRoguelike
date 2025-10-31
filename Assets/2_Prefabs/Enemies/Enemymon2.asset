@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 89954119df1bccf4d83ec6bb603479fb, type: 3}
-  m_Name: Enemymon
+  m_Name: Enemymon2
   m_EditorClassIdentifier: Assembly-CSharp::EnemyUnitData
   sprite: {fileID: 7482667652216324306, guid: 1173259d96a2d844985bf267ec853332, type: 3}
   spriteColor: {r: 0, g: 0, b: 0, a: 1}
@@ -18,6 +18,6 @@ MonoBehaviour:
   currentHP: 100
   attackDamage: 10
   defense: 5
-  speed: 10
+  speed: 11
   skills:
   - {fileID: 11400000, guid: 2a61fc053fd893a46863d7f2e141693f, type: 2}

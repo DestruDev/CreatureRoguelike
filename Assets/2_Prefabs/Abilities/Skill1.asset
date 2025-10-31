@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
   m_Name: Skill1
   m_EditorClassIdentifier: Assembly-CSharp::Ability
-  abilityName: Basic Attack
+  skillName: Whack
   description: A basic attack.
   icon: {fileID: 8367830406354533065, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
   damage: 10

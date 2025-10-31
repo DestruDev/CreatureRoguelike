@@ -9,15 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89954119df1bccf4d83ec6bb603479fb, type: 3}
-  m_Name: Enemymon
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyUnitData
+  m_Script: {fileID: 11500000, guid: 6e1ad48e95045d14c8dcfec638325f0d, type: 3}
+  m_Name: Creaturemon2
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureUnitData
   sprite: {fileID: 7482667652216324306, guid: 1173259d96a2d844985bf267ec853332, type: 3}
-  spriteColor: {r: 0, g: 0, b: 0, a: 1}
+  spriteColor: {r: 1, g: 1, b: 1, a: 1}
   maxHP: 100
   currentHP: 100
   attackDamage: 10
   defense: 5
-  speed: 10
+  speed: 11
   skills:
   - {fileID: 11400000, guid: 2a61fc053fd893a46863d7f2e141693f, type: 2}
