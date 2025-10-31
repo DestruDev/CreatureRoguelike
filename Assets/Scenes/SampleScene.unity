@@ -1226,11 +1226,11 @@ MonoBehaviour:
   - {fileID: 2074824471}
   creaturePrefabs:
   - {fileID: 4228242378919645687, guid: 9f5e66a5f5fc858419268690cf1abfdd, type: 3}
-  - {fileID: 4228242378919645687, guid: 9f5e66a5f5fc858419268690cf1abfdd, type: 3}
+  - {fileID: 4228242378919645687, guid: 21bd9f3315758c0459ad824d7f45c948, type: 3}
   - {fileID: 4228242378919645687, guid: 9f5e66a5f5fc858419268690cf1abfdd, type: 3}
   enemyPrefabs:
-  - {fileID: 8681863143999489288, guid: 11fc35bfd2e3c7a418f7c39aeb496f97, type: 3}
-  - {fileID: 8681863143999489288, guid: 11fc35bfd2e3c7a418f7c39aeb496f97, type: 3}
+  - {fileID: 8681863143999489288, guid: 20101893a2480f24dbc106fb9a5b86d3, type: 3}
+  - {fileID: 8681863143999489288, guid: 20101893a2480f24dbc106fb9a5b86d3, type: 3}
   - {fileID: 8681863143999489288, guid: 11fc35bfd2e3c7a418f7c39aeb496f97, type: 3}
 --- !u!4 &427498649
 Transform:
