@@ -20,7 +20,7 @@ public class Unit : MonoBehaviour
     
     [Header("Runtime Stats")]
     private int currentHP;
-    private int[] abilityCooldowns;
+    private int[] skillCooldowns;
     
     // Properties to access current data
     public bool IsEnemy => unitType == UnitType.Enemy;
@@ -33,7 +33,7 @@ public class Unit : MonoBehaviour
     public int AttackDamage => IsEnemy ? enemyData.attackDamage : creatureUnitData.attackDamage;
     public int Defense => IsEnemy ? enemyData.defense : creatureUnitData.defense;
     public int Speed => IsEnemy ? enemyData.speed : creatureUnitData.speed;
-    public Ability[] Abilities => IsEnemy ? enemyData.abilities : creatureUnitData.abilities;
+    public Skill[] Skills => IsEnemy ? enemyData.skills : creatureUnitData.skills;
     
     void Start()
     {
@@ -103,10 +103,10 @@ public class Unit : MonoBehaviour
         currentHP = MaxHP;
         UpdateHealthUI();
         
-        // Initialize ability cooldowns
-        abilityCooldowns = new int[Abilities.Length];
+        // Initialize skill cooldowns
+        skillCooldowns = new int[Skills.Length];
         
-        Debug.Log(gameObject.name + " (" + unitType + ") initialized with " + MaxHP + " HP and " + Abilities.Length + " abilities");
+        Debug.Log(gameObject.name + " (" + unitType + ") initialized with " + MaxHP + " HP and " + Skills.Length + " skills");
     }
     
     // Combat methods
@@ -143,30 +143,30 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
     }
     
-    public void UseAbility(int abilityIndex, Unit target = null)
+    public void UseSkill(int skillIndex, Unit target = null)
     {
-        if (abilityIndex < 0 || abilityIndex >= Abilities.Length)
+        if (skillIndex < 0 || skillIndex >= Skills.Length)
         {
-            Debug.Log("Invalid ability index");
+            Debug.Log("Invalid skill index");
             return;
         }
         
-        if (abilityCooldowns[abilityIndex] > 0)
+        if (skillCooldowns[skillIndex] > 0)
         {
-            Debug.Log("Ability is on cooldown!");
+            Debug.Log("Skill is on cooldown!");
             return;
         }
         
-        Ability ability = Abilities[abilityIndex];
+        Skill skill = Skills[skillIndex];
         
         // Set cooldown
-        abilityCooldowns[abilityIndex] = ability.cooldownTurns;
+        skillCooldowns[skillIndex] = skill.cooldownTurns;
         
-        // Execute ability (you'll need to adapt this based on your Ability.Execute method)
-        Debug.Log(gameObject.name + " uses " + ability.abilityName + "!");
+        // Execute skill (you'll need to adapt this based on your Skill.Execute method)
+        Debug.Log(gameObject.name + " uses " + skill.skillName + "!");
         
-        // For now, just log the ability use
-        // You can expand this to actually execute the ability effects
+        // For now, just log the skill use
+        // You can expand this to actually execute the skill effects
     }
     
     // Utility methods
@@ -188,9 +188,9 @@ public class Unit : MonoBehaviour
         }
     }
     
-    public bool CanUseAbility(int abilityIndex)
+    public bool CanUseSkill(int skillIndex)
     {
-        return abilityIndex >= 0 && abilityIndex < Abilities.Length && abilityCooldowns[abilityIndex] == 0;
+        return skillIndex >= 0 && skillIndex < Skills.Length && skillCooldowns[skillIndex] == 0;
     }
     
     void Die()
@@ -212,11 +212,11 @@ public class Unit : MonoBehaviour
     public void StartTurn()
     {
         // Reduce cooldowns
-        for (int i = 0; i < abilityCooldowns.Length; i++)
+        for (int i = 0; i < skillCooldowns.Length; i++)
         {
-            if (abilityCooldowns[i] > 0)
+            if (skillCooldowns[i] > 0)
             {
-                abilityCooldowns[i]--;
+                skillCooldowns[i]--;
             }
         }
         

@@ -1,12 +1,12 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Ability", menuName = "Abilities/Ability")]
-public class Ability : ScriptableObject
+[CreateAssetMenu(fileName = "New Skill", menuName = "Skills/Skill")]
+public class Skill : ScriptableObject
 {
     [Header("Basic Info")]
-    public string abilityName = "New Ability";
+    public string skillName = "New Skill";
     [TextArea(3, 5)]
-    public string description = "Ability description";
+    public string description = "Skill description";
     public Sprite icon;
     
     [Header("Stats")]
@@ -15,22 +15,22 @@ public class Ability : ScriptableObject
     public int cooldownTurns = 0;
     
     [Header("Targeting")]
-    public AbilityTargetType targetType = AbilityTargetType.Self;
+    public SkillTargetType targetType = SkillTargetType.Self;
     
     [Header("Effects")]
-    public AbilityEffectType effectType = AbilityEffectType.Damage;
+    public SkillEffectType effectType = SkillEffectType.Damage;
 	// Duration removed; effects should be handled externally if needed
     
     // [Header("Animation")]
     // public string animationTrigger = "";
     // public float animationDuration = 1f;
     
-    // Method to execute the ability
+    // Method to execute the skill
     public void Execute(Creature caster, Creature target = null)
     {
         switch (effectType)
         {
-            case AbilityEffectType.Damage:
+            case SkillEffectType.Damage:
                 if (target != null && damage > 0)
                 {
                     target.TakeDamage(damage);
@@ -38,7 +38,7 @@ public class Ability : ScriptableObject
                 }
                 break;
                 
-            case AbilityEffectType.Heal:
+            case SkillEffectType.Heal:
                 if (target != null && healAmount > 0)
                 {
                     target.Heal(healAmount);
@@ -46,24 +46,24 @@ public class Ability : ScriptableObject
                 }
                 break;
                 
-            case AbilityEffectType.Defend:
+            case SkillEffectType.Defend:
 				// Increase defense; amount/duration handled elsewhere
 				Debug.Log(caster.gameObject.name + " defends!");
                 break;
                 
-            case AbilityEffectType.Buff:
+            case SkillEffectType.Buff:
                 // Apply buff for duration turns
                 Debug.Log(caster.gameObject.name + " applies buff to " + (target != null ? target.gameObject.name : "self") + "!");
                 break;
                 
-            case AbilityEffectType.Debuff:
+            case SkillEffectType.Debuff:
                 // Apply debuff for duration turns
                 Debug.Log(caster.gameObject.name + " applies debuff to " + (target != null ? target.gameObject.name : "self") + "!");
                 break;
         }
     }
     
-    // Check if ability can target the given creature
+    // Check if skill can target the given creature
     public bool CanTarget(Creature target, Creature caster)
     {
         if (target == null) return false;
@@ -74,13 +74,13 @@ public class Ability : ScriptableObject
         
         switch (targetType)
         {
-            case AbilityTargetType.Self:
+            case SkillTargetType.Self:
                 return target == caster;
-            case AbilityTargetType.Ally:
+            case SkillTargetType.Ally:
                 return isAlly;
-            case AbilityTargetType.Enemy:
+            case SkillTargetType.Enemy:
                 return isEnemy;
-            case AbilityTargetType.Any:
+            case SkillTargetType.Any:
                 return true;
             default:
                 return false;
@@ -88,7 +88,7 @@ public class Ability : ScriptableObject
     }
 }
 
-public enum AbilityTargetType
+public enum SkillTargetType
 {
     Self,       // Can only target self
     Ally,       // Can only target allies
@@ -96,7 +96,7 @@ public enum AbilityTargetType
     Any         // Can target anyone
 }
 
-public enum AbilityEffectType
+public enum SkillEffectType
 {
     Damage,     // Deal damage
     Heal,       // Restore HP

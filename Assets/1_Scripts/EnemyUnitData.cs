@@ -14,8 +14,8 @@ public class EnemyUnitData : ScriptableObject
     public int defense = 5;
     public int speed = 10; // Turn order priority
     
-    [Header("Abilities")]
-    public Ability[] abilities = new Ability[0];
+    [Header("Skills")]
+    public Skill[] skills = new Skill[0];
     
     // [Header("Rewards")]
     // public int experienceReward = 10;

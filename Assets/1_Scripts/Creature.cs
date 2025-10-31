@@ -11,7 +11,7 @@ public class Creature : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     
     [Header("Turn-Based Stats")]
-    private int[] abilityCooldowns;
+    private int[] skillCooldowns;
     
     void Start()
     {
@@ -41,20 +41,20 @@ public class Creature : MonoBehaviour
         // Reset HP
         if (enemyData != null) enemyData.ResetHP(); else creatureUnitData.ResetHP();
         
-        // Initialize ability cooldowns
-        var abilities = enemyData != null ? enemyData.abilities : creatureUnitData.abilities;
-        abilityCooldowns = new int[abilities.Length];
+        // Initialize skill cooldowns
+        var skills = enemyData != null ? enemyData.skills : creatureUnitData.skills;
+        skillCooldowns = new int[skills.Length];
     }
     
     // Turn-based methods
     public void StartTurn()
     {
         // Reduce cooldowns
-        for (int i = 0; i < abilityCooldowns.Length; i++)
+        for (int i = 0; i < skillCooldowns.Length; i++)
         {
-            if (abilityCooldowns[i] > 0)
+            if (skillCooldowns[i] > 0)
             {
-                abilityCooldowns[i]--;
+                skillCooldowns[i]--;
             }
         }
         
@@ -74,36 +74,36 @@ public class Creature : MonoBehaviour
         Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + dmg + " damage!");
     }
     
-    public void UseAbility(int abilityIndex, Creature target = null)
+    public void UseSkill(int skillIndex, Creature target = null)
     {
-        var abilities = enemyData != null ? enemyData.abilities : creatureUnitData.abilities;
+        var skills = enemyData != null ? enemyData.skills : creatureUnitData.skills;
         
-        if (abilityIndex < 0 || abilityIndex >= abilities.Length)
+        if (skillIndex < 0 || skillIndex >= skills.Length)
         {
-            Debug.Log("Invalid ability index");
+            Debug.Log("Invalid skill index");
             return;
         }
         
-        if (abilityCooldowns[abilityIndex] > 0)
+        if (skillCooldowns[skillIndex] > 0)
         {
-            Debug.Log("Ability is on cooldown!");
+            Debug.Log("Skill is on cooldown!");
             return;
         }
         
-        Ability ability = abilities[abilityIndex];
+        Skill skill = skills[skillIndex];
         
         // Check if target is valid
-        if (!ability.CanTarget(target, this))
+        if (!skill.CanTarget(target, this))
         {
-            Debug.Log("Invalid target for ability: " + ability.abilityName);
+            Debug.Log("Invalid target for skill: " + skill.skillName);
             return;
         }
         
         // Set cooldown
-        abilityCooldowns[abilityIndex] = ability.cooldownTurns;
+        skillCooldowns[skillIndex] = skill.cooldownTurns;
         
-        // Execute ability
-        ability.Execute(this, target);
+        // Execute skill
+        skill.Execute(this, target);
     }
     
     public void TakeDamage(int damage)
@@ -158,10 +158,10 @@ public class Creature : MonoBehaviour
         return enemyData != null ? enemyData.GetHPPercentage() : (creatureUnitData != null ? creatureUnitData.GetHPPercentage() : 0f);
     }
     
-    public bool CanUseAbility(int abilityIndex)
+    public bool CanUseSkill(int skillIndex)
     {
-        var abilities = enemyData != null ? enemyData.abilities : (creatureUnitData != null ? creatureUnitData.abilities : new Ability[0]);
-        return abilityIndex >= 0 && abilityIndex < abilities.Length && abilityCooldowns[abilityIndex] == 0;
+        var skills = enemyData != null ? enemyData.skills : (creatureUnitData != null ? creatureUnitData.skills : new Skill[0]);
+        return skillIndex >= 0 && skillIndex < skills.Length && skillCooldowns[skillIndex] == 0;
     }
 
     private bool HasData()

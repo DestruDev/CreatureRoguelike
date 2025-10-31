@@ -25,14 +25,14 @@ public class UnitExample : MonoBehaviour
         Debug.Log("Is Creature: " + exampleUnit.IsCreature);
         Debug.Log("Max HP: " + exampleUnit.MaxHP);
         Debug.Log("Attack Damage: " + exampleUnit.AttackDamage);
-        Debug.Log("Number of Abilities: " + exampleUnit.Abilities.Length);
+        Debug.Log("Number of Skills: " + exampleUnit.Skills.Length);
         
-        // Example of using abilities
-        for (int i = 0; i < exampleUnit.Abilities.Length; i++)
+        // Example of using skills
+        for (int i = 0; i < exampleUnit.Skills.Length; i++)
         {
-            if (exampleUnit.CanUseAbility(i))
+            if (exampleUnit.CanUseSkill(i))
             {
-                Debug.Log("Can use ability: " + exampleUnit.Abilities[i].abilityName);
+                Debug.Log("Can use skill: " + exampleUnit.Skills[i].skillName);
             }
         }
     }

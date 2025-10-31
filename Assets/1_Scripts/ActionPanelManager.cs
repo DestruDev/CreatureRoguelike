@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ActionPanelManager : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class ActionPanelManager : MonoBehaviour
     [Header("Buttons")]
     public Button SkillsButton;
     public Button ItemsButton;
+
+    [Header("Unit Info")]
+    public TextMeshProUGUI UnitNameText;
 
     private void Start()
     {
