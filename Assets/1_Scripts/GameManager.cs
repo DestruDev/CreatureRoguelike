@@ -242,9 +242,9 @@ public class GameManager : MonoBehaviour
 				}
 				else
 				{
-					// Show text and update it for creature turns
+					// Show text and update it for creature turns using ScriptableObject name
 					UnitNameText.gameObject.SetActive(true);
-					UnitNameText.text = currentUnit.gameObject.name;
+					UnitNameText.text = currentUnit.UnitName;
 				}
 			}
 			else
@@ -289,10 +289,10 @@ public class GameManager : MonoBehaviour
 			{
 				if (unit.IsCreature)
 				{
-					// Update creature name
+					// Update creature name from ScriptableObject
 					if (creatureNameTexts[spawnIndex] != null)
 					{
-						creatureNameTexts[spawnIndex].text = unit.gameObject.name;
+						creatureNameTexts[spawnIndex].text = unit.UnitName;
 						creatureNameTexts[spawnIndex].gameObject.SetActive(true);
 					}
 					
@@ -307,10 +307,10 @@ public class GameManager : MonoBehaviour
 				}
 				else if (unit.IsEnemy)
 				{
-					// Update enemy name
+					// Update enemy name from ScriptableObject
 					if (enemyNameTexts[spawnIndex] != null)
 					{
-						enemyNameTexts[spawnIndex].text = unit.gameObject.name;
+						enemyNameTexts[spawnIndex].text = unit.UnitName;
 						enemyNameTexts[spawnIndex].gameObject.SetActive(true);
 					}
 					

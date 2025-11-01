@@ -34,6 +34,8 @@ public class Unit : MonoBehaviour
     public int Defense => IsEnemy ? enemyData.defense : creatureUnitData.defense;
     public int Speed => IsEnemy ? enemyData.speed : creatureUnitData.speed;
     public Skill[] Skills => IsEnemy ? enemyData.skills : creatureUnitData.skills;
+    public string UnitName => IsEnemy ? enemyData.unitName : creatureUnitData.unitName;
+    public string UnitID => IsEnemy ? enemyData.unitID : creatureUnitData.unitID;
     
     void Start()
     {

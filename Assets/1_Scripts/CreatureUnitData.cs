@@ -3,6 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Creature Unit", menuName = "Unit/Creature")]
 public class CreatureUnitData : ScriptableObject
 {
+    [Header("Unit Info")]
+    public string unitName = "Creature";
+    public string unitID = "";
+    
     [Header("Visual")]
     public Sprite sprite;
     public Color spriteColor = Color.white;

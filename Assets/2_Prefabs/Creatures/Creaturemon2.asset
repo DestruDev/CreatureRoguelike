@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e1ad48e95045d14c8dcfec638325f0d, type: 3}
   m_Name: Creaturemon2
   m_EditorClassIdentifier: Assembly-CSharp::CreatureUnitData
+  unitName: Creaturemon2
+  unitID: 2
   sprite: {fileID: 7482667652216324306, guid: 1173259d96a2d844985bf267ec853332, type: 3}
   spriteColor: {r: 1, g: 1, b: 1, a: 1}
   maxHP: 100

@@ -49,10 +49,11 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data
-				var creature = CreateUnitFromData(creatureData[i], UnitType.Creature, creatureSpawnAreas[i], "Creature_" + (i + 1));
+				// Create unit from ScriptableObject data, using unitName from ScriptableObject
+				string creatureName = !string.IsNullOrEmpty(creatureData[i].unitName) ? creatureData[i].unitName : "Creature_" + (i + 1);
+				var creature = CreateUnitFromData(creatureData[i], UnitType.Creature, creatureSpawnAreas[i], creatureName);
                 
-                Debug.Log("Spawned creature " + (i + 1) + " (" + creatureData[i].name + ") at " + creatureSpawnAreas[i].name);
+                Debug.Log("Spawned creature " + (i + 1) + " (" + creatureName + ") at " + creatureSpawnAreas[i].name);
             }
         }
     }
@@ -69,10 +70,11 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(enemySpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data
-				var enemy = CreateUnitFromData(enemyData[i], UnitType.Enemy, enemySpawnAreas[i], "Enemy_" + (i + 1));
+				// Create unit from ScriptableObject data, using unitName from ScriptableObject
+				string enemyName = !string.IsNullOrEmpty(enemyData[i].unitName) ? enemyData[i].unitName : "Enemy_" + (i + 1);
+				var enemy = CreateUnitFromData(enemyData[i], UnitType.Enemy, enemySpawnAreas[i], enemyName);
                 
-                Debug.Log("Spawned enemy " + (i + 1) + " (" + enemyData[i].name + ") at " + enemySpawnAreas[i].name);
+                Debug.Log("Spawned enemy " + (i + 1) + " (" + enemyName + ") at " + enemySpawnAreas[i].name);
             }
         }
     }
@@ -115,10 +117,11 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(creatureSpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data
-				var creature = CreateUnitFromData(creatureData[index], UnitType.Creature, creatureSpawnAreas[index], "Creature_" + (index + 1));
+				// Create unit from ScriptableObject data, using unitName from ScriptableObject
+				string creatureName = !string.IsNullOrEmpty(creatureData[index].unitName) ? creatureData[index].unitName : "Creature_" + (index + 1);
+				var creature = CreateUnitFromData(creatureData[index], UnitType.Creature, creatureSpawnAreas[index], creatureName);
                 
-                Debug.Log("Respawned creature " + (index + 1));
+                Debug.Log("Respawned creature " + (index + 1) + " (" + creatureName + ")");
             }
         }
     }
@@ -136,10 +139,11 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(enemySpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data
-				var enemy = CreateUnitFromData(enemyData[index], UnitType.Enemy, enemySpawnAreas[index], "Enemy_" + (index + 1));
+				// Create unit from ScriptableObject data, using unitName from ScriptableObject
+				string enemyName = !string.IsNullOrEmpty(enemyData[index].unitName) ? enemyData[index].unitName : "Enemy_" + (index + 1);
+				var enemy = CreateUnitFromData(enemyData[index], UnitType.Enemy, enemySpawnAreas[index], enemyName);
                 
-                Debug.Log("Respawned enemy " + (index + 1));
+                Debug.Log("Respawned enemy " + (index + 1) + " (" + enemyName + ")");
             }
         }
     }

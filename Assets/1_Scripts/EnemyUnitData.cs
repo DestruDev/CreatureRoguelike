@@ -3,6 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Enemy Unit", menuName = "Unit/Enemy")]
 public class EnemyUnitData : ScriptableObject
 {
+    [Header("Unit Info")]
+    public string unitName = "Enemy";
+    public string unitID = "";
+    
     [Header("Visual")]
     public Sprite sprite;
     public Color spriteColor = Color.white;
