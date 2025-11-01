@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Spawning : MonoBehaviour
 {
@@ -6,9 +7,10 @@ public class Spawning : MonoBehaviour
     public Transform[] creatureSpawnAreas = new Transform[3];
     public Transform[] enemySpawnAreas = new Transform[3];
     
-    [Header("Unit Prefabs")]
-	public GameObject[] creaturePrefabs = new GameObject[3];
-	public GameObject[] enemyPrefabs = new GameObject[3];
+    [Header("Unit Data (ScriptableObjects)")]
+	public CreatureUnitData[] creatureData = new CreatureUnitData[3];
+	public EnemyUnitData[] enemyData = new EnemyUnitData[3];
+    
     
     void Start()
     {
@@ -19,13 +21,27 @@ public class Spawning : MonoBehaviour
     {
         SpawnCreatures();
         SpawnEnemies();
+        
+        // Notify GameManager to update UI after all units are spawned
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
+        {
+            // Delay slightly to ensure all units are fully initialized
+            StartCoroutine(DelayedUIUpdate(gameManager));
+        }
+    }
+    
+    private System.Collections.IEnumerator DelayedUIUpdate(GameManager gameManager)
+    {
+        yield return new WaitForEndOfFrame();
+        gameManager.UpdateAllUnitUI();
     }
     
 	public void SpawnCreatures()
     {
-		for (int i = 0; i < creaturePrefabs.Length && i < creatureSpawnAreas.Length; i++)
+		for (int i = 0; i < creatureData.Length && i < creatureSpawnAreas.Length; i++)
         {
-			if (creaturePrefabs[i] != null && creatureSpawnAreas[i] != null)
+			if (creatureData[i] != null && creatureSpawnAreas[i] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = creatureSpawnAreas[i].childCount - 1; c >= 0; c--)
@@ -33,20 +49,19 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				// Spawn new creature as child
-				var creature = Instantiate(creaturePrefabs[i], creatureSpawnAreas[i].position, creatureSpawnAreas[i].rotation, creatureSpawnAreas[i]);
-				creature.name = "Creature_" + (i + 1);
+				// Create unit from ScriptableObject data
+				var creature = CreateUnitFromData(creatureData[i], UnitType.Creature, creatureSpawnAreas[i], "Creature_" + (i + 1));
                 
-                Debug.Log("Spawned creature " + (i + 1) + " at " + creatureSpawnAreas[i].name);
+                Debug.Log("Spawned creature " + (i + 1) + " (" + creatureData[i].name + ") at " + creatureSpawnAreas[i].name);
             }
         }
     }
     
 	public void SpawnEnemies()
     {
-		for (int i = 0; i < enemyPrefabs.Length && i < enemySpawnAreas.Length; i++)
+		for (int i = 0; i < enemyData.Length && i < enemySpawnAreas.Length; i++)
         {
-			if (enemyPrefabs[i] != null && enemySpawnAreas[i] != null)
+			if (enemyData[i] != null && enemySpawnAreas[i] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = enemySpawnAreas[i].childCount - 1; c >= 0; c--)
@@ -54,11 +69,10 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(enemySpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				// Spawn new enemy as child
-				var enemy = Instantiate(enemyPrefabs[i], enemySpawnAreas[i].position, enemySpawnAreas[i].rotation, enemySpawnAreas[i]);
-				enemy.name = "Enemy_" + (i + 1);
+				// Create unit from ScriptableObject data
+				var enemy = CreateUnitFromData(enemyData[i], UnitType.Enemy, enemySpawnAreas[i], "Enemy_" + (i + 1));
                 
-                Debug.Log("Spawned enemy " + (i + 1) + " at " + enemySpawnAreas[i].name);
+                Debug.Log("Spawned enemy " + (i + 1) + " (" + enemyData[i].name + ") at " + enemySpawnAreas[i].name);
             }
         }
     }
@@ -91,9 +105,9 @@ public class Spawning : MonoBehaviour
 	// Method to respawn a specific creature
 	public void RespawnCreature(int index)
     {
-		if (index >= 0 && index < creaturePrefabs.Length && index < creatureSpawnAreas.Length)
+		if (index >= 0 && index < creatureData.Length && index < creatureSpawnAreas.Length)
         {
-			if (creaturePrefabs[index] != null && creatureSpawnAreas[index] != null)
+			if (creatureData[index] != null && creatureSpawnAreas[index] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = creatureSpawnAreas[index].childCount - 1; c >= 0; c--)
@@ -101,9 +115,8 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(creatureSpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				// Spawn new creature as child
-				var creature = Instantiate(creaturePrefabs[index], creatureSpawnAreas[index].position, creatureSpawnAreas[index].rotation, creatureSpawnAreas[index]);
-				creature.name = "Creature_" + (index + 1);
+				// Create unit from ScriptableObject data
+				var creature = CreateUnitFromData(creatureData[index], UnitType.Creature, creatureSpawnAreas[index], "Creature_" + (index + 1));
                 
                 Debug.Log("Respawned creature " + (index + 1));
             }
@@ -113,9 +126,9 @@ public class Spawning : MonoBehaviour
     // Method to respawn a specific enemy
 	public void RespawnEnemy(int index)
     {
-		if (index >= 0 && index < enemyPrefabs.Length && index < enemySpawnAreas.Length)
+		if (index >= 0 && index < enemyData.Length && index < enemySpawnAreas.Length)
         {
-			if (enemyPrefabs[index] != null && enemySpawnAreas[index] != null)
+			if (enemyData[index] != null && enemySpawnAreas[index] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = enemySpawnAreas[index].childCount - 1; c >= 0; c--)
@@ -123,12 +136,50 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(enemySpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				// Spawn new enemy as child
-				var enemy = Instantiate(enemyPrefabs[index], enemySpawnAreas[index].position, enemySpawnAreas[index].rotation, enemySpawnAreas[index]);
-				enemy.name = "Enemy_" + (index + 1);
+				// Create unit from ScriptableObject data
+				var enemy = CreateUnitFromData(enemyData[index], UnitType.Enemy, enemySpawnAreas[index], "Enemy_" + (index + 1));
                 
                 Debug.Log("Respawned enemy " + (index + 1));
             }
+        }
+    }
+    
+    /// <summary>
+    /// Creates a unit GameObject from ScriptableObject data
+    /// </summary>
+    private GameObject CreateUnitFromData(ScriptableObject unitData, UnitType unitType, Transform parent, string unitName)
+    {
+        // Create the main GameObject
+        GameObject unitObj = new GameObject(unitName);
+        unitObj.transform.SetParent(parent);
+        unitObj.transform.localPosition = Vector3.zero;
+        unitObj.transform.localRotation = Quaternion.identity;
+        unitObj.transform.localScale = Vector3.one;
+        
+        // Add SpriteRenderer component
+        SpriteRenderer spriteRenderer = unitObj.AddComponent<SpriteRenderer>();
+        
+        // Add Unit component
+        Unit unit = unitObj.AddComponent<Unit>();
+        
+        // Initialize unit with data (this will set sprite and color via InitializeUnit)
+        SetUnitData(unit, unitData, unitType);
+        
+        return unitObj;
+    }
+    
+    /// <summary>
+    /// Sets the unit data on the Unit component using public initialization method
+    /// </summary>
+    private void SetUnitData(Unit unit, ScriptableObject data, UnitType unitType)
+    {
+        if (unitType == UnitType.Creature && data is CreatureUnitData creatureData)
+        {
+            unit.InitializeWithData(UnitType.Creature, creatureData, null);
+        }
+        else if (unitType == UnitType.Enemy && data is EnemyUnitData enemyData)
+        {
+            unit.InitializeWithData(UnitType.Enemy, null, enemyData);
         }
     }
 }

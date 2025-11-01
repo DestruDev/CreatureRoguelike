@@ -9,6 +9,22 @@ public class GameManager : MonoBehaviour
 
 	[Header("Unit Info")]
     public TextMeshProUGUI UnitNameText;
+    
+	[Header("Creature Status UI (3 units)")]
+    [Tooltip("Creature name text displays (index 0-2 correspond to creature 1-3)")]
+    public TextMeshProUGUI[] creatureNameTexts = new TextMeshProUGUI[3];
+    
+    [Tooltip("Creature health bar fill images (index 0-2 correspond to creature 1-3)")]
+    public UnityEngine.UI.Image[] creatureHealthFills = new UnityEngine.UI.Image[3];
+    
+    [Header("Enemy Status UI (3 units)")]
+    [Tooltip("Enemy name text displays (index 0-2 correspond to enemy 1-3)")]
+    public TextMeshProUGUI[] enemyNameTexts = new TextMeshProUGUI[3];
+    
+    [Tooltip("Enemy health bar fill images (index 0-2 correspond to enemy 1-3)")]
+    public UnityEngine.UI.Image[] enemyHealthFills = new UnityEngine.UI.Image[3];
+    
+    private TurnOrder turnOrderRef; // Reference to get spawn indices
 
     [Header("Turn Management")]
     private Unit currentUnit;
@@ -30,6 +46,19 @@ public class GameManager : MonoBehaviour
     {
         // Wait a frame to ensure all units are fully initialized
         yield return null;
+        
+        // Get reference to TurnOrder for spawn index lookup
+        if (turnOrder != null)
+        {
+            turnOrderRef = turnOrder;
+        }
+        else
+        {
+            turnOrderRef = FindFirstObjectByType<TurnOrder>();
+        }
+        
+        // Connect all units to their UI elements
+        UpdateAllUnitUI();
         
         if (turnOrder != null)
         {
@@ -231,5 +260,225 @@ public class GameManager : MonoBehaviour
 	public Unit GetCurrentUnit()
 	{
 		return currentUnit;
+	}
+	
+	/// <summary>
+	/// Updates all unit UI displays by connecting units to their corresponding UI elements based on spawn index
+	/// </summary>
+	public void UpdateAllUnitUI()
+	{
+		if (turnOrderRef == null)
+		{
+			turnOrderRef = FindFirstObjectByType<TurnOrder>();
+		}
+		
+		// Find all units in the scene
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		
+		// Clear all UI first
+		ClearCreatureUI();
+		ClearEnemyUI();
+		
+		// Connect each unit to its UI based on spawn index
+		foreach (var unit in allUnits)
+		{
+			if (unit == null || !unit.IsAlive()) continue;
+			
+			int spawnIndex = GetUnitSpawnIndexWithinType(unit);
+			if (spawnIndex >= 0 && spawnIndex < 3)
+			{
+				if (unit.IsCreature)
+				{
+					// Update creature name
+					if (creatureNameTexts[spawnIndex] != null)
+					{
+						creatureNameTexts[spawnIndex].text = unit.gameObject.name;
+						creatureNameTexts[spawnIndex].gameObject.SetActive(true);
+					}
+					
+					// Update creature health bar and connect to unit
+					if (creatureHealthFills[spawnIndex] != null)
+					{
+						creatureHealthFills[spawnIndex].gameObject.SetActive(true);
+						UpdateUnitHealthUI(unit, spawnIndex, isCreature: true);
+						// Connect the health fill to the unit so it updates automatically
+						unit.SetHealthFill(creatureHealthFills[spawnIndex]);
+					}
+				}
+				else if (unit.IsEnemy)
+				{
+					// Update enemy name
+					if (enemyNameTexts[spawnIndex] != null)
+					{
+						enemyNameTexts[spawnIndex].text = unit.gameObject.name;
+						enemyNameTexts[spawnIndex].gameObject.SetActive(true);
+					}
+					
+					// Update enemy health bar and connect to unit
+					if (enemyHealthFills[spawnIndex] != null)
+					{
+						enemyHealthFills[spawnIndex].gameObject.SetActive(true);
+						UpdateUnitHealthUI(unit, spawnIndex, isCreature: false);
+						// Connect the health fill to the unit so it updates automatically
+						unit.SetHealthFill(enemyHealthFills[spawnIndex]);
+					}
+				}
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Clears all creature UI displays
+	/// </summary>
+	private void ClearCreatureUI()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (creatureNameTexts[i] != null)
+			{
+				creatureNameTexts[i].text = "";
+				creatureNameTexts[i].gameObject.SetActive(false);
+			}
+			if (creatureHealthFills[i] != null)
+			{
+				creatureHealthFills[i].fillAmount = 0f;
+				creatureHealthFills[i].gameObject.SetActive(false);
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Clears all enemy UI displays
+	/// </summary>
+	private void ClearEnemyUI()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (enemyNameTexts[i] != null)
+			{
+				enemyNameTexts[i].text = "";
+				enemyNameTexts[i].gameObject.SetActive(false);
+			}
+			if (enemyHealthFills[i] != null)
+			{
+				enemyHealthFills[i].fillAmount = 0f;
+				enemyHealthFills[i].gameObject.SetActive(false);
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Updates a specific unit's health UI
+	/// </summary>
+	private void UpdateUnitHealthUI(Unit unit, int spawnIndex, bool isCreature)
+	{
+		if (unit == null || spawnIndex < 0 || spawnIndex >= 3) return;
+		
+		UnityEngine.UI.Image healthFill = null;
+		
+		if (isCreature && creatureHealthFills[spawnIndex] != null)
+		{
+			healthFill = creatureHealthFills[spawnIndex];
+		}
+		else if (!isCreature && enemyHealthFills[spawnIndex] != null)
+		{
+			healthFill = enemyHealthFills[spawnIndex];
+		}
+		
+		if (healthFill != null)
+		{
+			float healthPercentage = unit.GetHPPercentage();
+			healthFill.fillAmount = healthPercentage;
+		}
+	}
+	
+	/// <summary>
+	/// Gets the spawn index (0-2) for a unit within its type (creature or enemy) based on which spawn area it belongs to
+	/// </summary>
+	private int GetUnitSpawnIndexWithinType(Unit unit)
+	{
+		if (unit == null || turnOrderRef == null) return -1;
+		
+		// Get reference to Spawning to access spawn areas
+		Spawning spawning = FindFirstObjectByType<Spawning>();
+		if (spawning == null) return -1;
+		
+		// Check if unit is a creature or enemy and find its index within that type
+		if (unit.IsCreature)
+		{
+			// Check creature spawn areas (indices 0-2)
+			var spawnAreasField = typeof(Spawning).GetField("creatureSpawnAreas", 
+				System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+			
+			if (spawnAreasField != null)
+			{
+				var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
+				if (spawnAreas != null)
+				{
+					for (int i = 0; i < spawnAreas.Length && i < 3; i++)
+					{
+						if (spawnAreas[i] != null)
+						{
+							// Check if unit is a child of this spawn area
+							Transform unitTransform = unit.transform;
+							while (unitTransform != null)
+							{
+								if (unitTransform.gameObject == spawnAreas[i].gameObject)
+								{
+									return i;
+								}
+								unitTransform = unitTransform.parent;
+							}
+						}
+					}
+				}
+			}
+		}
+		else if (unit.IsEnemy)
+		{
+			// Check enemy spawn areas (indices 0-2)
+			var spawnAreasField = typeof(Spawning).GetField("enemySpawnAreas", 
+				System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+			
+			if (spawnAreasField != null)
+			{
+				var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
+				if (spawnAreas != null)
+				{
+					for (int i = 0; i < spawnAreas.Length && i < 3; i++)
+					{
+						if (spawnAreas[i] != null)
+						{
+							// Check if unit is a child of this spawn area
+							Transform unitTransform = unit.transform;
+							while (unitTransform != null)
+							{
+								if (unitTransform.gameObject == spawnAreas[i].gameObject)
+								{
+									return i;
+								}
+								unitTransform = unitTransform.parent;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return -1;
+	}
+	
+	/// <summary>
+	/// Called when a unit's health changes - updates the corresponding UI
+	/// </summary>
+	public void OnUnitHealthChanged(Unit unit)
+	{
+		if (unit == null) return;
+		
+		int spawnIndex = GetUnitSpawnIndexWithinType(unit);
+		if (spawnIndex >= 0 && spawnIndex < 3)
+		{
+			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsCreature);
+		}
 	}
 }

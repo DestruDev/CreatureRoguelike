@@ -59,6 +59,42 @@ public class Unit : MonoBehaviour
         InitializeUnit();
     }
     
+    /// <summary>
+    /// Initialize the unit with ScriptableObject data (for runtime spawning)
+    /// </summary>
+    public void InitializeWithData(UnitType type, CreatureUnitData creatureData = null, EnemyUnitData enemyData = null)
+    {
+        unitType = type;
+        
+        if (type == UnitType.Creature)
+        {
+            this.creatureUnitData = creatureData;
+            this.enemyData = null;
+        }
+        else
+        {
+            this.enemyData = enemyData;
+            this.creatureUnitData = null;
+        }
+        
+        // Get components if not already set
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+        
+        // Initialize unit data immediately (don't wait for Start)
+        InitializeUnit();
+    }
+    
+    /// <summary>
+    /// Set the health fill UI image (for runtime setup)
+    /// </summary>
+    public void SetHealthFill(Image image)
+    {
+        healthFill = image;
+    }
+    
     bool ValidateUnitConfiguration()
     {
         // Check if unit type matches assigned data
@@ -215,6 +251,13 @@ public class Unit : MonoBehaviour
         if (healthFill != null)
         {
             healthFill.fillAmount = Mathf.Clamp01(GetHPPercentage());
+        }
+        
+        // Notify GameManager to update UI if health changed
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.OnUnitHealthChanged(this);
         }
     }
     
