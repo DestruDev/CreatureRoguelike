@@ -3,13 +3,21 @@ using UnityEngine.UI;
 
 public class Spawning : MonoBehaviour
 {
-    [Header("Spawn Areas")]
+    [Header("Creature Spawn Areas")]
+    [Tooltip("Spawn areas for creature units (player units)")]
     public Transform[] creatureSpawnAreas = new Transform[3];
+    
+    [Header("Creature Unit Data (ScriptableObjects)")]
+    [Tooltip("Unit data for each creature spawn area. Should be CreatureUnitData.")]
+    public CreatureUnitData[] creatureUnitData = new CreatureUnitData[3];
+    
+    [Header("Enemy Spawn Areas")]
+    [Tooltip("Spawn areas for enemy units")]
     public Transform[] enemySpawnAreas = new Transform[3];
     
-    [Header("Unit Data (ScriptableObjects)")]
-	public CreatureUnitData[] creatureData = new CreatureUnitData[3];
-	public EnemyUnitData[] enemyData = new EnemyUnitData[3];
+    [Header("Enemy Unit Data (ScriptableObjects)")]
+    [Tooltip("Unit data for each enemy spawn area. Uses CreatureUnitData.")]
+    public CreatureUnitData[] enemyUnitData = new CreatureUnitData[3];
     
     
     void Start()
@@ -19,8 +27,7 @@ public class Spawning : MonoBehaviour
     
     public void SpawnAllUnits()
     {
-        SpawnCreatures();
-        SpawnEnemies();
+        SpawnUnits();
         
         // Notify GameManager to update UI after all units are spawned
         GameManager gameManager = FindFirstObjectByType<GameManager>();
@@ -37,11 +44,15 @@ public class Spawning : MonoBehaviour
         gameManager.UpdateAllUnitUI();
     }
     
-	public void SpawnCreatures()
+	/// <summary>
+	/// Spawns all units from the unit data arrays
+	/// </summary>
+	public void SpawnUnits()
     {
-		for (int i = 0; i < creatureData.Length && i < creatureSpawnAreas.Length; i++)
+		// Spawn creatures
+		for (int i = 0; i < creatureUnitData.Length && i < creatureSpawnAreas.Length; i++)
         {
-			if (creatureData[i] != null && creatureSpawnAreas[i] != null)
+			if (creatureUnitData[i] != null && creatureSpawnAreas[i] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = creatureSpawnAreas[i].childCount - 1; c >= 0; c--)
@@ -49,20 +60,26 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data, using unitName from ScriptableObject
-				string creatureName = !string.IsNullOrEmpty(creatureData[i].unitName) ? creatureData[i].unitName : "Creature_" + (i + 1);
-				var creature = CreateUnitFromData(creatureData[i], UnitType.Creature, creatureSpawnAreas[i], creatureName);
+				string unitName = GetUnitName(creatureUnitData[i], i);
+				
+				// Create unit from ScriptableObject data
+				var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName);
+    
+				// Ensure unit is set as player unit (uses ScriptableObject setting by default)
+				Unit unit = unitObj.GetComponent<Unit>();
+				if (unit != null && !creatureUnitData[i].isPlayerUnit)
+				{
+					unit.SetTeamAssignment(true); // Force player unit
+				}
                 
-                Debug.Log("Spawned creature " + (i + 1) + " (" + creatureName + ") at " + creatureSpawnAreas[i].name);
+                Debug.Log("Spawned creature " + (i + 1) + " (" + unitName + ") at " + creatureSpawnAreas[i].name);
             }
         }
-    }
-    
-	public void SpawnEnemies()
-    {
-		for (int i = 0; i < enemyData.Length && i < enemySpawnAreas.Length; i++)
+        
+        // Spawn enemies
+        for (int i = 0; i < enemyUnitData.Length && i < enemySpawnAreas.Length; i++)
         {
-			if (enemyData[i] != null && enemySpawnAreas[i] != null)
+			if (enemyUnitData[i] != null && enemySpawnAreas[i] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = enemySpawnAreas[i].childCount - 1; c >= 0; c--)
@@ -70,18 +87,26 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(enemySpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data, using unitName from ScriptableObject
-				string enemyName = !string.IsNullOrEmpty(enemyData[i].unitName) ? enemyData[i].unitName : "Enemy_" + (i + 1);
-				var enemy = CreateUnitFromData(enemyData[i], UnitType.Enemy, enemySpawnAreas[i], enemyName);
+				string unitName = GetUnitName(enemyUnitData[i], i);
+				
+				// Create unit from ScriptableObject data
+				var unitObj = CreateUnitFromData(enemyUnitData[i], enemySpawnAreas[i], unitName);
+    
+				// Ensure unit is set as enemy unit (spawn area determines team, not ScriptableObject)
+				Unit unit = unitObj.GetComponent<Unit>();
+				if (unit != null)
+				{
+					unit.SetTeamAssignment(false); // Force enemy unit based on spawn area
+				}
                 
-                Debug.Log("Spawned enemy " + (i + 1) + " (" + enemyName + ") at " + enemySpawnAreas[i].name);
+                Debug.Log("Spawned enemy " + (i + 1) + " (" + unitName + ") at " + enemySpawnAreas[i].name);
             }
         }
     }
     
 	public void ClearAllSpawnedUnits()
     {
-		// Clear creatures
+		// Clear creature spawn areas
 		for (int i = 0; i < creatureSpawnAreas.Length; i++)
 		{
 			if (creatureSpawnAreas[i] == null) continue;
@@ -91,7 +116,7 @@ public class Spawning : MonoBehaviour
 			}
 		}
 		
-		// Clear enemies
+		// Clear enemy spawn areas
 		for (int i = 0; i < enemySpawnAreas.Length; i++)
 		{
 			if (enemySpawnAreas[i] == null) continue;
@@ -104,12 +129,14 @@ public class Spawning : MonoBehaviour
         Debug.Log("Cleared all spawned units");
     }
     
-	// Method to respawn a specific creature
+	/// <summary>
+	/// Respawns a creature at a specific spawn area index (0-2)
+	/// </summary>
 	public void RespawnCreature(int index)
     {
-		if (index >= 0 && index < creatureData.Length && index < creatureSpawnAreas.Length)
+		if (index >= 0 && index < creatureUnitData.Length && index < creatureSpawnAreas.Length)
         {
-			if (creatureData[index] != null && creatureSpawnAreas[index] != null)
+			if (creatureUnitData[index] != null && creatureSpawnAreas[index] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = creatureSpawnAreas[index].childCount - 1; c >= 0; c--)
@@ -117,21 +144,31 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(creatureSpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data, using unitName from ScriptableObject
-				string creatureName = !string.IsNullOrEmpty(creatureData[index].unitName) ? creatureData[index].unitName : "Creature_" + (index + 1);
-				var creature = CreateUnitFromData(creatureData[index], UnitType.Creature, creatureSpawnAreas[index], creatureName);
+				string unitName = GetUnitName(creatureUnitData[index], index);
+				
+				// Create unit from ScriptableObject data
+				var unitObj = CreateUnitFromData(creatureUnitData[index], creatureSpawnAreas[index], unitName);
+    
+				// Ensure unit is set as player unit
+				Unit unit = unitObj.GetComponent<Unit>();
+				if (unit != null && !creatureUnitData[index].isPlayerUnit)
+				{
+					unit.SetTeamAssignment(true);
+				}
                 
-                Debug.Log("Respawned creature " + (index + 1) + " (" + creatureName + ")");
+                Debug.Log("Respawned creature " + (index + 1) + " (" + unitName + ")");
             }
         }
     }
     
-    // Method to respawn a specific enemy
+	/// <summary>
+	/// Respawns an enemy at a specific spawn area index (0-2)
+	/// </summary>
 	public void RespawnEnemy(int index)
     {
-		if (index >= 0 && index < enemyData.Length && index < enemySpawnAreas.Length)
+		if (index >= 0 && index < enemyUnitData.Length && index < enemySpawnAreas.Length)
         {
-			if (enemyData[index] != null && enemySpawnAreas[index] != null)
+			if (enemyUnitData[index] != null && enemySpawnAreas[index] != null)
             {
 				// Destroy existing children under this spawn area
 				for (int c = enemySpawnAreas[index].childCount - 1; c >= 0; c--)
@@ -139,11 +176,19 @@ public class Spawning : MonoBehaviour
 					DestroyImmediate(enemySpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				// Create unit from ScriptableObject data, using unitName from ScriptableObject
-				string enemyName = !string.IsNullOrEmpty(enemyData[index].unitName) ? enemyData[index].unitName : "Enemy_" + (index + 1);
-				var enemy = CreateUnitFromData(enemyData[index], UnitType.Enemy, enemySpawnAreas[index], enemyName);
+				string unitName = GetUnitName(enemyUnitData[index], index);
+				
+				// Create unit from ScriptableObject data
+				var unitObj = CreateUnitFromData(enemyUnitData[index], enemySpawnAreas[index], unitName);
+    
+				// Ensure unit is set as enemy unit (spawn area determines team)
+				Unit unit = unitObj.GetComponent<Unit>();
+				if (unit != null)
+				{
+					unit.SetTeamAssignment(false);
+				}
                 
-                Debug.Log("Respawned enemy " + (index + 1) + " (" + enemyName + ")");
+                Debug.Log("Respawned enemy " + (index + 1) + " (" + unitName + ")");
             }
         }
     }
@@ -151,7 +196,7 @@ public class Spawning : MonoBehaviour
     /// <summary>
     /// Creates a unit GameObject from ScriptableObject data
     /// </summary>
-    private GameObject CreateUnitFromData(ScriptableObject unitData, UnitType unitType, Transform parent, string unitName)
+    private GameObject CreateUnitFromData(CreatureUnitData unitData, Transform parent, string unitName)
     {
         // Create the main GameObject
         GameObject unitObj = new GameObject(unitName);
@@ -167,23 +212,17 @@ public class Spawning : MonoBehaviour
         Unit unit = unitObj.AddComponent<Unit>();
         
         // Initialize unit with data (this will set sprite and color via InitializeUnit)
-        SetUnitData(unit, unitData, unitType);
+        unit.InitializeWithData(unitData);
         
         return unitObj;
     }
     
     /// <summary>
-    /// Sets the unit data on the Unit component using public initialization method
+    /// Gets the unit name from ScriptableObject data, with fallback
     /// </summary>
-    private void SetUnitData(Unit unit, ScriptableObject data, UnitType unitType)
+    private string GetUnitName(CreatureUnitData data, int index)
     {
-        if (unitType == UnitType.Creature && data is CreatureUnitData creatureData)
-        {
-            unit.InitializeWithData(UnitType.Creature, creatureData, null);
-        }
-        else if (unitType == UnitType.Enemy && data is EnemyUnitData enemyData)
-        {
-            unit.InitializeWithData(UnitType.Enemy, null, enemyData);
-        }
+        return !string.IsNullOrEmpty(data.unitName) ? data.unitName : "Creature_" + (index + 1);
     }
+    
 }

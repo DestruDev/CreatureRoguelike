@@ -1,17 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum UnitType
-{
-    Creature,
-    Enemy
-}
-
 public class Unit : MonoBehaviour
 {
-    public UnitType unitType = UnitType.Creature;
-    
-    [SerializeField] private EnemyUnitData enemyData;
     [SerializeField] private CreatureUnitData creatureUnitData;
     
     [Header("Components")]
@@ -22,20 +13,48 @@ public class Unit : MonoBehaviour
     private int currentHP;
     private int[] skillCooldowns;
     
+    // Runtime team assignment override (doesn't modify ScriptableObject)
+    private bool? teamAssignmentOverride = null;
+    
     // Properties to access current data
-    public bool IsEnemy => unitType == UnitType.Enemy;
-    public bool IsCreature => unitType == UnitType.Creature;
-    public bool HasData => (IsEnemy && enemyData != null) || (IsCreature && creatureUnitData != null);
+    public bool HasData => creatureUnitData != null;
     
     // Current stats (cached from ScriptableObject)
     public int CurrentHP => currentHP;
-    public int MaxHP => IsEnemy ? enemyData.maxHP : creatureUnitData.maxHP;
-    public int AttackDamage => IsEnemy ? enemyData.attackDamage : creatureUnitData.attackDamage;
-    public int Defense => IsEnemy ? enemyData.defense : creatureUnitData.defense;
-    public int Speed => IsEnemy ? enemyData.speed : creatureUnitData.speed;
-    public Skill[] Skills => IsEnemy ? enemyData.skills : creatureUnitData.skills;
-    public string UnitName => IsEnemy ? enemyData.unitName : creatureUnitData.unitName;
-    public string UnitID => IsEnemy ? enemyData.unitID : creatureUnitData.unitID;
+    public int MaxHP => creatureUnitData != null ? creatureUnitData.maxHP : 0;
+    public int AttackDamage => creatureUnitData != null ? creatureUnitData.attackDamage : 0;
+    public int Defense => creatureUnitData != null ? creatureUnitData.defense : 0;
+    public int Speed => creatureUnitData != null ? creatureUnitData.speed : 0;
+    public Skill[] Skills => creatureUnitData != null ? creatureUnitData.skills : new Skill[0];
+    public string UnitName => creatureUnitData != null && !string.IsNullOrEmpty(creatureUnitData.unitName) ? creatureUnitData.unitName : "Unknown";
+    public string UnitID => creatureUnitData != null ? creatureUnitData.unitID : "";
+    
+    /// <summary>
+    /// Gets the player unit status, checking runtime override first, then ScriptableObject data
+    /// </summary>
+    public bool IsPlayerUnit 
+    { 
+        get 
+        {
+            // If override is set, use it
+            if (teamAssignmentOverride.HasValue)
+            {
+                return teamAssignmentOverride.Value;
+            }
+            // Otherwise, use ScriptableObject data (or default to false if no data)
+            return creatureUnitData != null ? creatureUnitData.isPlayerUnit : false;
+        }
+    }
+    
+    public bool IsEnemyUnit => !IsPlayerUnit; // Helper property for targeting
+    
+    /// <summary>
+    /// Override the team assignment for this unit instance at runtime (doesn't modify ScriptableObject)
+    /// </summary>
+    public void SetTeamAssignment(bool isPlayerUnit)
+    {
+        teamAssignmentOverride = isPlayerUnit;
+    }
     
     void Start()
     {
@@ -63,21 +82,11 @@ public class Unit : MonoBehaviour
     
     /// <summary>
     /// Initialize the unit with ScriptableObject data (for runtime spawning)
+    /// Team assignment is determined by spawn area, not by data type
     /// </summary>
-    public void InitializeWithData(UnitType type, CreatureUnitData creatureData = null, EnemyUnitData enemyData = null)
+    public void InitializeWithData(CreatureUnitData data)
     {
-        unitType = type;
-        
-        if (type == UnitType.Creature)
-        {
-            this.creatureUnitData = creatureData;
-            this.enemyData = null;
-        }
-        else
-        {
-            this.enemyData = enemyData;
-            this.creatureUnitData = null;
-        }
+        this.creatureUnitData = data;
         
         // Get components if not already set
         if (spriteRenderer == null)
@@ -99,30 +108,11 @@ public class Unit : MonoBehaviour
     
     bool ValidateUnitConfiguration()
     {
-        // Check if unit type matches assigned data
-        if (IsEnemy && enemyData == null)
+        // Check if unit data is assigned (both creatures and enemies use CreatureUnitData)
+        if (creatureUnitData == null)
         {
-            Debug.LogError("Unit type is set to Enemy but no EnemyUnitData is assigned to " + gameObject.name);
+            Debug.LogError("No CreatureUnitData is assigned to " + gameObject.name);
             return false;
-        }
-        
-        if (IsCreature && creatureUnitData == null)
-        {
-            Debug.LogError("Unit type is set to Creature but no CreatureUnitData is assigned to " + gameObject.name);
-            return false;
-        }
-        
-        // Check for conflicting data assignments
-        if (IsEnemy && creatureUnitData != null)
-        {
-            Debug.LogWarning("Unit type is Enemy but CreatureUnitData is assigned. Clearing CreatureUnitData.");
-            creatureUnitData = null;
-        }
-        
-        if (IsCreature && enemyData != null)
-        {
-            Debug.LogWarning("Unit type is Creature but EnemyUnitData is assigned. Clearing EnemyUnitData.");
-            enemyData = null;
         }
         
         return true;
@@ -130,11 +120,11 @@ public class Unit : MonoBehaviour
     
     void InitializeUnit()
     {
-        // Set visual properties
-        if (spriteRenderer != null)
+        // Set visual properties (both creatures and enemies use CreatureUnitData)
+        if (spriteRenderer != null && creatureUnitData != null)
         {
-            spriteRenderer.sprite = IsEnemy ? enemyData.sprite : creatureUnitData.sprite;
-            spriteRenderer.color = IsEnemy ? enemyData.spriteColor : creatureUnitData.spriteColor;
+            spriteRenderer.sprite = creatureUnitData.sprite;
+            spriteRenderer.color = creatureUnitData.spriteColor;
         }
         
         // Initialize HP
@@ -144,7 +134,7 @@ public class Unit : MonoBehaviour
         // Initialize skill cooldowns
         skillCooldowns = new int[Skills.Length];
         
-        Debug.Log(gameObject.name + " (" + unitType + ") initialized with " + MaxHP + " HP and " + Skills.Length + " skills");
+        Debug.Log(gameObject.name + " initialized with " + MaxHP + " HP and " + Skills.Length + " skills");
     }
     
     // Combat methods
@@ -272,10 +262,10 @@ public class Unit : MonoBehaviour
     {
         Debug.Log(gameObject.name + " has died!");
         
-        // Give rewards if this is an enemy
-        if (IsEnemy)
+        // Give rewards if this is an enemy unit
+        if (IsEnemyUnit)
         {
-            // Debug.Log("Player gains " + enemyData.experienceReward + " XP and " + enemyData.goldReward + " gold!");
+            // Rewards system could be implemented here
             Debug.Log("Rewards system disabled for now");
         }
         

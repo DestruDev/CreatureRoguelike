@@ -67,8 +67,8 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name);
                 SetCurrentUnit(firstUnit);
-            // If first unit is enemy, delay processing slightly to ensure creatures exist
-                if (firstUnit.IsEnemy)
+            // If first unit is enemy, delay processing slightly to ensure player units exist
+                if (firstUnit.IsEnemyUnit)
                 {
                     yield return new WaitForSeconds(0.1f);
                 }
@@ -110,24 +110,24 @@ public class GameManager : MonoBehaviour
 		UpdateUnitNameText();
 		UpdateSkillPanel();
 		
-		// If it's an enemy's turn, automatically process their turn
-		if (currentUnit != null && currentUnit.IsEnemy)
+		// If it's an enemy's turn (based on spawn area assignment), automatically process their turn
+		if (currentUnit != null && currentUnit.IsEnemyUnit)
 		{
 			ProcessEnemyTurn();
 		}
 	}
 	
 	/// <summary>
-	/// Processes an enemy's turn: picks random skill and targets random creature
+	/// Processes an enemy's turn: picks random skill and targets random player unit
 	/// </summary>
 	private void ProcessEnemyTurn()
 	{
-		if (currentUnit == null || !currentUnit.IsEnemy)
+		if (currentUnit == null || !currentUnit.IsEnemyUnit)
 			return;
 		
-		// Get all alive creatures (player units)
+		// Get all alive player units (targetable by enemies)
 		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-		List<Unit> creatures = new List<Unit>();
+		List<Unit> playerUnits = new List<Unit>();
 		
 		Debug.Log($"ProcessEnemyTurn: Found {allUnits.Length} total units");
 		
@@ -135,23 +135,23 @@ public class GameManager : MonoBehaviour
 		{
 			if (unit == null) continue;
 			
-			Debug.Log($"Checking unit: {unit.gameObject.name}, IsCreature: {unit.IsCreature}, IsAlive: {unit.IsAlive()}, unitType: {unit.unitType}");
+			Debug.Log($"Checking unit: {unit.gameObject.name}, IsPlayerUnit: {unit.IsPlayerUnit}, IsAlive: {unit.IsAlive()}");
 			
-			if (unit.IsCreature && unit.IsAlive())
+			if (unit.IsPlayerUnit && unit.IsAlive())
 			{
-				creatures.Add(unit);
-				Debug.Log($"Added creature: {unit.gameObject.name}");
+				playerUnits.Add(unit);
+				Debug.Log($"Added player unit: {unit.gameObject.name}");
 			}
 		}
 		
-		if (creatures.Count == 0)
+		if (playerUnits.Count == 0)
 		{
-			Debug.LogWarning($"No creatures to target! Total units found: {allUnits.Length}. Checking all units:");
+			Debug.LogWarning($"No player units to target! Total units found: {allUnits.Length}. Checking all units:");
 			foreach (var unit in allUnits)
 			{
 				if (unit != null)
 				{
-					Debug.LogWarning($"  - {unit.gameObject.name}: IsCreature={unit.IsCreature}, IsAlive={unit.IsAlive()}, unitType={unit.unitType}");
+					Debug.LogWarning($"  - {unit.gameObject.name}: IsPlayerUnit={unit.IsPlayerUnit}, IsAlive={unit.IsAlive()}");
 				}
 			}
 			if (turnOrder != null)
@@ -185,8 +185,8 @@ public class GameManager : MonoBehaviour
 		// Pick random skill
 		int randomSkillIndex = availableSkills[Random.Range(0, availableSkills.Count)];
 		
-		// Pick random creature target
-		Unit randomTarget = creatures[Random.Range(0, creatures.Count)];
+		// Pick random player unit target
+		Unit randomTarget = playerUnits[Random.Range(0, playerUnits.Count)];
 		
 		// Start the turn (reduce cooldowns)
 		currentUnit.StartTurn();
@@ -236,7 +236,7 @@ public class GameManager : MonoBehaviour
 			if (currentUnit != null)
 			{
 				// Hide text during enemy turns
-				if (currentUnit.IsEnemy)
+				if (currentUnit.IsEnemyUnit)
 				{
 					UnitNameText.gameObject.SetActive(false);
 				}
@@ -279,49 +279,46 @@ public class GameManager : MonoBehaviour
 		ClearCreatureUI();
 		ClearEnemyUI();
 		
-		// Connect each unit to its UI based on spawn index
+		// Connect each unit to its UI based on which spawn area array it belongs to
 		foreach (var unit in allUnits)
 		{
 			if (unit == null || !unit.IsAlive()) continue;
 			
-			int spawnIndex = GetUnitSpawnIndexWithinType(unit);
-			if (spawnIndex >= 0 && spawnIndex < 3)
+			// Check if unit is in creature spawn areas or enemy spawn areas
+			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
+			if (creatureIndex >= 0)
 			{
-				if (unit.IsCreature)
+				// Creature UI (indices 0-2)
+				if (creatureNameTexts[creatureIndex] != null)
 				{
-					// Update creature name from ScriptableObject
-					if (creatureNameTexts[spawnIndex] != null)
-					{
-						creatureNameTexts[spawnIndex].text = unit.UnitName;
-						creatureNameTexts[spawnIndex].gameObject.SetActive(true);
-					}
-					
-					// Update creature health bar and connect to unit
-					if (creatureHealthFills[spawnIndex] != null)
-					{
-						creatureHealthFills[spawnIndex].gameObject.SetActive(true);
-						UpdateUnitHealthUI(unit, spawnIndex, isCreature: true);
-						// Connect the health fill to the unit so it updates automatically
-						unit.SetHealthFill(creatureHealthFills[spawnIndex]);
-					}
+					creatureNameTexts[creatureIndex].text = unit.UnitName;
+					creatureNameTexts[creatureIndex].gameObject.SetActive(true);
 				}
-				else if (unit.IsEnemy)
+				
+				if (creatureHealthFills[creatureIndex] != null)
 				{
-					// Update enemy name from ScriptableObject
-					if (enemyNameTexts[spawnIndex] != null)
-					{
-						enemyNameTexts[spawnIndex].text = unit.UnitName;
-						enemyNameTexts[spawnIndex].gameObject.SetActive(true);
-					}
-					
-					// Update enemy health bar and connect to unit
-					if (enemyHealthFills[spawnIndex] != null)
-					{
-						enemyHealthFills[spawnIndex].gameObject.SetActive(true);
-						UpdateUnitHealthUI(unit, spawnIndex, isCreature: false);
-						// Connect the health fill to the unit so it updates automatically
-						unit.SetHealthFill(enemyHealthFills[spawnIndex]);
-					}
+					creatureHealthFills[creatureIndex].gameObject.SetActive(true);
+					UpdateUnitHealthUI(unit, creatureIndex, isCreature: true);
+					unit.SetHealthFill(creatureHealthFills[creatureIndex]);
+				}
+				continue;
+			}
+			
+			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
+			if (enemyIndex >= 0)
+			{
+				// Enemy UI (indices 0-2)
+				if (enemyNameTexts[enemyIndex] != null)
+				{
+					enemyNameTexts[enemyIndex].text = unit.UnitName;
+					enemyNameTexts[enemyIndex].gameObject.SetActive(true);
+				}
+				
+				if (enemyHealthFills[enemyIndex] != null)
+				{
+					enemyHealthFills[enemyIndex].gameObject.SetActive(true);
+					UpdateUnitHealthUI(unit, enemyIndex, isCreature: false);
+					unit.SetHealthFill(enemyHealthFills[enemyIndex]);
 				}
 			}
 		}
@@ -393,76 +390,68 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Gets the spawn index (0-2) for a unit within its type (creature or enemy) based on which spawn area it belongs to
+	/// Gets the spawn area index (0-2) within the creature or enemy array for a unit
+	/// Returns -1 if not found in the specified array
 	/// </summary>
-	private int GetUnitSpawnIndexWithinType(Unit unit)
+	private int GetUnitSpawnAreaIndexInArray(Unit unit, bool isCreature)
 	{
-		if (unit == null || turnOrderRef == null) return -1;
+		if (unit == null) return -1;
 		
 		// Get reference to Spawning to access spawn areas
 		Spawning spawning = FindFirstObjectByType<Spawning>();
 		if (spawning == null) return -1;
 		
-		// Check if unit is a creature or enemy and find its index within that type
-		if (unit.IsCreature)
+		// Get the appropriate spawn areas array
+		string fieldName = isCreature ? "creatureSpawnAreas" : "enemySpawnAreas";
+		var spawnAreasField = typeof(Spawning).GetField(fieldName, 
+			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+		
+		if (spawnAreasField != null)
 		{
-			// Check creature spawn areas (indices 0-2)
-			var spawnAreasField = typeof(Spawning).GetField("creatureSpawnAreas", 
-				System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-			
-			if (spawnAreasField != null)
+			var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
+			if (spawnAreas != null)
 			{
-				var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
-				if (spawnAreas != null)
+				// Find which spawn area the unit belongs to by checking parent hierarchy
+				for (int i = 0; i < spawnAreas.Length; i++)
 				{
-					for (int i = 0; i < spawnAreas.Length && i < 3; i++)
+					if (spawnAreas[i] != null)
 					{
-						if (spawnAreas[i] != null)
+						// Check if unit is a child of this spawn area
+						Transform unitTransform = unit.transform;
+						while (unitTransform != null)
 						{
-							// Check if unit is a child of this spawn area
-							Transform unitTransform = unit.transform;
-							while (unitTransform != null)
+							if (unitTransform == spawnAreas[i])
 							{
-								if (unitTransform.gameObject == spawnAreas[i].gameObject)
-								{
-									return i;
-								}
-								unitTransform = unitTransform.parent;
+								return i; // Return index within the array (0-2)
 							}
+							unitTransform = unitTransform.parent;
 						}
 					}
 				}
 			}
 		}
-		else if (unit.IsEnemy)
+		
+		return -1;
+	}
+	
+	/// <summary>
+	/// Gets the UI index (0-2) within the unit's team type (creature or enemy) based on spawn area
+	/// Returns -1 if not found
+	/// </summary>
+	private int GetUnitSpawnIndexWithinType(Unit unit)
+	{
+		// Try creature array first
+		int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
+		if (creatureIndex >= 0)
 		{
-			// Check enemy spawn areas (indices 0-2)
-			var spawnAreasField = typeof(Spawning).GetField("enemySpawnAreas", 
-				System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-			
-			if (spawnAreasField != null)
-			{
-				var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
-				if (spawnAreas != null)
-				{
-					for (int i = 0; i < spawnAreas.Length && i < 3; i++)
-					{
-						if (spawnAreas[i] != null)
-						{
-							// Check if unit is a child of this spawn area
-							Transform unitTransform = unit.transform;
-							while (unitTransform != null)
-							{
-								if (unitTransform.gameObject == spawnAreas[i].gameObject)
-								{
-									return i;
-								}
-								unitTransform = unitTransform.parent;
-							}
-						}
-					}
-				}
-			}
+			return creatureIndex;
+		}
+		
+		// Try enemy array
+		int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
+		if (enemyIndex >= 0)
+		{
+			return enemyIndex;
 		}
 		
 		return -1;
@@ -478,7 +467,7 @@ public class GameManager : MonoBehaviour
 		int spawnIndex = GetUnitSpawnIndexWithinType(unit);
 		if (spawnIndex >= 0 && spawnIndex < 3)
 		{
-			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsCreature);
+			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsPlayerUnit);
 		}
 	}
 }

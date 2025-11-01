@@ -20,9 +20,8 @@ public class UnitExample : MonoBehaviour
     {
         Debug.Log("=== Unit Example ===");
         Debug.Log("Unit Name: " + exampleUnit.gameObject.name);
-        Debug.Log("Unit Type: " + exampleUnit.unitType);
-        Debug.Log("Is Enemy: " + exampleUnit.IsEnemy);
-        Debug.Log("Is Creature: " + exampleUnit.IsCreature);
+        Debug.Log("Is Player Unit: " + exampleUnit.IsPlayerUnit);
+        Debug.Log("Is Enemy Unit: " + exampleUnit.IsEnemyUnit);
         Debug.Log("Max HP: " + exampleUnit.MaxHP);
         Debug.Log("Attack Damage: " + exampleUnit.AttackDamage);
         Debug.Log("Number of Skills: " + exampleUnit.Skills.Length);

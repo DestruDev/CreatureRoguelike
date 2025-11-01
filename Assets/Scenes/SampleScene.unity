@@ -387,7 +387,7 @@ GameObject:
   - component: {fileID: 37810065}
   - component: {fileID: 37810066}
   m_Layer: 0
-  m_Name: SpawnArea_1
+  m_Name: EnemySpawnArea2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -477,7 +477,7 @@ GameObject:
   - component: {fileID: 43765367}
   - component: {fileID: 43765368}
   m_Layer: 0
-  m_Name: SpawnArea_1
+  m_Name: CreatureSpawnArea2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2028,18 +2028,18 @@ MonoBehaviour:
   - {fileID: 694359373}
   - {fileID: 43765367}
   - {fileID: 528276959}
+  creatureUnitData:
+  - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
+  - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
+  - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
   enemySpawnAreas:
   - {fileID: 1593076177}
   - {fileID: 37810065}
   - {fileID: 2074824471}
-  creatureData:
+  enemyUnitData:
+  - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
   - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
   - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
-  - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
-  enemyData:
-  - {fileID: 11400000, guid: 625f726a04756eb4a9b3879e23711e27, type: 2}
-  - {fileID: 11400000, guid: 625f726a04756eb4a9b3879e23711e27, type: 2}
-  - {fileID: 11400000, guid: cbaec157fd6773249a49adb05d6ad37a, type: 2}
 --- !u!4 &427498649
 Transform:
   m_ObjectHideFlags: 0
@@ -2490,7 +2490,7 @@ GameObject:
   - component: {fileID: 528276959}
   - component: {fileID: 528276960}
   m_Layer: 0
-  m_Name: SpawnArea_2
+  m_Name: CreatureSpawnArea3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3322,7 +3322,7 @@ GameObject:
   - component: {fileID: 694359373}
   - component: {fileID: 694359372}
   m_Layer: 0
-  m_Name: SpawnArea
+  m_Name: CreatureSpawnArea1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5826,7 +5826,7 @@ GameObject:
   - component: {fileID: 1593076177}
   - component: {fileID: 1593076178}
   m_Layer: 0
-  m_Name: SpawnArea
+  m_Name: EnemySpawnArea1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7349,7 +7349,7 @@ GameObject:
   - component: {fileID: 2074824471}
   - component: {fileID: 2074824472}
   m_Layer: 0
-  m_Name: SpawnArea_2
+  m_Name: EnemySpawnArea3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -79,16 +79,16 @@ public class ActionPanelManager : MonoBehaviour
 
         Unit currentUnit = gameManager.GetCurrentUnit();
 
-        // If it's an enemy's turn, hide all panels and EndTurnButton
-        if (currentUnit != null && currentUnit.IsEnemy)
+        // If it's an enemy's turn (based on spawn area assignment), hide all panels and EndTurnButton
+        if (currentUnit != null && currentUnit.IsEnemyUnit)
         {
             HideAllPanels();
             HideEndTurnButton();
         }
-        // If it's a creature's turn and no panels are visible, show ActionPanel
-        else if (currentUnit != null && currentUnit.IsCreature)
+        // If it's a player unit's turn and no panels are visible, show ActionPanel
+        else if (currentUnit != null && currentUnit.IsPlayerUnit)
         {
-            // Show EndTurnButton during creature turns
+            // Show EndTurnButton during player unit turns
             ShowEndTurnButton();
             
             // Only show ActionPanel if no other panel is visible
@@ -209,7 +209,7 @@ public class ActionPanelManager : MonoBehaviour
         }
 
         Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
-        if (currentUnit != null && currentUnit.IsCreature)
+        if (currentUnit != null && currentUnit.IsPlayerUnit)
         {
             currentUnit.StartTurn();
         }

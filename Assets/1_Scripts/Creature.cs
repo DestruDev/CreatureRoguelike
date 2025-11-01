@@ -3,8 +3,7 @@ using System;
 
 public class Creature : MonoBehaviour
 {
-    [Header("Unit Data (assign one)")]
-    public EnemyUnitData enemyData;
+    [Header("Unit Data")]
     public CreatureUnitData creatureUnitData;
     
     [Header("Components")]
@@ -19,31 +18,32 @@ public class Creature : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         
         // Apply unit data
-        if (HasData())
+        if (creatureUnitData != null)
         {
             ApplyCreatureData();
         }
         else
         {
-            Debug.LogError("No UnitData assigned to " + gameObject.name + ". Assign either EnemyUnitData or CreatureUnitData.");
+            Debug.LogError("No CreatureUnitData assigned to " + gameObject.name + ".");
         }
     }
     
     void ApplyCreatureData()
     {
+        if (creatureUnitData == null) return;
+        
         // Set sprite and color
         if (spriteRenderer != null)
         {
-            spriteRenderer.sprite = enemyData != null ? enemyData.sprite : creatureUnitData.sprite;
-            spriteRenderer.color = enemyData != null ? enemyData.spriteColor : creatureUnitData.spriteColor;
+            spriteRenderer.sprite = creatureUnitData.sprite;
+            spriteRenderer.color = creatureUnitData.spriteColor;
         }
         
         // Reset HP
-        if (enemyData != null) enemyData.ResetHP(); else creatureUnitData.ResetHP();
+        creatureUnitData.ResetHP();
         
         // Initialize skill cooldowns
-        var skills = enemyData != null ? enemyData.skills : creatureUnitData.skills;
-        skillCooldowns = new int[skills.Length];
+        skillCooldowns = new int[creatureUnitData.skills.Length];
     }
     
     // Turn-based methods
@@ -63,20 +63,26 @@ public class Creature : MonoBehaviour
     
     public void Attack(Creature target)
     {
-        if (target == null || !target.IsAlive())
+        if (target == null || !target.IsAlive() || creatureUnitData == null)
         {
-            Debug.Log("Cannot attack - target is null or dead");
+            Debug.Log("Cannot attack - target is null or dead, or no unit data assigned");
             return;
         }
         
-        int dmg = enemyData != null ? enemyData.attackDamage : creatureUnitData.attackDamage;
+        int dmg = creatureUnitData.attackDamage;
         target.TakeDamage(dmg);
         Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + dmg + " damage!");
     }
     
     public void UseSkill(int skillIndex, Creature target = null)
     {
-        var skills = enemyData != null ? enemyData.skills : creatureUnitData.skills;
+        if (creatureUnitData == null)
+        {
+            Debug.Log("No unit data assigned");
+            return;
+        }
+        
+        var skills = creatureUnitData.skills;
         
         if (skillIndex < 0 || skillIndex >= skills.Length)
         {
@@ -108,10 +114,10 @@ public class Creature : MonoBehaviour
     
     public void TakeDamage(int damage)
     {
-        if (enemyData != null) enemyData.TakeDamage(damage); else creatureUnitData.TakeDamage(damage);
-        int hp = enemyData != null ? enemyData.currentHP : creatureUnitData.currentHP;
-        int maxHp = enemyData != null ? enemyData.maxHP : creatureUnitData.maxHP;
-        Debug.Log(gameObject.name + " takes " + damage + " damage! HP: " + hp + "/" + maxHp);
+        if (creatureUnitData == null) return;
+        
+        creatureUnitData.TakeDamage(damage);
+        Debug.Log(gameObject.name + " takes " + damage + " damage! HP: " + creatureUnitData.currentHP + "/" + creatureUnitData.maxHP);
         
         if (!IsAlive())
         {
@@ -121,10 +127,10 @@ public class Creature : MonoBehaviour
     
     public void Heal(int healAmount)
     {
-        if (enemyData != null) enemyData.Heal(healAmount); else creatureUnitData.Heal(healAmount);
-        int hp = enemyData != null ? enemyData.currentHP : creatureUnitData.currentHP;
-        int maxHp = enemyData != null ? enemyData.maxHP : creatureUnitData.maxHP;
-        Debug.Log(gameObject.name + " heals for " + healAmount + " HP! HP: " + hp + "/" + maxHp);
+        if (creatureUnitData == null) return;
+        
+        creatureUnitData.Heal(healAmount);
+        Debug.Log(gameObject.name + " heals for " + healAmount + " HP! HP: " + creatureUnitData.currentHP + "/" + creatureUnitData.maxHP);
     }
     
     void Die()
@@ -141,31 +147,30 @@ public class Creature : MonoBehaviour
     void GiveRewards()
     {
         // This would typically interact with a player or game manager
-        // int xp = enemyData != null ? enemyData.experienceReward : creatureUnitData.experienceReward;
-        // int gold = enemyData != null ? enemyData.goldReward : creatureUnitData.goldReward;
-        // Debug.Log("Player gains " + xp + " XP and " + gold + " gold!");
+        // if (creatureUnitData != null)
+        // {
+        //     int xp = creatureUnitData.experienceReward;
+        //     int gold = creatureUnitData.goldReward;
+        //     Debug.Log("Player gains " + xp + " XP and " + gold + " gold!");
+        // }
         Debug.Log("Rewards system disabled for now");
     }
     
     // Getters for UI
     public bool IsAlive()
     {
-        return enemyData != null ? enemyData.IsAlive() : (creatureUnitData != null && creatureUnitData.IsAlive());
+        return creatureUnitData != null && creatureUnitData.IsAlive();
     }
     
     public float GetHPPercentage()
     {
-        return enemyData != null ? enemyData.GetHPPercentage() : (creatureUnitData != null ? creatureUnitData.GetHPPercentage() : 0f);
+        return creatureUnitData != null ? creatureUnitData.GetHPPercentage() : 0f;
     }
     
     public bool CanUseSkill(int skillIndex)
     {
-        var skills = enemyData != null ? enemyData.skills : (creatureUnitData != null ? creatureUnitData.skills : new Skill[0]);
+        if (creatureUnitData == null) return false;
+        var skills = creatureUnitData.skills;
         return skillIndex >= 0 && skillIndex < skills.Length && skillCooldowns[skillIndex] == 0;
-    }
-
-    private bool HasData()
-    {
-        return enemyData != null || creatureUnitData != null;
     }
 }

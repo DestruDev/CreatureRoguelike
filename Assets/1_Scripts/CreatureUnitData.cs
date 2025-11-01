@@ -6,6 +6,8 @@ public class CreatureUnitData : ScriptableObject
     [Header("Unit Info")]
     public string unitName = "Creature";
     public string unitID = "";
+    [Tooltip("If true, this unit belongs to the player team (can be controlled). If false, it's an enemy unit.")]
+    public bool isPlayerUnit = true;
     
     [Header("Visual")]
     public Sprite sprite;
