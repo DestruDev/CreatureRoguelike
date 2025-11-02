@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
-  m_Name: Skill1
-  m_EditorClassIdentifier: Assembly-CSharp::Ability
-  skillName: Whack
-  description: A basic attack.
-  icon: {fileID: 8367830406354533065, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 30
+  m_Name: Heal
+  m_EditorClassIdentifier: Assembly-CSharp::Skill
+  skillName: New Skill
+  description: Skill description
+  icon: {fileID: 0}
+  damage: 0
   healAmount: 0
   cooldownTurns: 0
-  targetType: 2
+  targetType: 0
   effectType: 0

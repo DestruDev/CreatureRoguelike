@@ -315,6 +315,16 @@ public class Unit : MonoBehaviour
         return skillIndex >= 0 && skillIndex < Skills.Length && skillCooldowns[skillIndex] == 0;
     }
     
+    /// <summary>
+    /// Gets the remaining cooldown turns for a skill
+    /// </summary>
+    public int GetSkillCooldown(int skillIndex)
+    {
+        if (skillIndex < 0 || skillIndex >= skillCooldowns.Length)
+            return -1;
+        return skillCooldowns[skillIndex];
+    }
+    
     void Die()
     {
         Debug.Log(gameObject.name + " has died!");

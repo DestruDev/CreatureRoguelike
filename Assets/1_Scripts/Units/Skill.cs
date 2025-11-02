@@ -1,9 +1,13 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [CreateAssetMenu(fileName = "New Skill", menuName = "Skills/Skill")]
 public class Skill : ScriptableObject
 {
     [Header("Basic Info")]
+    [Tooltip("Skill name - automatically set to asset name if left empty or set to default")]
     public string skillName = "New Skill";
     [TextArea(3, 5)]
     public string description = "Skill description";
@@ -24,6 +28,27 @@ public class Skill : ScriptableObject
     // [Header("Animation")]
     // public string animationTrigger = "";
     // public float animationDuration = 1f;
+    
+#if UNITY_EDITOR
+    // Auto-set skillName to asset name if it's empty or still at default value
+    private void OnValidate()
+    {
+        // Only auto-set if skillName is empty or still at default "New Skill"
+        if (string.IsNullOrEmpty(skillName) || skillName == "New Skill")
+        {
+            // Get the asset path and extract just the filename without extension
+            string assetPath = AssetDatabase.GetAssetPath(this);
+            if (!string.IsNullOrEmpty(assetPath))
+            {
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    skillName = fileName;
+                }
+            }
+        }
+    }
+#endif
     
     // Method to execute the skill
     public void Execute(Unit caster, Unit target = null)
