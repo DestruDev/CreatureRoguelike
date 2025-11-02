@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +17,7 @@ public class TurnOrder : MonoBehaviour
     public Color highlightColor = Color.yellow;
     [Range(0f, 100f)]
     public float transparencyPercentage = 50f;
+    
 
     private SpriteRenderer[] unitRenderers;
     private Dictionary<SpriteRenderer, Color> originalColors = new Dictionary<SpriteRenderer, Color>();
@@ -63,6 +65,19 @@ public class TurnOrder : MonoBehaviour
     /// </summary>
     private void UpdateHighlight()
     {
+        // If game has ended, reset all highlights to normal
+        if (gameEnded)
+        {
+            foreach (var renderer in unitRenderers)
+            {
+                if (renderer != null && originalColors.ContainsKey(renderer))
+                {
+                    renderer.color = originalColors[renderer];
+                }
+            }
+            return;
+        }
+        
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
@@ -341,11 +356,12 @@ public class TurnOrder : MonoBehaviour
     }
 
     /// <summary>
-    /// Compares two units for tiebreaking when they have the same gauge
+    /// Public method for comparing units in tiebreaker situations
+    /// Used by TurnOrderTimeline for sorting upcoming turns
     /// Returns: <0 if unit1 should go first, >0 if unit2 should go first, 0 if equal
     /// Priority: Player units > Enemy units, then lower spawn index
     /// </summary>
-    private int CompareUnitsForTiebreaker(Unit unit1, Unit unit2)
+    public int CompareUnitsForTiebreaker(Unit unit1, Unit unit2)
     {
         // First priority: Player units go before enemy units
         bool unit1IsPlayer = unit1.IsPlayerUnit;
@@ -743,5 +759,14 @@ public class TurnOrder : MonoBehaviour
         
         // Now select the next unit that can act
         SelectNextUnitToAct();
+    }
+    
+    /// <summary>
+    /// Returns whether the game has ended
+    /// Used by TurnOrderTimeline to know when to stop displaying turn order
+    /// </summary>
+    public bool IsGameEnded()
+    {
+        return gameEnded;
     }
 }

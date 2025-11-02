@@ -26,7 +26,7 @@ public class Skill : ScriptableObject
     // public float animationDuration = 1f;
     
     // Method to execute the skill
-    public void Execute(Creature caster, Creature target = null)
+    public void Execute(Unit caster, Unit target = null)
     {
         switch (effectType)
         {
@@ -63,8 +63,8 @@ public class Skill : ScriptableObject
         }
     }
     
-    // Check if skill can target the given creature
-    public bool CanTarget(Creature target, Creature caster)
+    // Check if skill can target the given unit
+    public bool CanTarget(Unit target, Unit caster)
     {
         if (target == null) return false;
         
