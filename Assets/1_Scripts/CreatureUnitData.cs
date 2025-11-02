@@ -1,13 +1,17 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [CreateAssetMenu(fileName = "New Creature Unit", menuName = "Unit/Creature")]
 public class CreatureUnitData : ScriptableObject
 {
     [Header("Unit Info")]
+    [Tooltip("Unit name - automatically set to asset name if left empty or set to default")]
     public string unitName = "Creature";
     public string unitID = "";
-    [Tooltip("If true, this unit belongs to the player team (can be controlled). If false, it's an enemy unit.")]
-    public bool isPlayerUnit = true;
+    // [Tooltip("If true, this unit belongs to the player team (can be controlled). If false, it's an enemy unit.")]
+    // public bool isPlayerUnit = true;
     
     [Header("Visual")]
     public Sprite sprite;
@@ -32,6 +36,27 @@ public class CreatureUnitData : ScriptableObject
     {
         currentHP = maxHP;
     }
+    
+#if UNITY_EDITOR
+    // Auto-set unitName to asset name if it's empty or still at default value
+    private void OnValidate()
+    {
+        // Only auto-set if unitName is empty or still at default "Creature"
+        if (string.IsNullOrEmpty(unitName) || unitName == "Creature")
+        {
+            // Get the asset path and extract just the filename without extension
+            string assetPath = AssetDatabase.GetAssetPath(this);
+            if (!string.IsNullOrEmpty(assetPath))
+            {
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    unitName = fileName;
+                }
+            }
+        }
+    }
+#endif
     
     // Method to reset HP to max (useful when spawning creatures)
     public void ResetHP()

@@ -17,12 +17,18 @@ public class GameManager : MonoBehaviour
     [Tooltip("Creature health bar fill images (index 0-2 correspond to creature 1-3)")]
     public UnityEngine.UI.Image[] creatureHealthFills = new UnityEngine.UI.Image[3];
     
+    [Tooltip("Creature action gauge fill images (index 0-2 correspond to creature 1-3)")]
+    public UnityEngine.UI.Image[] creatureActionGaugeFills = new UnityEngine.UI.Image[3];
+    
     [Header("Enemy Status UI (3 units)")]
     [Tooltip("Enemy name text displays (index 0-2 correspond to enemy 1-3)")]
     public TextMeshProUGUI[] enemyNameTexts = new TextMeshProUGUI[3];
     
     [Tooltip("Enemy health bar fill images (index 0-2 correspond to enemy 1-3)")]
     public UnityEngine.UI.Image[] enemyHealthFills = new UnityEngine.UI.Image[3];
+    
+    [Tooltip("Enemy action gauge fill images (index 0-2 correspond to enemy 1-3)")]
+    public UnityEngine.UI.Image[] enemyActionGaugeFills = new UnityEngine.UI.Image[3];
     
     private TurnOrder turnOrderRef; // Reference to get spawn indices
 
@@ -62,16 +68,68 @@ public class GameManager : MonoBehaviour
         
         if (turnOrder != null)
         {
+            // Increment all units' gauges until someone reaches 100 for the first turn
+            // This makes the first turn selection based on gauge accumulation, not just initial speed
+            Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            if (allUnits != null && allUnits.Length > 0)
+            {
+                bool someoneCanAct = false;
+                int maxIterations = 20; // Safety limit
+                int iterations = 0;
+                
+                Debug.Log("=== Initializing first turn - incrementing gauges until someone can act ===");
+                
+                while (!someoneCanAct && iterations < maxIterations)
+                {
+                    iterations++;
+                    
+                    foreach (var unit in allUnits)
+                    {
+                        if (unit == null || !unit.IsAlive())
+                            continue;
+                        
+                        float oldGauge = unit.GetActionGauge();
+                        bool reached100 = unit.IncrementActionGauge();
+                        float newGauge = unit.GetActionGauge();
+                        
+                        Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge:F1} -> {newGauge:F1}");
+                        
+                        if (reached100)
+                        {
+                            someoneCanAct = true;
+                        }
+                    }
+                }
+                
+                if (iterations >= maxIterations && !someoneCanAct)
+                {
+                    Debug.LogError("Max iterations reached during first turn initialization!");
+                }
+            }
+            
+            // Wait a moment for initialization
+            yield return new WaitForSeconds(0.1f);
+            
+            // Get the first unit with tiebreaker logic (player units first, then by spawn slot)
             Unit firstUnit = turnOrder.GetFirstUnit();
             if (firstUnit != null)
             {
-                Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name);
+                Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name + " with gauge " + firstUnit.GetActionGauge());
+                // Set the acting flag before setting the unit
+                if (turnOrder != null)
+                {
+                    turnOrder.SetUnitActing(true);
+                }
                 SetCurrentUnit(firstUnit);
-            // If first unit is enemy, delay processing slightly to ensure player units exist
+                // If first unit is enemy, delay processing slightly to ensure player units exist
                 if (firstUnit.IsEnemyUnit)
                 {
                     yield return new WaitForSeconds(0.1f);
                 }
+            }
+            else
+            {
+                Debug.LogWarning("GameManager: No first unit found! All units may have gauge < 100.");
             }
         }
         else
@@ -88,6 +146,15 @@ public class GameManager : MonoBehaviour
 		{
 			DamageAllUnits(20);
 		}
+		
+		// Debug: Print action gauge status when pressing G
+		if (Input.GetKeyDown(KeyCode.G))
+		{
+			PrintActionGaugeStatus();
+		}
+		
+		// Update all action gauge UI displays
+		UpdateAllActionGaugeUI();
     }
 
 	// Temporary helper to damage all units in the scene
@@ -115,6 +182,11 @@ public class GameManager : MonoBehaviour
 		{
 			ProcessEnemyTurn();
 		}
+		else if (currentUnit != null && currentUnit.IsPlayerUnit)
+		{
+			// Player unit's turn started, call StartTurn to reduce cooldowns
+			currentUnit.StartTurn();
+		}
 	}
 	
 	/// <summary>
@@ -124,6 +196,17 @@ public class GameManager : MonoBehaviour
 	{
 		if (currentUnit == null || !currentUnit.IsEnemyUnit)
 			return;
+		
+		// Check if the enemy unit itself is dead
+		if (!currentUnit.IsAlive())
+		{
+			Debug.LogWarning($"Enemy unit {currentUnit.gameObject.name} is dead! Skipping turn and advancing.");
+			if (turnOrder != null)
+			{
+				turnOrder.AdvanceToNextTurn();
+			}
+			return;
+		}
 		
 		// Get all alive player units (targetable by enemies)
 		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
@@ -146,7 +229,8 @@ public class GameManager : MonoBehaviour
 		
 		if (playerUnits.Count == 0)
 		{
-			Debug.LogWarning($"No player units to target! Total units found: {allUnits.Length}. Checking all units:");
+			Debug.LogWarning($"No alive player units to target! Total units found: {allUnits.Length}. Advancing turn.");
+			Debug.LogWarning("Checking all units:");
 			foreach (var unit in allUnits)
 			{
 				if (unit != null)
@@ -154,6 +238,7 @@ public class GameManager : MonoBehaviour
 					Debug.LogWarning($"  - {unit.gameObject.name}: IsPlayerUnit={unit.IsPlayerUnit}, IsAlive={unit.IsAlive()}");
 				}
 			}
+			// Advance turn immediately since there are no valid targets
 			if (turnOrder != null)
 			{
 				turnOrder.AdvanceToNextTurn();
@@ -185,8 +270,28 @@ public class GameManager : MonoBehaviour
 		// Pick random skill
 		int randomSkillIndex = availableSkills[Random.Range(0, availableSkills.Count)];
 		
-		// Pick random player unit target
+		// Pick random player unit target (already confirmed alive)
 		Unit randomTarget = playerUnits[Random.Range(0, playerUnits.Count)];
+		
+		// Double-check target is still alive (in case it died between selection and use)
+		if (randomTarget == null || !randomTarget.IsAlive())
+		{
+			Debug.LogWarning($"Target {randomTarget?.gameObject.name} is dead or null! Finding another target...");
+			// Filter to only alive targets again
+			playerUnits.RemoveAll(u => u == null || !u.IsAlive());
+			
+			if (playerUnits.Count == 0)
+			{
+				Debug.LogWarning("No alive targets remaining! Advancing turn.");
+				if (turnOrder != null)
+				{
+					turnOrder.AdvanceToNextTurn();
+				}
+				return;
+			}
+			
+			randomTarget = playerUnits[Random.Range(0, playerUnits.Count)];
+		}
 		
 		// Start the turn (reduce cooldowns)
 		currentUnit.StartTurn();
@@ -195,7 +300,17 @@ public class GameManager : MonoBehaviour
 		currentUnit.UseSkill(randomSkillIndex, randomTarget);
 		
 		// Small delay before advancing to next turn (optional, for visual feedback)
-		Invoke(nameof(AdvanceToNextTurn), 1f);
+		// Use Coroutine instead of Invoke to avoid timing issues
+		StartCoroutine(DelayedAdvanceTurn());
+	}
+	
+	/// <summary>
+	/// Coroutine to delay turn advancement for visual feedback
+	/// </summary>
+	private System.Collections.IEnumerator DelayedAdvanceTurn()
+	{
+		yield return new WaitForSeconds(1f);
+		AdvanceToNextTurn();
 	}
 	
 	/// <summary>
@@ -301,6 +416,12 @@ public class GameManager : MonoBehaviour
 					UpdateUnitHealthUI(unit, creatureIndex, isCreature: true);
 					unit.SetHealthFill(creatureHealthFills[creatureIndex]);
 				}
+				
+				if (creatureActionGaugeFills[creatureIndex] != null)
+				{
+					creatureActionGaugeFills[creatureIndex].gameObject.SetActive(true);
+					UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
+				}
 				continue;
 			}
 			
@@ -319,6 +440,12 @@ public class GameManager : MonoBehaviour
 					enemyHealthFills[enemyIndex].gameObject.SetActive(true);
 					UpdateUnitHealthUI(unit, enemyIndex, isCreature: false);
 					unit.SetHealthFill(enemyHealthFills[enemyIndex]);
+				}
+				
+				if (enemyActionGaugeFills[enemyIndex] != null)
+				{
+					enemyActionGaugeFills[enemyIndex].gameObject.SetActive(true);
+					UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
 				}
 			}
 		}
@@ -341,6 +468,11 @@ public class GameManager : MonoBehaviour
 				creatureHealthFills[i].fillAmount = 0f;
 				creatureHealthFills[i].gameObject.SetActive(false);
 			}
+			if (creatureActionGaugeFills[i] != null)
+			{
+				creatureActionGaugeFills[i].fillAmount = 0f;
+				creatureActionGaugeFills[i].gameObject.SetActive(false);
+			}
 		}
 	}
 	
@@ -360,6 +492,11 @@ public class GameManager : MonoBehaviour
 			{
 				enemyHealthFills[i].fillAmount = 0f;
 				enemyHealthFills[i].gameObject.SetActive(false);
+			}
+			if (enemyActionGaugeFills[i] != null)
+			{
+				enemyActionGaugeFills[i].fillAmount = 0f;
+				enemyActionGaugeFills[i].gameObject.SetActive(false);
 			}
 		}
 	}
@@ -469,5 +606,106 @@ public class GameManager : MonoBehaviour
 		{
 			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsPlayerUnit);
 		}
+	}
+	
+	/// <summary>
+	/// Updates a specific unit's action gauge UI
+	/// </summary>
+	private void UpdateUnitActionGaugeUI(Unit unit, int spawnIndex, bool isCreature)
+	{
+		if (unit == null || spawnIndex < 0 || spawnIndex >= 3) return;
+		
+		UnityEngine.UI.Image actionGaugeFill = null;
+		
+		if (isCreature && creatureActionGaugeFills[spawnIndex] != null)
+		{
+			actionGaugeFill = creatureActionGaugeFills[spawnIndex];
+		}
+		else if (!isCreature && enemyActionGaugeFills[spawnIndex] != null)
+		{
+			actionGaugeFill = enemyActionGaugeFills[spawnIndex];
+		}
+		
+		if (actionGaugeFill != null)
+		{
+			// Action gauge is 0-100, so divide by 100 to get percentage
+			float gaugePercentage = Mathf.Clamp01(unit.GetActionGauge() / 100f);
+			actionGaugeFill.fillAmount = gaugePercentage;
+		}
+	}
+	
+	/// <summary>
+	/// Updates all units' action gauge UI displays
+	/// </summary>
+	private void UpdateAllActionGaugeUI()
+	{
+		if (turnOrderRef == null)
+		{
+			turnOrderRef = FindFirstObjectByType<TurnOrder>();
+		}
+		
+		// Find all units in the scene
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		
+		foreach (var unit in allUnits)
+		{
+			if (unit == null || !unit.IsAlive()) continue;
+			
+			// Check if unit is in creature spawn areas or enemy spawn areas
+			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
+			if (creatureIndex >= 0)
+			{
+				UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
+				continue;
+			}
+			
+			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
+			if (enemyIndex >= 0)
+			{
+				UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Debug utility: Prints the action gauge status of all units
+	/// Press G key to use this
+	/// </summary>
+	private void PrintActionGaugeStatus()
+	{
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		
+		Debug.Log("=== ACTION GAUGE STATUS ===");
+		
+		if (allUnits == null || allUnits.Length == 0)
+		{
+			Debug.Log("No units found in scene.");
+			return;
+		}
+		
+		foreach (var unit in allUnits)
+		{
+			if (unit == null) continue;
+			
+			string team = unit.IsPlayerUnit ? "PLAYER" : "ENEMY";
+			string alive = unit.IsAlive() ? "ALIVE" : "DEAD";
+			float gauge = unit.GetActionGauge();
+			bool canAct = gauge >= 100f;
+			string canActStr = canAct ? "✓ CAN ACT" : "✗ Cannot act";
+			
+			Debug.Log($"[{team}] {unit.gameObject.name}: Speed={unit.Speed}, Gauge={gauge:F1}/100 ({gauge/100f*100:F1}%), {alive}, {canActStr}");
+		}
+		
+		Unit current = GetCurrentUnit();
+		if (current != null)
+		{
+			Debug.Log($"\nCURRENT UNIT: {current.gameObject.name} (Speed: {current.Speed}, Gauge: {current.GetActionGauge():F1})");
+		}
+		else
+		{
+			Debug.Log("\nCURRENT UNIT: None");
+		}
+		
+		Debug.Log("============================");
 	}
 }

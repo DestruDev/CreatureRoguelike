@@ -202,19 +202,8 @@ public class ActionPanelManager : MonoBehaviour
     /// </summary>
     public void EndTurn()
     {
-        // Start the current unit's turn (reduce cooldowns) if it's a creature's turn
-        if (gameManager == null)
-        {
-            gameManager = FindFirstObjectByType<GameManager>();
-        }
-
-        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
-        if (currentUnit != null && currentUnit.IsPlayerUnit)
-        {
-            currentUnit.StartTurn();
-        }
-
-        // Advance to next turn
+        // Advance to next turn (this will reset the gauge)
+        // Note: StartTurn is now called in GameManager.SetCurrentUnit when a player unit's turn begins
         if (turnOrder == null)
         {
             turnOrder = FindFirstObjectByType<TurnOrder>();

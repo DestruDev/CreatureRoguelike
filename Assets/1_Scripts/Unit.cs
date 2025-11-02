@@ -12,6 +12,7 @@ public class Unit : MonoBehaviour
     [Header("Runtime Stats")]
     private int currentHP;
     private int[] skillCooldowns;
+    private float actionGauge = 0f; // Action gauge that fills based on speed
     
     // Runtime team assignment override (doesn't modify ScriptableObject)
     private bool? teamAssignmentOverride = null;
@@ -41,8 +42,9 @@ public class Unit : MonoBehaviour
             {
                 return teamAssignmentOverride.Value;
             }
-            // Otherwise, use ScriptableObject data (or default to false if no data)
-            return creatureUnitData != null ? creatureUnitData.isPlayerUnit : false;
+            // Otherwise, default to false (isPlayerUnit field is commented out in CreatureUnitData)
+            // Team assignment is now determined by spawn area, not ScriptableObject
+            return false;
         }
     }
     
@@ -134,7 +136,10 @@ public class Unit : MonoBehaviour
         // Initialize skill cooldowns
         skillCooldowns = new int[Skills.Length];
         
-        Debug.Log(gameObject.name + " initialized with " + MaxHP + " HP and " + Skills.Length + " skills");
+        // Initialize action gauge to 0
+        actionGauge = 0f;
+        
+        // Debug.Log(gameObject.name + " initialized with " + MaxHP + " HP and " + Skills.Length + " skills");
     }
     
     // Combat methods
@@ -197,16 +202,24 @@ public class Unit : MonoBehaviour
         switch (skill.effectType)
         {
             case SkillEffectType.Damage:
-                if (target != null && skill.damage > 0)
+                if (target != null && target.IsAlive() && skill.damage > 0)
                 {
                     target.TakeDamage(skill.damage);
+                }
+                else if (target != null && !target.IsAlive())
+                {
+                    Debug.LogWarning($"Cannot damage {target.gameObject.name} - target is already dead!");
                 }
                 break;
                 
             case SkillEffectType.Heal:
-                if (target != null && skill.healAmount > 0)
+                if (target != null && target.IsAlive() && skill.healAmount > 0)
                 {
                     target.Heal(skill.healAmount);
+                }
+                else if (target != null && !target.IsAlive())
+                {
+                    Debug.LogWarning($"Cannot heal {target.gameObject.name} - target is dead!");
                 }
                 break;
                 
@@ -236,6 +249,50 @@ public class Unit : MonoBehaviour
     public float GetHPPercentage()
     {
         return (float)currentHP / MaxHP;
+    }
+
+    /// <summary>
+    /// Gets the current action gauge value (0-100+)
+    /// </summary>
+    public float GetActionGauge()
+    {
+        return actionGauge;
+    }
+
+    /// <summary>
+    /// Increments the action gauge based on speed. Higher speed means larger increments per turn.
+    /// This is called once per turn completion, not every frame.
+    /// Returns true if gauge reached 100 or more (unit can act).
+    /// </summary>
+    /// <returns>True if gauge is full (>= 100), false otherwise</returns>
+    public bool IncrementActionGauge()
+    {
+        if (!IsAlive())
+            return false;
+
+        // Increment gauge based on speed. Speed directly determines how much gauge is gained per turn.
+        // Example: Speed 25 = 25 gauge per turn, Speed 10 = 10 gauge per turn
+        actionGauge += Speed;
+        
+        return actionGauge >= 100f;
+    }
+
+    /// <summary>
+    /// Resets the action gauge after a unit takes their turn
+    /// If gauge exceeds 100, the remainder is preserved (e.g., 145 -> 45)
+    /// This rewards fast units that accumulate excess gauge
+    /// </summary>
+    public void ResetActionGauge()
+    {
+        // Preserve excess gauge if over 100, otherwise reset to 0
+        if (actionGauge > 100f)
+        {
+            actionGauge = actionGauge - 100f;
+        }
+        else
+        {
+            actionGauge = 0f;
+        }
     }
 
     private void UpdateHealthUI()

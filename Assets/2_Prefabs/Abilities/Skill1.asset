@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Whack
   description: A basic attack.
   icon: {fileID: 8367830406354533065, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 10
+  damage: 30
   healAmount: 0
   cooldownTurns: 0
   targetType: 2

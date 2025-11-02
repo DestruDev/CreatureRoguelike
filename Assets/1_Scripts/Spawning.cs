@@ -65,14 +65,14 @@ public class Spawning : MonoBehaviour
 				// Create unit from ScriptableObject data
 				var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName);
     
-				// Ensure unit is set as player unit (uses ScriptableObject setting by default)
+				// Ensure unit is set as player unit (spawn area determines team)
 				Unit unit = unitObj.GetComponent<Unit>();
-				if (unit != null && !creatureUnitData[i].isPlayerUnit)
+				if (unit != null)
 				{
-					unit.SetTeamAssignment(true); // Force player unit
+					unit.SetTeamAssignment(true); // Force player unit based on spawn area
 				}
                 
-                Debug.Log("Spawned creature " + (i + 1) + " (" + unitName + ") at " + creatureSpawnAreas[i].name);
+                // Debug.Log("Spawned creature " + (i + 1) + " (" + unitName + ") at " + creatureSpawnAreas[i].name);
             }
         }
         
@@ -99,7 +99,7 @@ public class Spawning : MonoBehaviour
 					unit.SetTeamAssignment(false); // Force enemy unit based on spawn area
 				}
                 
-                Debug.Log("Spawned enemy " + (i + 1) + " (" + unitName + ") at " + enemySpawnAreas[i].name);
+                // Debug.Log("Spawned enemy " + (i + 1) + " (" + unitName + ") at " + enemySpawnAreas[i].name);
             }
         }
     }
@@ -149,9 +149,9 @@ public class Spawning : MonoBehaviour
 				// Create unit from ScriptableObject data
 				var unitObj = CreateUnitFromData(creatureUnitData[index], creatureSpawnAreas[index], unitName);
     
-				// Ensure unit is set as player unit
+				// Ensure unit is set as player unit (spawn area determines team)
 				Unit unit = unitObj.GetComponent<Unit>();
-				if (unit != null && !creatureUnitData[index].isPlayerUnit)
+				if (unit != null)
 				{
 					unit.SetTeamAssignment(true);
 				}
