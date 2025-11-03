@@ -30,6 +30,13 @@ public class GameManager : MonoBehaviour
     [Tooltip("Enemy action gauge fill images (index 0-2 correspond to enemy 1-3)")]
     public UnityEngine.UI.Image[] enemyActionGaugeFills = new UnityEngine.UI.Image[3];
     
+    [Header("Unit UI Roots (toggle on death)")]
+    [Tooltip("Root GameObjects for creature UI slots (0-2). These will be disabled when the unit dies.")]
+    public GameObject[] creatureUIRoots = new GameObject[3];
+    
+    [Tooltip("Root GameObjects for enemy UI slots (0-2). These will be disabled when the unit dies.")]
+    public GameObject[] enemyUIRoots = new GameObject[3];
+    
     private TurnOrder turnOrderRef; // Reference to get spawn indices
 
     [Header("Turn Management")]
@@ -394,7 +401,7 @@ public class GameManager : MonoBehaviour
 		ClearCreatureUI();
 		ClearEnemyUI();
 		
-		// Connect each unit to its UI based on which spawn area array it belongs to
+        // Connect each unit to its UI based on which spawn area array it belongs to
 		foreach (var unit in allUnits)
 		{
 			if (unit == null || !unit.IsAlive()) continue;
@@ -422,6 +429,12 @@ public class GameManager : MonoBehaviour
 					creatureActionGaugeFills[creatureIndex].gameObject.SetActive(true);
 					UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
 				}
+                
+                // Ensure the creature UI root is active for alive unit
+                if (creatureUIRoots != null && creatureIndex >= 0 && creatureIndex < creatureUIRoots.Length && creatureUIRoots[creatureIndex] != null)
+                {
+                    creatureUIRoots[creatureIndex].SetActive(true);
+                }
 				continue;
 			}
 			
@@ -447,6 +460,12 @@ public class GameManager : MonoBehaviour
 					enemyActionGaugeFills[enemyIndex].gameObject.SetActive(true);
 					UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
 				}
+                
+                // Ensure the enemy UI root is active for alive unit
+                if (enemyUIRoots != null && enemyIndex >= 0 && enemyIndex < enemyUIRoots.Length && enemyUIRoots[enemyIndex] != null)
+                {
+                    enemyUIRoots[enemyIndex].SetActive(true);
+                }
 			}
 		}
 	}
@@ -605,6 +624,23 @@ public class GameManager : MonoBehaviour
 		if (spawnIndex >= 0 && spawnIndex < 3)
 		{
 			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsPlayerUnit);
+
+            // Toggle the corresponding UI root based on alive state
+            bool isAlive = unit.IsAlive();
+            if (unit.IsPlayerUnit)
+            {
+                if (creatureUIRoots != null && spawnIndex < creatureUIRoots.Length && creatureUIRoots[spawnIndex] != null)
+                {
+                    creatureUIRoots[spawnIndex].SetActive(isAlive);
+                }
+            }
+            else
+            {
+                if (enemyUIRoots != null && spawnIndex < enemyUIRoots.Length && enemyUIRoots[spawnIndex] != null)
+                {
+                    enemyUIRoots[spawnIndex].SetActive(isAlive);
+                }
+            }
 		}
 	}
 	

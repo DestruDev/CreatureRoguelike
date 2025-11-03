@@ -17,6 +17,9 @@ public class ActionPanelManager : MonoBehaviour
     [Header("References")]
     private GameManager gameManager;
     private TurnOrder turnOrder;
+    
+    // Track the last unit to detect when a new turn starts
+    private Unit lastUnit = null;
 
     private void Start()
     {
@@ -84,20 +87,34 @@ public class ActionPanelManager : MonoBehaviour
         {
             HideAllPanels();
             HideEndTurnButton();
+            lastUnit = currentUnit;
         }
-        // If it's a player unit's turn and no panels are visible, show ActionPanel
+        // If it's a player unit's turn
         else if (currentUnit != null && currentUnit.IsPlayerUnit)
         {
             // Show EndTurnButton during player unit turns
             ShowEndTurnButton();
             
-            // Only show ActionPanel if no other panel is visible
-            if (ActionPanel != null && !ActionPanel.activeSelf && 
-                (SkillsPanel == null || !SkillsPanel.activeSelf) && 
-                (ItemsPanel == null || !ItemsPanel.activeSelf))
+            // If this is a different unit from last frame (new turn started), reset to ActionPanel
+            bool isNewTurn = lastUnit != currentUnit;
+            if (isNewTurn)
+            {
+                // Always show ActionPanel at the start of a new creature turn
+                ShowActionPanel();
+                lastUnit = currentUnit;
+            }
+            // If no panels are visible and it's not a new turn, show ActionPanel
+            else if (ActionPanel != null && !ActionPanel.activeSelf && 
+                     (SkillsPanel == null || !SkillsPanel.activeSelf) && 
+                     (ItemsPanel == null || !ItemsPanel.activeSelf))
             {
                 ShowActionPanel();
             }
+        }
+        else
+        {
+            // No current unit, reset tracking
+            lastUnit = null;
         }
     }
 
