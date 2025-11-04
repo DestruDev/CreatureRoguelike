@@ -439,7 +439,6 @@ public class SkillPanelManager : MonoBehaviour
             Debug.Log($"[SkillPanel] ConfirmSelection: caster={caster.UnitName}, skillIndex={skillIndex}, target={target.UnitName}");
             if (gameManager != null)
             {
-                Debug.Log($"[SkillPanel] Calling ExecuteSkillWithDelay on GameManager");
                 gameManager.ExecuteSkillWithDelay(caster, skillIndex, target, false);
                 // Advance turn after delays complete
                 StartCoroutine(DelayedAdvanceTurnAfterSkill());

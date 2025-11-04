@@ -18,5 +18,5 @@ MonoBehaviour:
   damage: 0
   healAmount: 0
   cooldownTurns: 0
-  targetType: 0
-  effectType: 0
+  targetType: 1
+  effectType: 1

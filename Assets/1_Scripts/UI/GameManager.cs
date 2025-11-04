@@ -42,6 +42,9 @@ public class GameManager : MonoBehaviour
     [Header("Turn Management")]
     private Unit currentUnit;
     
+    // Cache the ActionPanelManager reference
+    private ActionPanelManager actionPanelManager;
+    
     [Header("Enemy Turn Settings")]
     [Tooltip("Delay in seconds before advancing to next turn after enemy completes their action")]
     [Range(0f, 5f)]
@@ -64,6 +67,9 @@ public class GameManager : MonoBehaviour
         {
             turnOrder = FindFirstObjectByType<TurnOrder>();
         }
+        
+        // Cache ActionPanelManager reference
+        actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
 
         // Get the first unit that should go - delay slightly to ensure all units are initialized
         StartCoroutine(DelayedStart());
@@ -239,18 +245,13 @@ public class GameManager : MonoBehaviour
 		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 		List<Unit> playerUnits = new List<Unit>();
 		
-		Debug.Log($"ProcessEnemyTurn: Found {allUnits.Length} total units");
-		
 		foreach (var unit in allUnits)
 		{
 			if (unit == null) continue;
 			
-			Debug.Log($"Checking unit: {unit.gameObject.name}, IsPlayerUnit: {unit.IsPlayerUnit}, IsAlive: {unit.IsAlive()}");
-			
 			if (unit.IsPlayerUnit && unit.IsAlive())
 			{
 				playerUnits.Add(unit);
-				Debug.Log($"Added player unit: {unit.gameObject.name}");
 			}
 		}
 		
@@ -323,6 +324,9 @@ public class GameManager : MonoBehaviour
 		// Start the turn (reduce cooldowns)
 		currentUnit.StartTurn();
 		
+		// Hide action UI immediately to prevent input during skill execution
+		HideActionUI();
+		
 		// Use the skill with delayed execution for proper animation timing
 		StartCoroutine(ExecuteEnemySkillWithDelay(currentUnit, randomSkillIndex, randomTarget));
 	}
@@ -333,7 +337,11 @@ public class GameManager : MonoBehaviour
 	private System.Collections.IEnumerator ExecuteEnemySkillWithDelay(Unit caster, int skillIndex, Unit target)
 	{
 		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
+		{
+			Debug.LogWarning($"Invalid skill index {skillIndex} for enemy unit {caster.UnitName}");
+			ShowActionUI(); // Restore UI in case of error
 			yield break;
+		}
 			
 		Skill skill = caster.Skills[skillIndex];
 		
@@ -353,6 +361,9 @@ public class GameManager : MonoBehaviour
 		// Wait for hit animation
 		yield return new WaitForSeconds(hitAnimationDelay);
 		
+		// Show action UI again
+		ShowActionUI();
+		
 		// Advance turn
 		AdvanceToNextTurn();
 	}
@@ -363,16 +374,21 @@ public class GameManager : MonoBehaviour
 	public void ExecuteSkillWithDelay(Unit caster, int skillIndex, Unit target, bool autoAdvanceTurn = false)
 	{
 		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
+		{
+			Debug.LogWarning($"Invalid skill index {skillIndex} for unit {caster.UnitName}");
 			return;
+		}
 			
 		Skill skill = caster.Skills[skillIndex];
 		
 		// Set cooldown (same as UseSkill does)
 		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
 		
+		// Hide action UI immediately to prevent input during skill execution
+		HideActionUI();
+		
 		// Log skill usage immediately (before starting coroutine for instant display)
 		string targetName = target != null ? target.UnitName : "self";
-		Debug.Log($"[IMMEDIATE] {caster.UnitName} uses {skill.skillName} on {targetName}!");
 		EventLogPanel.LogEvent($"{caster.UnitName} uses {skill.skillName} on {targetName}!");
 		
 		// Start coroutine for delayed effects
@@ -384,27 +400,29 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private System.Collections.IEnumerator ExecuteSkillWithDelayCoroutine(Unit caster, Skill skill, Unit target, bool autoAdvanceTurn)
 	{
+		if (skill == null || caster == null)
+		{
+			Debug.LogError("ExecuteSkillWithDelayCoroutine: Invalid caster or skill!");
+			ShowActionUI(); // Restore UI in case of error
+			yield break;
+		}
+		
 		// Wait for skill animation
-		Debug.Log($"[DELAY] Waiting {skillAnimationDelay} seconds for skill animation...");
 		yield return new WaitForSeconds(skillAnimationDelay);
 		
 		// Apply skill effects (which will log damage)
-		Debug.Log($"[DELAYED] Applying skill effects now...");
 		caster.ApplySkillEffects(skill, target);
 		
 		// Wait for hit animation
-		Debug.Log($"[DELAY] Waiting {hitAnimationDelay} seconds for hit animation...");
 		yield return new WaitForSeconds(hitAnimationDelay);
+		
+		// Show action UI again
+		ShowActionUI();
 		
 		// Advance turn if auto-advance is enabled (for enemy turns)
 		if (autoAdvanceTurn)
 		{
-			Debug.Log($"[DELAYED] Advancing turn...");
 			AdvanceToNextTurn();
-		}
-		else
-		{
-			Debug.Log($"[DELAYED] Skill execution complete. Turn will be advanced manually.");
 		}
 	}
 	
@@ -840,5 +858,48 @@ public class GameManager : MonoBehaviour
 		}
 		
 		Debug.Log("============================");
+	}
+	
+	/// <summary>
+	/// Hides action UI elements to prevent player input during skill execution
+	/// </summary>
+	private void HideActionUI()
+	{
+		// Hide UnitNameText
+		if (UnitNameText != null)
+		{
+			UnitNameText.gameObject.SetActive(false);
+		}
+		
+		// Hide ActionPanelManager elements
+		if (actionPanelManager == null)
+		{
+			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+		}
+		
+		if (actionPanelManager != null)
+		{
+			actionPanelManager.HideAllActionUI();
+		}
+	}
+	
+	/// <summary>
+	/// Shows action UI elements after skill execution completes
+	/// </summary>
+	private void ShowActionUI()
+	{
+		// Show UnitNameText based on current unit
+		UpdateUnitNameText();
+		
+		// Show ActionPanelManager elements (they will handle visibility based on current unit)
+		if (actionPanelManager == null)
+		{
+			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+		}
+		
+		if (actionPanelManager != null)
+		{
+			actionPanelManager.ShowAllActionUI();
+		}
 	}
 }

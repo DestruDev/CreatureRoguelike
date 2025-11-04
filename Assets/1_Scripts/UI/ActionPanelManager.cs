@@ -20,6 +20,9 @@ public class ActionPanelManager : MonoBehaviour
     
     // Track the last unit to detect when a new turn starts
     private Unit lastUnit = null;
+    
+    // Track if we're in skill execution mode (to block UI from showing)
+    private bool isSkillExecuting = false;
 
     private void Start()
     {
@@ -74,6 +77,12 @@ public class ActionPanelManager : MonoBehaviour
     /// </summary>
     private void UpdatePanelVisibility()
     {
+        // Don't update visibility during skill execution
+        if (isSkillExecuting)
+        {
+            return;
+        }
+        
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
@@ -234,5 +243,48 @@ public class ActionPanelManager : MonoBehaviour
         {
             Debug.LogWarning("ActionPanelManager: Cannot end turn - TurnOrder not found!");
         }
+    }
+    
+    /// <summary>
+    /// Hides all action UI elements (called during skill execution to prevent player input)
+    /// </summary>
+    public void HideAllActionUI()
+    {
+        // Set flag to block UpdatePanelVisibility from showing UI during skill execution
+        isSkillExecuting = true;
+        
+        if (ActionPanel != null)
+        {
+            ActionPanel.SetActive(false);
+        }
+        
+        if (SkillsPanel != null)
+        {
+            SkillsPanel.SetActive(false);
+        }
+        
+        if (ItemsPanel != null)
+        {
+            ItemsPanel.SetActive(false);
+        }
+        
+        if (EndTurnButton != null)
+        {
+            EndTurnButton.gameObject.SetActive(false);
+        }
+    }
+    
+    /// <summary>
+    /// Shows action UI elements based on current unit (called after skill execution completes)
+    /// </summary>
+    public void ShowAllActionUI()
+    {
+        // Clear the skill execution flag
+        isSkillExecuting = false;
+        
+        // Let UpdatePanelVisibility handle showing the correct UI based on whose turn it is
+        // This will be called in the next Update() cycle
+        // We can force an update by calling UpdatePanelVisibility directly
+        UpdatePanelVisibility();
     }
 }
