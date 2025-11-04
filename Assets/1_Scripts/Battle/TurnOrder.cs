@@ -345,7 +345,7 @@ public class TurnOrder : MonoBehaviour
                 return;
             }
             
-            Debug.Log($"Selecting next unit: {nextUnitToAct.gameObject.name} with gauge {highestGauge}");
+            //Debug.Log($"Selecting next unit: {nextUnitToAct.gameObject.name} with gauge {highestGauge}");
             isUnitActing = true;
             gameManager.SetCurrentUnit(nextUnitToAct);
         }
@@ -489,7 +489,7 @@ public class TurnOrder : MonoBehaviour
             {
                 tiebreakerInfo = $" (tiebreaker: {(firstUnit.IsPlayerUnit ? "Player" : "Enemy")} slot {GetUnitSpawnIndex(firstUnit) + 1})";
             }
-            Debug.Log(firstUnit.gameObject.name + " goes first! (Speed: " + firstUnit.Speed + ", Gauge: " + firstUnit.GetActionGauge() + tiebreakerInfo + ")");
+            //Debug.Log(firstUnit.gameObject.name + " goes first! (Speed: " + firstUnit.Speed + ", Gauge: " + firstUnit.GetActionGauge() + tiebreakerInfo + ")");
         }
         
         return firstUnit;
@@ -689,7 +689,7 @@ public class TurnOrder : MonoBehaviour
                     float oldGauge = unit.GetActionGauge();
                     unit.IncrementActionGauge();
                     float newGauge = unit.GetActionGauge();
-                    Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge} -> {newGauge}");
+                    //Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge} -> {newGauge}");
                 }
             }
             

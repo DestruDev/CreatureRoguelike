@@ -41,6 +41,20 @@ public class GameManager : MonoBehaviour
 
     [Header("Turn Management")]
     private Unit currentUnit;
+    
+    [Header("Enemy Turn Settings")]
+    [Tooltip("Delay in seconds before advancing to next turn after enemy completes their action")]
+    [Range(0f, 5f)]
+    public float enemyTurnDelay = 2f;
+    
+    [Header("Battle Animation Timing")]
+    [Tooltip("Delay in seconds for skill animation to play (between skill usage message and damage message)")]
+    [Range(0f, 5f)]
+    public float skillAnimationDelay = 2f;
+    
+    [Tooltip("Delay in seconds for hit animation to play (between damage message and turn advancement)")]
+    [Range(0f, 5f)]
+    public float hitAnimationDelay = 2f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -84,7 +98,7 @@ public class GameManager : MonoBehaviour
                 int maxIterations = 20; // Safety limit
                 int iterations = 0;
                 
-                Debug.Log("=== Initializing first turn - incrementing gauges until someone can act ===");
+                //Debug.Log("=== Initializing first turn - incrementing gauges until someone can act ===");
                 
                 while (!someoneCanAct && iterations < maxIterations)
                 {
@@ -99,7 +113,7 @@ public class GameManager : MonoBehaviour
                         bool reached100 = unit.IncrementActionGauge();
                         float newGauge = unit.GetActionGauge();
                         
-                        Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge:F1} -> {newGauge:F1}");
+                        //Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge:F1} -> {newGauge:F1}");
                         
                         if (reached100)
                         {
@@ -121,7 +135,7 @@ public class GameManager : MonoBehaviour
             Unit firstUnit = turnOrder.GetFirstUnit();
             if (firstUnit != null)
             {
-                Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name + " with gauge " + firstUnit.GetActionGauge());
+                //Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name + " with gauge " + firstUnit.GetActionGauge());
                 // Set the acting flag before setting the unit
                 if (turnOrder != null)
                 {
@@ -180,6 +194,12 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void SetCurrentUnit(Unit unit)
 	{
+		// Prevent duplicate calls for the same unit
+		if (currentUnit == unit)
+		{
+			return;
+		}
+		
 		currentUnit = unit;
 		UpdateUnitNameText();
 		UpdateSkillPanel();
@@ -303,20 +323,97 @@ public class GameManager : MonoBehaviour
 		// Start the turn (reduce cooldowns)
 		currentUnit.StartTurn();
 		
-		// Use the skill
-		currentUnit.UseSkill(randomSkillIndex, randomTarget);
-		
-		// Small delay before advancing to next turn (optional, for visual feedback)
-		// Use Coroutine instead of Invoke to avoid timing issues
-		StartCoroutine(DelayedAdvanceTurn());
+		// Use the skill with delayed execution for proper animation timing
+		StartCoroutine(ExecuteEnemySkillWithDelay(currentUnit, randomSkillIndex, randomTarget));
 	}
 	
 	/// <summary>
-	/// Coroutine to delay turn advancement for visual feedback
+	/// Coroutine to execute enemy skill with proper timing delays
+	/// </summary>
+	private System.Collections.IEnumerator ExecuteEnemySkillWithDelay(Unit caster, int skillIndex, Unit target)
+	{
+		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
+			yield break;
+			
+		Skill skill = caster.Skills[skillIndex];
+		
+		// Set cooldown (same as UseSkill does)
+		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
+		
+		// Log skill usage immediately
+		string targetName = target != null ? target.UnitName : "self";
+		EventLogPanel.LogEvent($"{caster.UnitName} uses {skill.skillName} on {targetName}!");
+		
+		// Wait for skill animation
+		yield return new WaitForSeconds(skillAnimationDelay);
+		
+		// Apply skill effects (which will log damage)
+		caster.ApplySkillEffects(skill, target);
+		
+		// Wait for hit animation
+		yield return new WaitForSeconds(hitAnimationDelay);
+		
+		// Advance turn
+		AdvanceToNextTurn();
+	}
+	
+	/// <summary>
+	/// Public method to execute a skill with proper timing delays (for both player and enemy units)
+	/// </summary>
+	public void ExecuteSkillWithDelay(Unit caster, int skillIndex, Unit target, bool autoAdvanceTurn = false)
+	{
+		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
+			return;
+			
+		Skill skill = caster.Skills[skillIndex];
+		
+		// Set cooldown (same as UseSkill does)
+		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
+		
+		// Log skill usage immediately (before starting coroutine for instant display)
+		string targetName = target != null ? target.UnitName : "self";
+		Debug.Log($"[IMMEDIATE] {caster.UnitName} uses {skill.skillName} on {targetName}!");
+		EventLogPanel.LogEvent($"{caster.UnitName} uses {skill.skillName} on {targetName}!");
+		
+		// Start coroutine for delayed effects
+		StartCoroutine(ExecuteSkillWithDelayCoroutine(caster, skill, target, autoAdvanceTurn));
+	}
+	
+	/// <summary>
+	/// Coroutine to execute skill with proper timing delays
+	/// </summary>
+	private System.Collections.IEnumerator ExecuteSkillWithDelayCoroutine(Unit caster, Skill skill, Unit target, bool autoAdvanceTurn)
+	{
+		// Wait for skill animation
+		Debug.Log($"[DELAY] Waiting {skillAnimationDelay} seconds for skill animation...");
+		yield return new WaitForSeconds(skillAnimationDelay);
+		
+		// Apply skill effects (which will log damage)
+		Debug.Log($"[DELAYED] Applying skill effects now...");
+		caster.ApplySkillEffects(skill, target);
+		
+		// Wait for hit animation
+		Debug.Log($"[DELAY] Waiting {hitAnimationDelay} seconds for hit animation...");
+		yield return new WaitForSeconds(hitAnimationDelay);
+		
+		// Advance turn if auto-advance is enabled (for enemy turns)
+		if (autoAdvanceTurn)
+		{
+			Debug.Log($"[DELAYED] Advancing turn...");
+			AdvanceToNextTurn();
+		}
+		else
+		{
+			Debug.Log($"[DELAYED] Skill execution complete. Turn will be advanced manually.");
+		}
+	}
+	
+	/// <summary>
+	/// Coroutine to delay turn advancement for visual feedback (legacy, kept for compatibility)
 	/// </summary>
 	private System.Collections.IEnumerator DelayedAdvanceTurn()
 	{
-		yield return new WaitForSeconds(1f);
+		yield return new WaitForSeconds(enemyTurnDelay);
 		AdvanceToNextTurn();
 	}
 	

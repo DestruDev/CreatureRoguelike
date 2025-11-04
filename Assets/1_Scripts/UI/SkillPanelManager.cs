@@ -231,11 +231,21 @@ public class SkillPanelManager : MonoBehaviour
 
         Skill skill = currentUnit.Skills[skillIndex];
 
-        // If skill targets self, use it immediately without selection
+        // If skill targets self, use it with delay for proper animation timing
         if (skill.targetType == SkillTargetType.Self)
         {
-            currentUnit.UseSkill(skillIndex, currentUnit);
-            AdvanceTurn();
+            if (gameManager != null)
+            {
+                gameManager.ExecuteSkillWithDelay(currentUnit, skillIndex, currentUnit, false);
+                // Advance turn after delays complete
+                StartCoroutine(DelayedAdvanceTurnAfterSkill());
+            }
+            else
+            {
+                // Fallback to immediate execution
+                currentUnit.UseSkill(skillIndex, currentUnit);
+                AdvanceTurn();
+            }
             return;
         }
 
@@ -417,15 +427,47 @@ public class SkillPanelManager : MonoBehaviour
         
         if (selectedTarget != null && currentCastingUnit != null && currentSkill != null && selectedSkillIndex >= 0)
         {
-            // Use the skill on the selected target
-            currentCastingUnit.UseSkill(selectedSkillIndex, selectedTarget);
+            // Save references before clearing selection mode
+            Unit caster = currentCastingUnit;
+            int skillIndex = selectedSkillIndex;
+            Unit target = selectedTarget;
             
             // Exit selection mode
             CancelSelectionMode();
             
-            // Advance turn
-            AdvanceTurn();
+            // Use the skill on the selected target with delay for proper animation timing
+            Debug.Log($"[SkillPanel] ConfirmSelection: caster={caster.UnitName}, skillIndex={skillIndex}, target={target.UnitName}");
+            if (gameManager != null)
+            {
+                Debug.Log($"[SkillPanel] Calling ExecuteSkillWithDelay on GameManager");
+                gameManager.ExecuteSkillWithDelay(caster, skillIndex, target, false);
+                // Advance turn after delays complete
+                StartCoroutine(DelayedAdvanceTurnAfterSkill());
+            }
+            else
+            {
+                Debug.LogWarning($"[SkillPanel] GameManager is null! Using fallback.");
+                // Fallback to immediate execution
+                caster.UseSkill(skillIndex, target);
+                AdvanceTurn();
+            }
         }
+    }
+    
+    /// <summary>
+    /// Coroutine to advance turn after skill animation delays complete
+    /// </summary>
+    private System.Collections.IEnumerator DelayedAdvanceTurnAfterSkill()
+    {
+        if (gameManager == null)
+            yield break;
+            
+        // Wait for skill animation + hit animation delays
+        float totalDelay = gameManager.skillAnimationDelay + gameManager.hitAnimationDelay;
+        yield return new WaitForSeconds(totalDelay);
+        
+        // Advance turn
+        AdvanceTurn();
     }
 
     /// <summary>

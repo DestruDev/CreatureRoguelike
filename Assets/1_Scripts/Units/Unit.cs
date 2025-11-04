@@ -151,6 +151,9 @@ public class Unit : MonoBehaviour
         
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage! HP: " + currentHP + "/" + MaxHP);
         
+        // Log to event panel
+        EventLogPanel.LogEvent($"{UnitName} takes {actualDamage} damage! ({currentHP}/{MaxHP} HP)");
+        
         if (currentHP <= 0)
         {
             Die();
@@ -172,8 +175,12 @@ public class Unit : MonoBehaviour
             return;
         }
         
-        target.TakeDamage(AttackDamage);
         Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
+        
+        // Log attack to event panel
+        EventLogPanel.LogEvent($"{UnitName} attacks {target.UnitName}!");
+        
+        target.TakeDamage(AttackDamage);
     }
     
     public void UseSkill(int skillIndex, Unit target = null)
@@ -198,12 +205,29 @@ public class Unit : MonoBehaviour
         // Execute skill effects
         Debug.Log(gameObject.name + " uses " + skill.skillName + "!");
         
+        // Log skill usage to event panel
+        string targetName = target != null ? target.UnitName : "self";
+        EventLogPanel.LogEvent($"{UnitName} uses {skill.skillName} on {targetName}!");
+        
+        // Apply skill effects immediately (for backwards compatibility)
+        ApplySkillEffects(skill, target);
+    }
+    
+    /// <summary>
+    /// Applies skill effects without logging (for delayed execution)
+    /// </summary>
+    public void ApplySkillEffects(Skill skill, Unit target = null)
+    {
+        Debug.Log($"[ApplySkillEffects] Called on {gameObject.name}, skill={skill.skillName}, target={target?.gameObject.name ?? "null"}, effectType={skill.effectType}");
+        
         // Apply skill effects based on effect type
         switch (skill.effectType)
         {
             case SkillEffectType.Damage:
+                Debug.Log($"[ApplySkillEffects] Damage case: target={target}, isAlive={target?.IsAlive()}, damage={skill.damage}");
                 if (target != null && target.IsAlive() && skill.damage > 0)
                 {
+                    Debug.Log($"[ApplySkillEffects] Calling TakeDamage({skill.damage}) on {target.gameObject.name}");
                     target.TakeDamage(skill.damage);
                 }
                 else if (target != null && !target.IsAlive())
@@ -316,6 +340,17 @@ public class Unit : MonoBehaviour
     }
     
     /// <summary>
+    /// Sets the cooldown for a skill (used for delayed skill execution)
+    /// </summary>
+    public void SetSkillCooldown(int skillIndex, int cooldownTurns)
+    {
+        if (skillIndex >= 0 && skillIndex < skillCooldowns.Length)
+        {
+            skillCooldowns[skillIndex] = cooldownTurns;
+        }
+    }
+    
+    /// <summary>
     /// Gets the remaining cooldown turns for a skill
     /// </summary>
     public int GetSkillCooldown(int skillIndex)
@@ -353,5 +388,8 @@ public class Unit : MonoBehaviour
         }
         
         Debug.Log(gameObject.name + " starts their turn!");
+        
+        // Log to event panel
+        // EventLogPanel.LogEvent($"{UnitName} starts their turn!");
     }
 }

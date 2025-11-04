@@ -52,13 +52,14 @@ public class TurnOrderTimeline : MonoBehaviour
                 return;
         }
         
-        // Clear all slots first
+        // Initialize all slots first - keep them active and set to space to maintain height
         for (int i = 0; i < turnOrderSlots.Length; i++)
         {
             if (turnOrderSlots[i] != null)
             {
-                turnOrderSlots[i].text = "";
-                turnOrderSlots[i].gameObject.SetActive(false);
+                turnOrderSlots[i].text = " "; // Space character to maintain line height
+                turnOrderSlots[i].color = Color.white;
+                turnOrderSlots[i].gameObject.SetActive(true);
             }
         }
         
