@@ -3009,9 +3009,9 @@ MonoBehaviour:
   - {fileID: 422464924}
   - {fileID: 1135940041}
   - {fileID: 1606051087}
-  enemyTurnDelay: 2
-  skillAnimationDelay: 2
-  hitAnimationDelay: 2
+  enemyTurnDelay: 1
+  skillAnimationDelay: 1
+  hitAnimationDelay: 1
 --- !u!114 &427498651
 MonoBehaviour:
   m_ObjectHideFlags: 0

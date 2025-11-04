@@ -349,8 +349,9 @@ public class GameManager : MonoBehaviour
 		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
 		
 		// Log skill usage immediately
-		string targetName = target != null ? target.UnitName : "self";
-		EventLogPanel.LogEvent($"{caster.UnitName} uses {skill.skillName} on {targetName}!");
+		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
 		
 		// Wait for skill animation
 		yield return new WaitForSeconds(skillAnimationDelay);
@@ -388,8 +389,9 @@ public class GameManager : MonoBehaviour
 		HideActionUI();
 		
 		// Log skill usage immediately (before starting coroutine for instant display)
-		string targetName = target != null ? target.UnitName : "self";
-		EventLogPanel.LogEvent($"{caster.UnitName} uses {skill.skillName} on {targetName}!");
+		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
 		
 		// Start coroutine for delayed effects
 		StartCoroutine(ExecuteSkillWithDelayCoroutine(caster, skill, target, autoAdvanceTurn));

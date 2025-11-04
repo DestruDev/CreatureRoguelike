@@ -59,6 +59,73 @@ public class EventLogPanel : MonoBehaviour
     }
     
     /// <summary>
+    /// Gets a display name for a unit, adding a distinguishing identifier if there are duplicates
+    /// Similar to TurnOrderTimeline's GetDisplayNameForUnit method
+    /// </summary>
+    public static string GetDisplayNameForUnit(Unit unit)
+    {
+        if (unit == null)
+            return "Unknown";
+        
+        string baseName = unit.UnitName;
+        
+        // Get all units in the scene
+        Unit[] allUnits = Object.FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null || allUnits.Length == 0)
+            return baseName;
+        
+        // Count how many units have the same name
+        int sameNameCount = 0;
+        foreach (var u in allUnits)
+        {
+            if (u != null && u.IsAlive() && u.UnitName == baseName)
+            {
+                sameNameCount++;
+            }
+        }
+        
+        // If there are duplicates, add a distinguishing identifier
+        if (sameNameCount > 1)
+        {
+            // Sort all units with same name to get consistent numbering
+            List<Unit> sameNameUnits = new List<Unit>();
+            foreach (var u in allUnits)
+            {
+                if (u != null && u.IsAlive() && u.UnitName == baseName)
+                {
+                    sameNameUnits.Add(u);
+                }
+            }
+            
+            // Get TurnOrder for tiebreaker logic
+            TurnOrder turnOrder = Object.FindFirstObjectByType<TurnOrder>();
+            
+            // Sort by team (player first), then by spawn index (if available), then by instance ID
+            sameNameUnits.Sort((a, b) =>
+            {
+                // Use tiebreaker logic for consistent ordering
+                int tiebreak = turnOrder != null ? turnOrder.CompareUnitsForTiebreaker(a, b) : 0;
+                if (tiebreak != 0)
+                    return tiebreak;
+                // Final fallback: instance ID
+                return a.GetInstanceID().CompareTo(b.GetInstanceID());
+            });
+            
+            // Find this unit's index in the sorted list
+            for (int i = 0; i < sameNameUnits.Count; i++)
+            {
+                if (sameNameUnits[i] == unit)
+                {
+                    return $"{baseName} ({i + 1})";
+                }
+            }
+        }
+        
+        // No duplicates or couldn't find in list, return base name
+        return baseName;
+    }
+    
+    /// <summary>
     /// Adds a message to the event log
     /// </summary>
     private void AddLogMessage(string message)

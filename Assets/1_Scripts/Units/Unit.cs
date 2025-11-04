@@ -152,7 +152,8 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage! HP: " + currentHP + "/" + MaxHP);
         
         // Log to event panel
-        EventLogPanel.LogEvent($"{UnitName} takes {actualDamage} damage! ({currentHP}/{MaxHP} HP)");
+        string displayName = EventLogPanel.GetDisplayNameForUnit(this);
+        EventLogPanel.LogEvent($"{displayName} takes {actualDamage} damage! ({currentHP}/{MaxHP} HP)");
         
         if (currentHP <= 0)
         {
@@ -178,7 +179,9 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
         
         // Log attack to event panel
-        EventLogPanel.LogEvent($"{UnitName} attacks {target.UnitName}!");
+        string attackerName = EventLogPanel.GetDisplayNameForUnit(this);
+        string targetName = EventLogPanel.GetDisplayNameForUnit(target);
+        EventLogPanel.LogEvent($"{attackerName} attacks {targetName}!");
         
         target.TakeDamage(AttackDamage);
     }
@@ -206,8 +209,9 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " uses " + skill.skillName + "!");
         
         // Log skill usage to event panel
-        string targetName = target != null ? target.UnitName : "self";
-        EventLogPanel.LogEvent($"{UnitName} uses {skill.skillName} on {targetName}!");
+        string casterName = EventLogPanel.GetDisplayNameForUnit(this);
+        string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+        EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
         
         // Apply skill effects immediately (for backwards compatibility)
         ApplySkillEffects(skill, target);
