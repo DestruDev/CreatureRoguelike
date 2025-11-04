@@ -26,9 +26,29 @@ public class SkillPanelManager : MonoBehaviour
     public Button skill3Button;
     public Button skill4Button;
 
+    [Header("Cooldown Text")]
+    public TextMeshProUGUI skill1Cooldown;
+    public TextMeshProUGUI skill2Cooldown;
+    public TextMeshProUGUI skill3Cooldown;
+    public TextMeshProUGUI skill4Cooldown;
+
+    [Header("Cooldown Settings")]
+    [Range(0f, 1f)]
+    [Tooltip("Brightness value (V) for skills on cooldown. 0 = black, 1 = full brightness")]
+    public float cooldownBrightness = 0.5f;
+
     private TextMeshProUGUI[] skillNames;
     private Image[] skillIcons;
     private Button[] skillButtons;
+    private TextMeshProUGUI[] skillCooldowns;
+    
+    // Store original colors for restoration
+    private Color[] originalIconColors = new Color[4];
+    private Color[] originalButtonColors = new Color[4];
+    private bool[] originalColorsStored = new bool[4];
+    
+    // Track current unit to reset colors when switching units
+    private Unit lastDisplayedUnit = null;
     
     // Selection mode state
     private bool isSelectionMode = false;
@@ -54,6 +74,7 @@ public class SkillPanelManager : MonoBehaviour
         skillNames = new TextMeshProUGUI[] { skill1Name, skill2Name, skill3Name, skill4Name };
         skillIcons = new Image[] { skill1Icon, skill2Icon, skill3Icon, skill4Icon };
         skillButtons = new Button[] { skill1Button, skill2Button, skill3Button, skill4Button };
+        skillCooldowns = new TextMeshProUGUI[] { skill1Cooldown, skill2Cooldown, skill3Cooldown, skill4Cooldown };
 
         // Subscribe to button clicks
         for (int i = 0; i < skillButtons.Length; i++)
@@ -77,6 +98,26 @@ public class SkillPanelManager : MonoBehaviour
 
     private void Update()
     {
+        // Update skills to reflect cooldown changes (only for player units, and only update brightness)
+        if (gameManager != null && !isSelectionMode)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && currentUnit.IsPlayerUnit && currentUnit == lastDisplayedUnit)
+            {
+                // Only update brightness and cooldown text without full refresh (more efficient)
+                Skill[] skills = currentUnit.Skills;
+                for (int i = 0; i < 4 && i < skills.Length; i++)
+                {
+                    if (skills[i] != null && originalColorsStored[i])
+                    {
+                        bool isOnCooldown = !currentUnit.CanUseSkill(i);
+                        UpdateSkillBrightness(i, isOnCooldown);
+                        UpdateCooldownText(i, currentUnit);
+                    }
+                }
+            }
+        }
+        
         // Check for cancellation (right click or ESC)
         if (isSelectionMode)
         {
@@ -129,7 +170,15 @@ public class SkillPanelManager : MonoBehaviour
         {
             // Clear all skill displays if no unit
             ClearAllSkills();
+            lastDisplayedUnit = null;
             return;
+        }
+
+        // If unit changed, reset all stored colors and restore slots to original state
+        if (currentUnit != lastDisplayedUnit)
+        {
+            ResetAllSkillColors();
+            lastDisplayedUnit = currentUnit;
         }
 
         Skill[] skills = currentUnit.Skills;
@@ -145,6 +194,24 @@ public class SkillPanelManager : MonoBehaviour
                     skillNames[i].text = skills[i].skillName;
                 }
 
+                // Store original colors if not already stored
+                if (!originalColorsStored[i])
+                {
+                    // Store original icon color
+                    if (skillIcons[i] != null)
+                    {
+                        originalIconColors[i] = skillIcons[i].color;
+                    }
+                    
+                    // Store original button color
+                    if (skillButtons[i] != null && skillButtons[i].image != null)
+                    {
+                        originalButtonColors[i] = skillButtons[i].image.color;
+                    }
+                    
+                    originalColorsStored[i] = true;
+                }
+                
                 // Update skill icon
                 if (skillIcons[i] != null)
                 {
@@ -159,6 +226,13 @@ public class SkillPanelManager : MonoBehaviour
                         skillIcons[i].enabled = false;
                     }
                 }
+                
+                // Update brightness based on cooldown
+                bool isOnCooldown = !currentUnit.CanUseSkill(i);
+                UpdateSkillBrightness(i, isOnCooldown);
+                
+                // Update cooldown text
+                UpdateCooldownText(i, currentUnit);
             }
             else
             {
@@ -172,7 +246,143 @@ public class SkillPanelManager : MonoBehaviour
                 {
                     skillIcons[i].enabled = false;
                 }
+                
+                // Clear cooldown text
+                if (skillCooldowns[i] != null)
+                {
+                    skillCooldowns[i].text = "";
+                }
+                
+                // Restore colors when clearing slot
+                if (originalColorsStored[i])
+                {
+                    if (skillIcons[i] != null)
+                    {
+                        skillIcons[i].color = originalIconColors[i];
+                    }
+                    if (skillButtons[i] != null && skillButtons[i].image != null)
+                    {
+                        skillButtons[i].image.color = originalButtonColors[i];
+                    }
+                }
+                // If not stored, leave it as is (don't modify alpha)
+                
+                // Reset stored flag
+                originalColorsStored[i] = false;
             }
+        }
+    }
+
+    /// <summary>
+    /// Resets all skill colors to their original state when switching units
+    /// </summary>
+    private void ResetAllSkillColors()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            // Restore icon color
+            if (skillIcons[i] != null)
+            {
+                if (originalColorsStored[i])
+                {
+                    skillIcons[i].color = originalIconColors[i];
+                }
+                // If not stored, leave it as is (don't modify)
+            }
+            
+            // Restore button color
+            if (skillButtons[i] != null && skillButtons[i].image != null)
+            {
+                if (originalColorsStored[i])
+                {
+                    skillButtons[i].image.color = originalButtonColors[i];
+                }
+                // If not stored, leave it as is (don't modify)
+            }
+            
+            // Reset stored flag so colors will be re-stored for new unit
+            originalColorsStored[i] = false;
+        }
+    }
+
+    /// <summary>
+    /// Updates the brightness of a skill's icon and button based on cooldown status
+    /// </summary>
+    private void UpdateSkillBrightness(int skillIndex, bool isOnCooldown)
+    {
+        if (skillIndex < 0 || skillIndex >= 4)
+            return;
+        
+        // Update icon brightness
+        if (skillIcons[skillIndex] != null && skillIcons[skillIndex].enabled)
+        {
+            if (isOnCooldown)
+            {
+                // Apply brightness value to icon
+                Color originalColor = originalIconColors[skillIndex];
+                Color cooldownColor = new Color(
+                    originalColor.r * cooldownBrightness,
+                    originalColor.g * cooldownBrightness,
+                    originalColor.b * cooldownBrightness,
+                    originalColor.a
+                );
+                skillIcons[skillIndex].color = cooldownColor;
+            }
+            else
+            {
+                // Restore original color
+                if (originalColorsStored[skillIndex])
+                {
+                    skillIcons[skillIndex].color = originalIconColors[skillIndex];
+                }
+            }
+        }
+        
+        // Update button brightness
+        if (skillButtons[skillIndex] != null && skillButtons[skillIndex].image != null)
+        {
+            if (isOnCooldown)
+            {
+                // Apply brightness value to button
+                Color originalColor = originalButtonColors[skillIndex];
+                Color cooldownColor = new Color(
+                    originalColor.r * cooldownBrightness,
+                    originalColor.g * cooldownBrightness,
+                    originalColor.b * cooldownBrightness,
+                    originalColor.a
+                );
+                skillButtons[skillIndex].image.color = cooldownColor;
+            }
+            else
+            {
+                // Restore original color
+                if (originalColorsStored[skillIndex])
+                {
+                    skillButtons[skillIndex].image.color = originalButtonColors[skillIndex];
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the cooldown text for a skill
+    /// </summary>
+    private void UpdateCooldownText(int skillIndex, Unit unit)
+    {
+        if (skillIndex < 0 || skillIndex >= 4 || skillCooldowns[skillIndex] == null || unit == null)
+            return;
+
+        int cooldown = unit.GetSkillCooldown(skillIndex);
+        
+        if (cooldown > 0)
+        {
+            // Show cooldown count
+            skillCooldowns[skillIndex].text = cooldown.ToString();
+        }
+        else
+        {
+            // Clear text when skill is available
+            skillCooldowns[skillIndex].text = "";
         }
     }
 
@@ -192,6 +402,28 @@ public class SkillPanelManager : MonoBehaviour
             {
                 skillIcons[i].enabled = false;
             }
+            
+            // Clear cooldown text
+            if (skillCooldowns[i] != null)
+            {
+                skillCooldowns[i].text = "";
+            }
+            
+            // Restore colors when clearing
+            if (originalColorsStored[i])
+            {
+                if (skillIcons[i] != null)
+                {
+                    skillIcons[i].color = originalIconColors[i];
+                }
+                if (skillButtons[i] != null && skillButtons[i].image != null)
+                {
+                    skillButtons[i].image.color = originalButtonColors[i];
+                }
+            }
+            // If not stored, leave it as is (don't modify alpha)
+            
+            originalColorsStored[i] = false;
         }
     }
 
@@ -237,6 +469,8 @@ public class SkillPanelManager : MonoBehaviour
             if (gameManager != null)
             {
                 gameManager.ExecuteSkillWithDelay(currentUnit, skillIndex, currentUnit, false);
+                // Update skills immediately to reflect cooldown
+                UpdateSkills();
                 // Advance turn after delays complete
                 StartCoroutine(DelayedAdvanceTurnAfterSkill());
             }
@@ -244,6 +478,7 @@ public class SkillPanelManager : MonoBehaviour
             {
                 // Fallback to immediate execution
                 currentUnit.UseSkill(skillIndex, currentUnit);
+                UpdateSkills();
                 AdvanceTurn();
             }
             return;
@@ -440,6 +675,8 @@ public class SkillPanelManager : MonoBehaviour
             if (gameManager != null)
             {
                 gameManager.ExecuteSkillWithDelay(caster, skillIndex, target, false);
+                // Update skills immediately to reflect cooldown
+                UpdateSkills();
                 // Advance turn after delays complete
                 StartCoroutine(DelayedAdvanceTurnAfterSkill());
             }
@@ -448,6 +685,7 @@ public class SkillPanelManager : MonoBehaviour
                 Debug.LogWarning($"[SkillPanel] GameManager is null! Using fallback.");
                 // Fallback to immediate execution
                 caster.UseSkill(skillIndex, target);
+                UpdateSkills();
                 AdvanceTurn();
             }
         }

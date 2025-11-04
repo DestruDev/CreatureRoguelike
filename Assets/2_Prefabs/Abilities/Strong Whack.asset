@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
-  m_Name: Heal
+  m_Name: Strong Whack
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: Heal
-  description: A heal.
-  icon: {fileID: 8020143640844766479, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 0
-  healAmount: 10
-  cooldownTurns: 0
-  targetType: 1
-  effectType: 1
+  skillName: Strong Whack
+  description: A stronger whack.
+  icon: {fileID: -7803645574393991823, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
+  damage: 50
+  healAmount: 0
+  cooldownTurns: 3
+  targetType: 2
+  effectType: 0

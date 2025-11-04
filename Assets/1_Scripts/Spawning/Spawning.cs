@@ -207,6 +207,7 @@ public class Spawning : MonoBehaviour
         
         // Add SpriteRenderer component
         SpriteRenderer spriteRenderer = unitObj.AddComponent<SpriteRenderer>();
+        spriteRenderer.sortingLayerName = "Units";
         
         // Add Unit component
         Unit unit = unitObj.AddComponent<Unit>();
