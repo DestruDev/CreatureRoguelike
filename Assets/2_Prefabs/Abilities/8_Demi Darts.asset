@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
   m_Name: 8_Demi Darts
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: New Skill
-  skillID: 
-  description: Skill description
-  icon: {fileID: 0}
-  damage: 0
+  skillName: Demi Darts
+  skillID: 8
+  description: Some demi darts.
+  icon: {fileID: -7676219313036738927, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
+  damage: 20
   healAmount: 0
   cooldownTurns: 0
-  targetType: 0
+  targetType: 2
   effectType: 0

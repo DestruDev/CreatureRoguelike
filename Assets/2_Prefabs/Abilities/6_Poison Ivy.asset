@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: 6_Poison Ivy
   m_EditorClassIdentifier: Assembly-CSharp::Skill
   skillName: Poison Ivy
-  skillID: 
+  skillID: 6
   description: Poison from ivy's.
-  icon: {fileID: 0}
+  icon: {fileID: 4773514653529381359, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
   damage: 65
   healAmount: 0
   cooldownTurns: 0

@@ -21,5 +21,4 @@ MonoBehaviour:
   defense: 45
   speed: 37
   skills:
-  - {fileID: 11400000, guid: 2a61fc053fd893a46863d7f2e141693f, type: 2}
-  - {fileID: 11400000, guid: 6ea36b9dc69288242afb35dc70705b60, type: 2}
+  - {fileID: 11400000, guid: 3242c1a4808328d4bb83818fa4d76490, type: 2}

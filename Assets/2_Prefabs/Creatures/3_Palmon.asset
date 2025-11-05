@@ -17,10 +17,8 @@ MonoBehaviour:
   sprite: {fileID: -2051683664, guid: fa0ac6347a6823e4f8c920c37f181088, type: 3}
   spriteColor: {r: 1, g: 1, b: 1, a: 1}
   maxHP: 510
-  currentHP: 100
+  currentHP: 510
   defense: 37
   speed: 35
   skills:
-  - {fileID: 11400000, guid: 2a61fc053fd893a46863d7f2e141693f, type: 2}
-  - {fileID: 11400000, guid: 6ea36b9dc69288242afb35dc70705b60, type: 2}
-  - {fileID: 11400000, guid: 8443bc1d7ab436a4c8e92b6411b791d3, type: 2}
+  - {fileID: 11400000, guid: 9dc9250914aae8749bdd97487a6f87f8, type: 2}

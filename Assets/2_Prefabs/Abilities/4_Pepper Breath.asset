@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Pepper Breath
   skillID: 4
   description: Breath of peppers.
-  icon: {fileID: 0}
+  icon: {fileID: 6985626698306143173, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
   damage: 70
   healAmount: 0
   cooldownTurns: 0
