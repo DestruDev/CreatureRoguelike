@@ -16,7 +16,7 @@ MonoBehaviour:
   skillID: 9
   description: A black pearl blast.
   icon: {fileID: -5906973516983679737, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 25
+  damage: 40
   healAmount: 0
   cooldownTurns: 0
   targetType: 2

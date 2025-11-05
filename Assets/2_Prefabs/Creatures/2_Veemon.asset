@@ -16,9 +16,9 @@ MonoBehaviour:
   unitID: 2
   sprite: {fileID: 233200872, guid: 111412f1cdf3cb54d8246c2739739284, type: 3}
   spriteColor: {r: 1, g: 1, b: 1, a: 1}
-  maxHP: 460
-  currentHP: 460
-  defense: 30
-  speed: 43
+  maxHP: 120
+  currentHP: 120
+  defense: 7
+  speed: 17
   skills:
   - {fileID: 11400000, guid: 452a2cac3381ba943b0c420fa67c4af0, type: 2}

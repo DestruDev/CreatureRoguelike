@@ -161,6 +161,27 @@ public class Unit : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Takes damage ignoring defense (for admin/debug purposes)
+    /// </summary>
+    public void TakeDamageIgnoreDefense(int damage)
+    {
+        int actualDamage = Mathf.Max(0, damage);
+        currentHP = Mathf.Max(0, currentHP - actualDamage);
+        UpdateHealthUI();
+        
+        Debug.Log(gameObject.name + " takes " + actualDamage + " damage (ignoring defense)! HP: " + currentHP + "/" + MaxHP);
+        
+        // Log to event panel
+        string displayName = EventLogPanel.GetDisplayNameForUnit(this);
+        EventLogPanel.LogEvent($"{displayName} takes {actualDamage} damage (ignoring defense)! ({currentHP}/{MaxHP} HP)");
+        
+        if (currentHP <= 0)
+        {
+            Die();
+        }
+    }
+    
     public void Heal(int healAmount)
     {
         currentHP = Mathf.Min(MaxHP, currentHP + healAmount);

@@ -2870,6 +2870,7 @@ GameObject:
   - component: {fileID: 427498655}
   - component: {fileID: 427498656}
   - component: {fileID: 427498657}
+  - component: {fileID: 427498658}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3130,6 +3131,19 @@ MonoBehaviour:
   item2Button: {fileID: 549901808}
   item3Button: {fileID: 1875020528}
   item4Button: {fileID: 1869176404}
+--- !u!114 &427498658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427498647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00ddcd394c4fad740945ed8e2c907d2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdminPanel
+  damageAmount: 20
 --- !u!1 &444719010
 GameObject:
   m_ObjectHideFlags: 0
