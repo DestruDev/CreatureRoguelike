@@ -14,8 +14,16 @@ public class Item : ScriptableObject
     public string itemDescription = "Item description";
     public Sprite icon;
     
-    [Header("Item Type")]
+
     public ItemType itemType = ItemType.Consumable;
+    
+
+    [Tooltip("Subtype for consumable items")]
+    public ConsumableSubtype consumableSubtype = ConsumableSubtype.Heal;
+    
+    [Header("Targeting")]
+    [Tooltip("Target type for consumable items (auto-set based on subtype)")]
+    public SkillTargetType targetType = SkillTargetType.Ally;
     
 #if UNITY_EDITOR
     // Auto-set itemName to asset name if it's empty or still at default value
@@ -35,6 +43,24 @@ public class Item : ScriptableObject
                 }
             }
         }
+        
+        // Auto-set target type based on consumable subtype
+        if (itemType == ItemType.Consumable)
+        {
+            switch (consumableSubtype)
+            {
+                case ConsumableSubtype.Heal:
+                    targetType = SkillTargetType.Ally;
+                    break;
+                case ConsumableSubtype.Damage:
+                    targetType = SkillTargetType.Enemy;
+                    break;
+                case ConsumableSubtype.Status:
+                    // Status will be decided later - default to Any for now
+                    // Don't auto-set, allow manual configuration
+                    break;
+            }
+        }
     }
 #endif
 }
@@ -47,4 +73,11 @@ public enum ItemType
     Quest,          // Quest items
     Key,            // Key items
     Misc            // Miscellaneous items
+}
+
+public enum ConsumableSubtype
+{
+    Heal,           // Healing consumables (potions, etc.)
+    Damage,         // Damage consumables (throwing weapons, bombs, etc.)
+    Status          // Status effect consumables (buffs, debuffs, etc.)
 }
