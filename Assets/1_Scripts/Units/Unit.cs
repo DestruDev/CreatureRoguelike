@@ -23,7 +23,7 @@ public class Unit : MonoBehaviour
     // Current stats (cached from ScriptableObject)
     public int CurrentHP => currentHP;
     public int MaxHP => creatureUnitData != null ? creatureUnitData.maxHP : 0;
-    public int AttackDamage => creatureUnitData != null ? creatureUnitData.attackDamage : 0;
+    //public int AttackDamage => creatureUnitData != null ? creatureUnitData.attackDamage : 0;
     public int Defense => creatureUnitData != null ? creatureUnitData.defense : 0;
     public int Speed => creatureUnitData != null ? creatureUnitData.speed : 0;
     public Skill[] Skills => creatureUnitData != null ? creatureUnitData.skills : new Skill[0];
@@ -176,14 +176,14 @@ public class Unit : MonoBehaviour
             return;
         }
         
-        Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
+        // Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
         
         // Log attack to event panel
         string attackerName = EventLogPanel.GetDisplayNameForUnit(this);
         string targetName = EventLogPanel.GetDisplayNameForUnit(target);
         EventLogPanel.LogEvent($"{attackerName} attacks {targetName}!");
         
-        target.TakeDamage(AttackDamage);
+        // target.TakeDamage(AttackDamage);
     }
     
     public void UseSkill(int skillIndex, Unit target = null)

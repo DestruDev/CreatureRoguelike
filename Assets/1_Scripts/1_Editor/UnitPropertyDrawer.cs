@@ -63,7 +63,7 @@ public class UnitEditor : Editor
                     EditorGUI.ProgressBar(rect, hpPercent, $"{Mathf.RoundToInt(hpPercent * 100)}%");
                 }
                 
-                EditorGUILayout.LabelField("Attack Damage:", unit.AttackDamage.ToString());
+                // EditorGUILayout.LabelField("Attack Damage:", unit.AttackDamage.ToString());
                 EditorGUILayout.LabelField("Defense:", unit.Defense.ToString());
                 EditorGUILayout.LabelField("Speed:", unit.Speed.ToString());
                 

@@ -20,7 +20,7 @@ public class CreatureUnitData : ScriptableObject
     [Header("Stats")]
     public int maxHP = 100;
     [HideInInspector]public int currentHP;
-    public int attackDamage = 10;
+    //public int attackDamage = 10;
     public int defense = 5;
     public int speed = 10; // Turn order priority
     

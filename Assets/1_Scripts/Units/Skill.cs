@@ -9,6 +9,7 @@ public class Skill : ScriptableObject
     [Header("Basic Info")]
     [Tooltip("Skill name - automatically set to asset name if left empty or set to default")]
     public string skillName = "New Skill";
+    public string skillID = "";
     [TextArea(3, 5)]
     public string description = "Skill description";
     public Sprite icon;

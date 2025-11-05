@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
-  m_Name: Strong Whack
+  m_Name: 4_Pepper Breath
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: Strong Whack
-  description: A stronger whack.
-  icon: {fileID: -7803645574393991823, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 50
+  skillName: Pepper Breath
+  skillID: 4
+  description: Breath of peppers.
+  icon: {fileID: 0}
+  damage: 70
   healAmount: 0
-  cooldownTurns: 3
+  cooldownTurns: 0
   targetType: 2
   effectType: 0

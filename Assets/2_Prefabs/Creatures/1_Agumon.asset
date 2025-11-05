@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e1ad48e95045d14c8dcfec638325f0d, type: 3}
-  m_Name: Shakomon
+  m_Name: 1_Agumon
   m_EditorClassIdentifier: Assembly-CSharp::CreatureUnitData
-  unitName: Shakomon
-  unitID: 5
-  sprite: {fileID: -662273953, guid: fa73c690f1601604d97fec13066fa0df, type: 3}
+  unitName: Agumon
+  unitID: 1
+  sprite: {fileID: -8287752880039827561, guid: a3e9fedeccf0629478ae3ff63e18f232, type: 3}
   spriteColor: {r: 1, g: 1, b: 1, a: 1}
-  maxHP: 100
-  currentHP: 100
-  attackDamage: 10
-  defense: 5
-  speed: 10
+  maxHP: 450
+  currentHP: 450
+  defense: 45
+  speed: 37
   skills:
   - {fileID: 11400000, guid: 2a61fc053fd893a46863d7f2e141693f, type: 2}
+  - {fileID: 11400000, guid: 6ea36b9dc69288242afb35dc70705b60, type: 2}
