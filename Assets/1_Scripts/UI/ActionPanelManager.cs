@@ -20,6 +20,7 @@ public class ActionPanelManager : MonoBehaviour
     [Header("References")]
     private GameManager gameManager;
     private TurnOrder turnOrder;
+    private InspectPanelManager inspectPanelManager;
     
     // Track the last unit to detect when a new turn starts
     private Unit lastUnit = null;
@@ -37,6 +38,9 @@ public class ActionPanelManager : MonoBehaviour
 
         // Find TurnOrder
         turnOrder = FindFirstObjectByType<TurnOrder>();
+        
+        // Find InspectPanelManager
+        inspectPanelManager = FindFirstObjectByType<InspectPanelManager>();
 
         // Set initial state - only ActionPanel visible
         ShowActionPanel();
@@ -60,6 +64,12 @@ public class ActionPanelManager : MonoBehaviour
 
     private void Update()
     {
+        // Don't process if in inspect mode
+        if (IsInInspectMode())
+        {
+            return;
+        }
+        
         // Check for ESC key press or right-click to return to ActionPanel
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
         {
@@ -77,14 +87,27 @@ public class ActionPanelManager : MonoBehaviour
         // Hide ActionPanel during enemy turns
         UpdatePanelVisibility();
     }
+    
+    /// <summary>
+    /// Checks if inspect mode is currently active
+    /// </summary>
+    private bool IsInInspectMode()
+    {
+        if (inspectPanelManager == null)
+        {
+            inspectPanelManager = FindFirstObjectByType<InspectPanelManager>();
+        }
+        
+        return inspectPanelManager != null && inspectPanelManager.IsInspectMode();
+    }
 
     /// <summary>
     /// Updates panel visibility based on whose turn it is
     /// </summary>
-    private void UpdatePanelVisibility()
+    public void UpdatePanelVisibility()
     {
-        // Don't update visibility during skill execution
-        if (isSkillExecuting)
+        // Don't update visibility during skill execution or inspect mode
+        if (isSkillExecuting || IsInInspectMode())
         {
             return;
         }
@@ -184,6 +207,12 @@ public class ActionPanelManager : MonoBehaviour
 
     public void ShowActionPanel()
     {
+        // Don't allow if in inspect mode
+        if (IsInInspectMode())
+        {
+            return;
+        }
+        
         // Hide all panels first
         HideAllPanels();
 
@@ -196,6 +225,12 @@ public class ActionPanelManager : MonoBehaviour
 
     public void ShowSkillsPanel()
     {
+        // Don't allow if in inspect mode
+        if (IsInInspectMode())
+        {
+            return;
+        }
+        
         // Hide all panels first
         HideAllPanels();
 
@@ -208,6 +243,12 @@ public class ActionPanelManager : MonoBehaviour
 
     public void ShowItemsPanel()
     {
+        // Don't allow if in inspect mode
+        if (IsInInspectMode())
+        {
+            return;
+        }
+        
         // Hide all panels first
         HideAllPanels();
 
@@ -218,7 +259,7 @@ public class ActionPanelManager : MonoBehaviour
         }
     }
 
-    private void HideAllPanels()
+    public void HideAllPanels()
     {
         // Hide all panels to ensure only one is visible at a time
         if (ActionPanel != null)
@@ -240,7 +281,7 @@ public class ActionPanelManager : MonoBehaviour
     /// <summary>
     /// Hides the EndTurnButton (used during enemy turns)
     /// </summary>
-    private void HideEndTurnButton()
+    public void HideEndTurnButton()
     {
         if (EndTurnButton != null)
         {
@@ -264,6 +305,12 @@ public class ActionPanelManager : MonoBehaviour
     /// </summary>
     public void EndTurn()
     {
+        // Don't allow if in inspect mode
+        if (IsInInspectMode())
+        {
+            return;
+        }
+        
         // Advance to next turn (this will reset the gauge)
         // Note: StartTurn is now called in GameManager.SetCurrentUnit when a player unit's turn begins
         if (turnOrder == null)
@@ -328,6 +375,14 @@ public class ActionPanelManager : MonoBehaviour
         // This will be called in the next Update() cycle
         // We can force an update by calling UpdatePanelVisibility directly
         UpdatePanelVisibility();
+    }
+    
+    /// <summary>
+    /// Gets whether skill execution is currently in progress
+    /// </summary>
+    public bool IsSkillExecuting()
+    {
+        return isSkillExecuting;
     }
     
     /// <summary>

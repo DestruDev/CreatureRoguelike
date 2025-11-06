@@ -447,6 +447,13 @@ public class SkillPanelManager : MonoBehaviour
         {
             return;
         }
+        
+        // Don't allow skill usage during inspect mode
+        InspectPanelManager inspectPanel = FindFirstObjectByType<InspectPanelManager>();
+        if (inspectPanel != null && inspectPanel.IsInspectMode())
+        {
+            return;
+        }
 
         // Check if unit has this skill
         if (skillIndex < 0 || skillIndex >= currentUnit.Skills.Length || currentUnit.Skills[skillIndex] == null)
