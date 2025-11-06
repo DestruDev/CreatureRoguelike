@@ -27,6 +27,24 @@ public class Selection : MonoBehaviour
     public SpriteRenderer enemyHighlightMarker2;
     public SpriteRenderer enemyHighlightMarker3;
 
+    [Header("Highlight Colors")]
+    [Tooltip("Color for creature highlight markers")]
+    public Color creatureHighlightColor = Color.white;
+    
+    [Tooltip("Transparency/Alpha for creature highlight markers (0 = fully transparent, 1 = fully opaque)")]
+    [Range(0f, 1f)]
+    public float creatureHighlightAlpha = 1f;
+    
+    [Tooltip("Color for enemy highlight markers")]
+    public Color enemyHighlightColor = Color.white;
+    
+    [Tooltip("Transparency/Alpha for enemy highlight markers (0 = fully transparent, 1 = fully opaque)")]
+    [Range(0f, 1f)]
+    public float enemyHighlightAlpha = 1f;
+    
+    // Inspect mode color override (null when not in inspect mode)
+    private Color? inspectModeColor = null;
+
     [Header("Mouse Hover Settings")]
     [Tooltip("Maximum distance for mouse hover detection (in world units)")]
     public float hoverDetectionDistance = 2f;
@@ -874,6 +892,85 @@ public class Selection : MonoBehaviour
             if (marker != null)
             {
                 marker.gameObject.SetActive(active);
+                
+                // Apply color based on whether it's a creature (0-2) or enemy (3-5) marker
+                if (active)
+                {
+                    // Use inspect mode color if set, otherwise use normal colors
+                    if (inspectModeColor.HasValue)
+                    {
+                        Color colorWithAlpha = inspectModeColor.Value;
+                        marker.color = colorWithAlpha;
+                    }
+                    else
+                    {
+                        if (markerIndex < 3)
+                        {
+                            // Creature marker (indices 0-2)
+                            Color colorWithAlpha = creatureHighlightColor;
+                            colorWithAlpha.a = creatureHighlightAlpha;
+                            marker.color = colorWithAlpha;
+                        }
+                        else
+                        {
+                            // Enemy marker (indices 3-5)
+                            Color colorWithAlpha = enemyHighlightColor;
+                            colorWithAlpha.a = enemyHighlightAlpha;
+                            marker.color = colorWithAlpha;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Sets the inspect mode color override (used when in inspect mode)
+    /// </summary>
+    public void SetInspectModeColor(Color color, float alpha)
+    {
+        Color colorWithAlpha = color;
+        colorWithAlpha.a = alpha;
+        inspectModeColor = colorWithAlpha;
+        
+        // Update all currently active markers to use the inspect color
+        foreach (var marker in highlightMarkers)
+        {
+            if (marker != null && marker.gameObject.activeSelf)
+            {
+                marker.color = colorWithAlpha;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Clears the inspect mode color override (restores normal colors)
+    /// </summary>
+    public void ClearInspectModeColor()
+    {
+        inspectModeColor = null;
+        
+        // Update all currently active markers to use normal colors
+        foreach (var marker in highlightMarkers)
+        {
+            if (marker != null && marker.gameObject.activeSelf)
+            {
+                int markerIndex = System.Array.IndexOf(highlightMarkers, marker);
+                if (markerIndex >= 0)
+                {
+                    if (markerIndex < 3)
+                    {
+                        Color colorWithAlpha = creatureHighlightColor;
+                        colorWithAlpha.a = creatureHighlightAlpha;
+                        marker.color = colorWithAlpha;
+                    }
+                    else
+                    {
+                        Color colorWithAlpha = enemyHighlightColor;
+                        colorWithAlpha.a = enemyHighlightAlpha;
+                        marker.color = colorWithAlpha;
+                    }
+                }
             }
         }
     }

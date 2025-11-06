@@ -3243,6 +3243,7 @@ MonoBehaviour:
   - {fileID: 1634257647}
   - {fileID: 609809813}
   - {fileID: 581798702}
+  userPanelRoot: {fileID: 1483408881}
   enemyTurnDelay: 1
   skillAnimationDelay: 1
   hitAnimationDelay: 1
@@ -3357,6 +3358,10 @@ MonoBehaviour:
   enemyHighlightMarker1: {fileID: 1715747833}
   enemyHighlightMarker2: {fileID: 1174290070}
   enemyHighlightMarker3: {fileID: 1464587144}
+  creatureHighlightColor: {r: 0.0817945, g: 1, b: 0, a: 1}
+  creatureHighlightAlpha: 0.3
+  enemyHighlightColor: {r: 1, g: 0, b: 0, a: 1}
+  enemyHighlightAlpha: 0.3
   hoverDetectionDistance: 2
   raycastCamera: {fileID: 519420031}
 --- !u!114 &427498656
@@ -3432,6 +3437,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InspectPanelManager
   InspectPanel: {fileID: 852144410}
   enableInspectFunctionality: 1
+  inspectHighlightColor: {r: 0, g: 1, b: 1, a: 1}
+  inspectHighlightAlpha: 0.3
   InspectName: {fileID: 595094148}
   InspectHP: {fileID: 949897603}
   InspectDefense: {fileID: 12756331}

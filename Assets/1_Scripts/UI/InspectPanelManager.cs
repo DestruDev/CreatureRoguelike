@@ -9,6 +9,14 @@ public class InspectPanelManager : MonoBehaviour
     [Header("Settings")]
     public bool enableInspectFunctionality = true;
     
+    [Header("Inspect Highlight Color")]
+    [Tooltip("Color for highlight markers when in inspect mode (applies to all units)")]
+    public Color inspectHighlightColor = Color.cyan;
+    
+    [Tooltip("Transparency/Alpha for inspect highlight markers (0 = fully transparent, 1 = fully opaque)")]
+    [Range(0f, 1f)]
+    public float inspectHighlightAlpha = 1f;
+    
     [Header("Inspect Info")]
     public TextMeshProUGUI InspectName;
     public TextMeshProUGUI InspectHP;
@@ -146,6 +154,8 @@ public class InspectPanelManager : MonoBehaviour
         if (selection != null)
         {
             selection.SetupUnitSelection(UnitTargetType.AnyAlive);
+            // Set inspect mode color override with alpha
+            selection.SetInspectModeColor(inspectHighlightColor, inspectHighlightAlpha);
         }
         
         // Hide user panel root which contains all UI elements
@@ -175,10 +185,12 @@ public class InspectPanelManager : MonoBehaviour
             InspectPanel.SetActive(false);
         }
         
-        // Clear selection
+        // Clear selection and restore normal colors
         if (selection != null)
         {
             selection.ClearSelection();
+            // Clear inspect mode color override to restore normal colors
+            selection.ClearInspectModeColor();
         }
         
         // Restore action panels

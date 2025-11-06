@@ -847,6 +847,17 @@ public class GameManager : MonoBehaviour
 	{
 		// Hide user panel root which contains all UI elements
 		HideUserPanel();
+		
+		// Also notify ActionPanelManager to set the skill executing flag
+		if (actionPanelManager == null)
+		{
+			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+		}
+		
+		if (actionPanelManager != null)
+		{
+			actionPanelManager.HideAllActionUI();
+		}
 	}
 	
 	/// <summary>
