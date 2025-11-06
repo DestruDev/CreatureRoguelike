@@ -266,10 +266,10 @@ public class InspectPanelManager : MonoBehaviour
             InspectName.text = selectedUnit.UnitName;
         }
         
-        // Update HP
+        // Update HP (only show max health)
         if (InspectHP != null)
         {
-            InspectHP.text = $"HP: {selectedUnit.CurrentHP} / {selectedUnit.MaxHP}";
+            InspectHP.text = $"HP: {selectedUnit.MaxHP}";
         }
         
         // Update Defense
