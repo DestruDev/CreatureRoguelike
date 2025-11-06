@@ -33,7 +33,10 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("Root GameObjects for enemy UI slots (0-2). These will be disabled when the unit dies.")]
     public GameObject[] enemyUIRoots = new GameObject[3];
-    
+
+	 [Header("User Panel UI Root")]
+    public GameObject userPanelRoot;
+	
     private TurnOrder turnOrderRef; // Reference to get spawn indices
 
     [Header("Turn Management")]
@@ -816,20 +819,34 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Hides the user panel root (contains action panel, skill panel, item panel, unit name, end turn button)
+	/// </summary>
+	public void HideUserPanel()
+	{
+		if (userPanelRoot != null)
+		{
+			userPanelRoot.SetActive(false);
+		}
+	}
+	
+	/// <summary>
+	/// Shows the user panel root (contains action panel, skill panel, item panel, unit name, end turn button)
+	/// </summary>
+	public void ShowUserPanel()
+	{
+		if (userPanelRoot != null)
+		{
+			userPanelRoot.SetActive(true);
+		}
+	}
+	
+	/// <summary>
 	/// Hides action UI elements to prevent player input during skill execution
 	/// </summary>
 	private void HideActionUI()
 	{
-		// Hide ActionPanelManager elements
-		if (actionPanelManager == null)
-		{
-			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-		}
-		
-		if (actionPanelManager != null)
-		{
-			actionPanelManager.HideAllActionUI();
-		}
+		// Hide user panel root which contains all UI elements
+		HideUserPanel();
 	}
 	
 	/// <summary>
@@ -837,6 +854,8 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private void ShowActionUI()
 	{
+		// Show user panel root
+		ShowUserPanel();
 		
 		// Show ActionPanelManager elements (they will handle visibility based on current unit)
 		if (actionPanelManager == null)

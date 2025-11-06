@@ -128,13 +128,8 @@ public class ActionPanelManager : MonoBehaviour
         {
             if (!panelsHiddenForGameOver)
             {
-                HideAllPanels();
-                HideEndTurnButton();
-                // Hide UnitNameText when game is over
-                if (UnitNameText != null)
-                {
-                    UnitNameText.gameObject.SetActive(false);
-                }
+                // Hide user panel root which contains all UI elements
+                gameManager.HideUserPanel();
                 panelsHiddenForGameOver = true;
             }
             return; // Don't process further if game is over
@@ -150,18 +145,17 @@ public class ActionPanelManager : MonoBehaviour
         // Update unit name text
         UpdateUnitNameText(currentUnit);
 
-        // If it's an enemy's turn (based on spawn area assignment), hide all panels and EndTurnButton
+        // If it's an enemy's turn (based on spawn area assignment), hide user panel root
         if (currentUnit != null && currentUnit.IsEnemyUnit)
         {
-            HideAllPanels();
-            HideEndTurnButton();
+            gameManager.HideUserPanel();
             lastUnit = currentUnit;
         }
         // If it's a player unit's turn
         else if (currentUnit != null && currentUnit.IsPlayerUnit)
         {
-            // Show EndTurnButton during player unit turns
-            ShowEndTurnButton();
+            // Show user panel root during player unit turns
+            gameManager.ShowUserPanel();
             
             // If this is a different unit from last frame (new turn started), reset to ActionPanel
             bool isNewTurn = lastUnit != currentUnit;
@@ -336,30 +330,15 @@ public class ActionPanelManager : MonoBehaviour
         // Set flag to block UpdatePanelVisibility from showing UI during skill execution
         isSkillExecuting = true;
         
-        // Hide UnitNameText
-        if (UnitNameText != null)
+        // Hide user panel root which contains all UI elements
+        if (gameManager == null)
         {
-            UnitNameText.gameObject.SetActive(false);
+            gameManager = FindFirstObjectByType<GameManager>();
         }
         
-        if (ActionPanel != null)
+        if (gameManager != null)
         {
-            ActionPanel.SetActive(false);
-        }
-        
-        if (SkillsPanel != null)
-        {
-            SkillsPanel.SetActive(false);
-        }
-        
-        if (ItemsPanel != null)
-        {
-            ItemsPanel.SetActive(false);
-        }
-        
-        if (EndTurnButton != null)
-        {
-            EndTurnButton.gameObject.SetActive(false);
+            gameManager.HideUserPanel();
         }
     }
     
@@ -394,21 +373,12 @@ public class ActionPanelManager : MonoBehaviour
         {
             if (currentUnit != null)
             {
-                // Hide text during enemy turns
-                if (currentUnit.IsEnemyUnit)
+                // Update text for creature turns using ScriptableObject name
+                // Note: userPanelRoot visibility is handled by UpdatePanelVisibility()
+                if (currentUnit.IsPlayerUnit)
                 {
-                    UnitNameText.gameObject.SetActive(false);
-                }
-                else
-                {
-                    // Show text and update it for creature turns using ScriptableObject name
-                    UnitNameText.gameObject.SetActive(true);
                     UnitNameText.text = currentUnit.UnitName;
                 }
-            }
-            else
-            {
-                UnitNameText.gameObject.SetActive(false);
             }
         }
     }

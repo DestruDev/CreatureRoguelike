@@ -6,6 +6,9 @@ public class InspectPanelManager : MonoBehaviour
     [Header("Panel")]
     public GameObject InspectPanel;
     
+    [Header("Settings")]
+    public bool enableInspectFunctionality = true;
+    
     [Header("Inspect Info")]
     public TextMeshProUGUI InspectName;
     public TextMeshProUGUI InspectHP;
@@ -44,6 +47,12 @@ public class InspectPanelManager : MonoBehaviour
     
     private void Update()
     {
+        // Only process inspect functionality if enabled
+        if (!enableInspectFunctionality)
+        {
+            return;
+        }
+        
         // Toggle inspect mode with Q key
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -139,11 +148,10 @@ public class InspectPanelManager : MonoBehaviour
             selection.SetupUnitSelection(UnitTargetType.AnyAlive);
         }
         
-        // Hide action panels and disable buttons
-        if (actionPanelManager != null)
+        // Hide user panel root which contains all UI elements
+        if (gameManager != null)
         {
-            actionPanelManager.HideAllPanels();
-            actionPanelManager.HideEndTurnButton();
+            gameManager.HideUserPanel();
         }
         
         // Update display with first selected unit
