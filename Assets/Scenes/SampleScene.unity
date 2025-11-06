@@ -2937,7 +2937,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   turnOrder: {fileID: 427498652}
-  UnitNameText: {fileID: 986892422}
   creatureNameTexts:
   - {fileID: 1786399940}
   - {fileID: 1990006631}
@@ -2991,6 +2990,7 @@ MonoBehaviour:
   SkillsButton: {fileID: 2071272104}
   ItemsButton: {fileID: 490042305}
   EndTurnButton: {fileID: 16570348}
+  UnitNameText: {fileID: 986892422}
 --- !u!114 &427498652
 MonoBehaviour:
   m_ObjectHideFlags: 0

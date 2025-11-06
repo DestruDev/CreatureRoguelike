@@ -13,6 +13,9 @@ public class ActionPanelManager : MonoBehaviour
     public Button SkillsButton;
     public Button ItemsButton;
     public Button EndTurnButton;
+    
+    [Header("Unit Info")]
+    public TextMeshProUGUI UnitNameText;
 
     [Header("References")]
     private GameManager gameManager;
@@ -23,6 +26,9 @@ public class ActionPanelManager : MonoBehaviour
     
     // Track if we're in skill execution mode (to block UI from showing)
     private bool isSkillExecuting = false;
+    
+    // Track if panels have been hidden for game over
+    private bool panelsHiddenForGameOver = false;
 
     private void Start()
     {
@@ -88,8 +94,38 @@ public class ActionPanelManager : MonoBehaviour
             gameManager = FindFirstObjectByType<GameManager>();
             if (gameManager == null) return;
         }
+        
+        // Check if game is over and hide all panels
+        if (turnOrder == null)
+        {
+            turnOrder = FindFirstObjectByType<TurnOrder>();
+        }
+        
+        if (turnOrder != null && turnOrder.IsGameEnded())
+        {
+            if (!panelsHiddenForGameOver)
+            {
+                HideAllPanels();
+                HideEndTurnButton();
+                // Hide UnitNameText when game is over
+                if (UnitNameText != null)
+                {
+                    UnitNameText.gameObject.SetActive(false);
+                }
+                panelsHiddenForGameOver = true;
+            }
+            return; // Don't process further if game is over
+        }
+        else
+        {
+            // Reset flag if game is not over (in case of restart)
+            panelsHiddenForGameOver = false;
+        }
 
         Unit currentUnit = gameManager.GetCurrentUnit();
+        
+        // Update unit name text
+        UpdateUnitNameText(currentUnit);
 
         // If it's an enemy's turn (based on spawn area assignment), hide all panels and EndTurnButton
         if (currentUnit != null && currentUnit.IsEnemyUnit)
@@ -253,6 +289,12 @@ public class ActionPanelManager : MonoBehaviour
         // Set flag to block UpdatePanelVisibility from showing UI during skill execution
         isSkillExecuting = true;
         
+        // Hide UnitNameText
+        if (UnitNameText != null)
+        {
+            UnitNameText.gameObject.SetActive(false);
+        }
+        
         if (ActionPanel != null)
         {
             ActionPanel.SetActive(false);
@@ -286,5 +328,33 @@ public class ActionPanelManager : MonoBehaviour
         // This will be called in the next Update() cycle
         // We can force an update by calling UpdatePanelVisibility directly
         UpdatePanelVisibility();
+    }
+    
+    /// <summary>
+    /// Updates the UnitNameText UI with the current unit's name
+    /// </summary>
+    private void UpdateUnitNameText(Unit currentUnit)
+    {
+        if (UnitNameText != null)
+        {
+            if (currentUnit != null)
+            {
+                // Hide text during enemy turns
+                if (currentUnit.IsEnemyUnit)
+                {
+                    UnitNameText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    // Show text and update it for creature turns using ScriptableObject name
+                    UnitNameText.gameObject.SetActive(true);
+                    UnitNameText.text = currentUnit.UnitName;
+                }
+            }
+            else
+            {
+                UnitNameText.gameObject.SetActive(false);
+            }
+        }
     }
 }

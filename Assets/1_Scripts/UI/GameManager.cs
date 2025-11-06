@@ -7,9 +7,6 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     public TurnOrder turnOrder;
 
-	[Header("Unit Info")]
-    public TextMeshProUGUI UnitNameText;
-    
 	[Header("Creature Status UI (3 units)")]
     [Tooltip("Creature name text displays (index 0-2 correspond to creature 1-3)")]
     public TextMeshProUGUI[] creatureNameTexts = new TextMeshProUGUI[3];
@@ -191,7 +188,6 @@ public class GameManager : MonoBehaviour
 		}
 		
 		currentUnit = unit;
-		UpdateUnitNameText();
 		UpdateSkillPanel();
 		
 		// If it's an enemy's turn (based on spawn area assignment), automatically process their turn
@@ -449,33 +445,6 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Updates the UnitNameText UI with the current unit's name
-	/// </summary>
-	private void UpdateUnitNameText()
-	{
-		if (UnitNameText != null)
-		{
-			if (currentUnit != null)
-			{
-				// Hide text during enemy turns
-				if (currentUnit.IsEnemyUnit)
-				{
-					UnitNameText.gameObject.SetActive(false);
-				}
-				else
-				{
-					// Show text and update it for creature turns using ScriptableObject name
-					UnitNameText.gameObject.SetActive(true);
-					UnitNameText.text = currentUnit.UnitName;
-				}
-			}
-			else
-			{
-				UnitNameText.gameObject.SetActive(false);
-			}
-		}
-	}
 
 	/// <summary>
 	/// Gets the current unit whose turn it is
@@ -851,12 +820,6 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private void HideActionUI()
 	{
-		// Hide UnitNameText
-		if (UnitNameText != null)
-		{
-			UnitNameText.gameObject.SetActive(false);
-		}
-		
 		// Hide ActionPanelManager elements
 		if (actionPanelManager == null)
 		{
@@ -874,8 +837,6 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private void ShowActionUI()
 	{
-		// Show UnitNameText based on current unit
-		UpdateUnitNameText();
 		
 		// Show ActionPanelManager elements (they will handle visibility based on current unit)
 		if (actionPanelManager == null)
