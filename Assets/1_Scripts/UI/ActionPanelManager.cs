@@ -13,6 +13,7 @@ public class ActionPanelManager : MonoBehaviour
     public Button SkillsButton;
     public Button ItemsButton;
     public Button EndTurnButton;
+    public Button BackButton;
     
     [Header("Unit Info")]
     public TextMeshProUGUI UnitNameText;
@@ -60,6 +61,11 @@ public class ActionPanelManager : MonoBehaviour
         {
             EndTurnButton.onClick.AddListener(EndTurn);
         }
+        
+        if (BackButton != null)
+        {
+            BackButton.onClick.AddListener(OnBackButtonClicked);
+        }
     }
 
     private void Update()
@@ -73,16 +79,11 @@ public class ActionPanelManager : MonoBehaviour
         // Check for ESC key press or right-click to return to ActionPanel
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
         {
-            // If SkillsPanel or ItemsPanel is active, return to ActionPanel
-            if (SkillsPanel != null && SkillsPanel.activeSelf)
-            {
-                ShowActionPanel();
-            }
-            else if (ItemsPanel != null && ItemsPanel.activeSelf)
-            {
-                ShowActionPanel();
-            }
+            GoBackToActionPanel();
         }
+        
+        // Update back button visibility
+        UpdateBackButtonVisibility();
 
         // Hide ActionPanel during enemy turns
         UpdatePanelVisibility();
@@ -197,6 +198,11 @@ public class ActionPanelManager : MonoBehaviour
         {
             EndTurnButton.onClick.RemoveListener(EndTurn);
         }
+        
+        if (BackButton != null)
+        {
+            BackButton.onClick.RemoveListener(OnBackButtonClicked);
+        }
     }
 
     public void ShowActionPanel()
@@ -215,6 +221,9 @@ public class ActionPanelManager : MonoBehaviour
         {
             ActionPanel.SetActive(true);
         }
+        
+        // Update back button visibility
+        UpdateBackButtonVisibility();
     }
 
     public void ShowSkillsPanel()
@@ -233,6 +242,9 @@ public class ActionPanelManager : MonoBehaviour
         {
             SkillsPanel.SetActive(true);
         }
+        
+        // Update back button visibility
+        UpdateBackButtonVisibility();
     }
 
     public void ShowItemsPanel()
@@ -258,6 +270,9 @@ public class ActionPanelManager : MonoBehaviour
         {
             itemPanelManager.UpdateItems();
         }
+        
+        // Update back button visibility
+        UpdateBackButtonVisibility();
     }
 
     public void HideAllPanels()
@@ -277,6 +292,47 @@ public class ActionPanelManager : MonoBehaviour
         {
             ItemsPanel.SetActive(false);
         }
+        
+        // Update back button visibility
+        UpdateBackButtonVisibility();
+    }
+    
+    /// <summary>
+    /// Called when the back button is clicked - returns to ActionPanel
+    /// </summary>
+    private void OnBackButtonClicked()
+    {
+        GoBackToActionPanel();
+    }
+    
+    /// <summary>
+    /// Returns to ActionPanel from SkillsPanel or ItemsPanel (same as ESC/right-click)
+    /// </summary>
+    private void GoBackToActionPanel()
+    {
+        // If SkillsPanel or ItemsPanel is active, return to ActionPanel
+        if (SkillsPanel != null && SkillsPanel.activeSelf)
+        {
+            ShowActionPanel();
+        }
+        else if (ItemsPanel != null && ItemsPanel.activeSelf)
+        {
+            ShowActionPanel();
+        }
+    }
+    
+    /// <summary>
+    /// Updates the back button visibility - only show when SkillsPanel or ItemsPanel is active
+    /// </summary>
+    private void UpdateBackButtonVisibility()
+    {
+        if (BackButton == null) return;
+        
+        // Show back button only when SkillsPanel or ItemsPanel is active
+        bool shouldShow = (SkillsPanel != null && SkillsPanel.activeSelf) || 
+                         (ItemsPanel != null && ItemsPanel.activeSelf);
+        
+        BackButton.gameObject.SetActive(shouldShow);
     }
     
     /// <summary>
