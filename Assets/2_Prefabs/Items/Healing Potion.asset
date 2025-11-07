@@ -20,3 +20,5 @@ MonoBehaviour:
   icon: {fileID: 1764758472, guid: ae2c6821683db024e9aaaa3c70f68f6a, type: 3}
   itemType: 0
   consumableSubtype: 0
+  healAmount: 50
+  targetType: 1

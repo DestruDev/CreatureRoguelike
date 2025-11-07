@@ -251,6 +251,13 @@ public class ActionPanelManager : MonoBehaviour
         {
             ItemsPanel.SetActive(true);
         }
+        
+        // Update item panel display
+        ItemPanelManager itemPanelManager = FindFirstObjectByType<ItemPanelManager>();
+        if (itemPanelManager != null)
+        {
+            itemPanelManager.UpdateItems();
+        }
     }
 
     public void HideAllPanels()

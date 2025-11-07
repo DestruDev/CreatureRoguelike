@@ -10,6 +10,7 @@ public class ItemEditor : Editor
     private SerializedProperty iconProperty;
     private SerializedProperty itemTypeProperty;
     private SerializedProperty consumableSubtypeProperty;
+    private SerializedProperty healAmountProperty;
     private SerializedProperty targetTypeProperty;
     
     private void OnEnable()
@@ -20,6 +21,7 @@ public class ItemEditor : Editor
         iconProperty = serializedObject.FindProperty("icon");
         itemTypeProperty = serializedObject.FindProperty("itemType");
         consumableSubtypeProperty = serializedObject.FindProperty("consumableSubtype");
+        healAmountProperty = serializedObject.FindProperty("healAmount");
         targetTypeProperty = serializedObject.FindProperty("targetType");
     }
     
@@ -48,6 +50,14 @@ public class ItemEditor : Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Consumable Subtype", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(consumableSubtypeProperty);
+            
+            // Only show heal amount when subtype is Heal
+            if (item.consumableSubtype == ConsumableSubtype.Heal)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Item Effects", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(healAmountProperty);
+            }
             
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Targeting", EditorStyles.boldLabel);

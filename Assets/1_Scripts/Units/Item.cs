@@ -21,6 +21,10 @@ public class Item : ScriptableObject
     [Tooltip("Subtype for consumable items")]
     public ConsumableSubtype consumableSubtype = ConsumableSubtype.Heal;
     
+    [Header("Item Effects")]
+    [Tooltip("Heal amount (only used when consumableSubtype is Heal)")]
+    public int healAmount = 10;
+    
     [Header("Targeting")]
     [Tooltip("Target type for consumable items (auto-set based on subtype)")]
     public SkillTargetType targetType = SkillTargetType.Ally;
