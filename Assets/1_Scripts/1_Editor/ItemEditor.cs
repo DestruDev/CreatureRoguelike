@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 
@@ -82,4 +83,5 @@ public class ItemEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 }
+#endif
 

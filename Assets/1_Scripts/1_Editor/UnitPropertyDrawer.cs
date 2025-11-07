@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 
@@ -110,3 +111,4 @@ public class UnitEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 }
+#endif
