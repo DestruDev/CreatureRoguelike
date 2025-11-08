@@ -22,6 +22,7 @@ public class ActionPanelManager : MonoBehaviour
     private GameManager gameManager;
     private TurnOrder turnOrder;
     private InspectPanelManager inspectPanelManager;
+    private Selection selection;
     
     // Track the last unit to detect when a new turn starts
     private Unit lastUnit = null;
@@ -31,6 +32,9 @@ public class ActionPanelManager : MonoBehaviour
     
     // Track if panels have been hidden for game over
     private bool panelsHiddenForGameOver = false;
+    
+    // Track if we're in button selection mode
+    private bool isButtonSelectionMode = false;
 
     private void Start()
     {
@@ -42,6 +46,9 @@ public class ActionPanelManager : MonoBehaviour
         
         // Find InspectPanelManager
         inspectPanelManager = FindFirstObjectByType<InspectPanelManager>();
+        
+        // Find Selection
+        selection = FindFirstObjectByType<Selection>();
 
         // Set initial state - only ActionPanel visible
         ShowActionPanel();
@@ -66,6 +73,12 @@ public class ActionPanelManager : MonoBehaviour
         {
             BackButton.onClick.AddListener(OnBackButtonClicked);
         }
+        
+        // Subscribe to selection changes
+        if (selection != null)
+        {
+            selection.OnSelectionChanged += OnButtonSelectionChanged;
+        }
     }
 
     private void Update()
@@ -80,6 +93,12 @@ public class ActionPanelManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
         {
             GoBackToActionPanel();
+        }
+        
+        // Handle button selection mode input
+        if (isButtonSelectionMode && ActionPanel != null && ActionPanel.activeSelf)
+        {
+            HandleButtonSelectionInput();
         }
         
         // Update back button visibility
@@ -203,6 +222,12 @@ public class ActionPanelManager : MonoBehaviour
         {
             BackButton.onClick.RemoveListener(OnBackButtonClicked);
         }
+        
+        // Unsubscribe from selection changes
+        if (selection != null)
+        {
+            selection.OnSelectionChanged -= OnButtonSelectionChanged;
+        }
     }
 
     public void ShowActionPanel()
@@ -222,6 +247,9 @@ public class ActionPanelManager : MonoBehaviour
             ActionPanel.SetActive(true);
         }
         
+        // Enable button selection mode
+        EnableButtonSelectionMode();
+        
         // Update back button visibility
         UpdateBackButtonVisibility();
     }
@@ -233,6 +261,9 @@ public class ActionPanelManager : MonoBehaviour
         {
             return;
         }
+        
+        // Disable button selection mode when leaving ActionPanel
+        DisableButtonSelectionMode();
         
         // Hide all panels first
         HideAllPanels();
@@ -254,6 +285,9 @@ public class ActionPanelManager : MonoBehaviour
         {
             return;
         }
+        
+        // Disable button selection mode when leaving ActionPanel
+        DisableButtonSelectionMode();
         
         // Hide all panels first
         HideAllPanels();
@@ -277,6 +311,9 @@ public class ActionPanelManager : MonoBehaviour
 
     public void HideAllPanels()
     {
+        // Disable button selection mode when hiding panels
+        DisableButtonSelectionMode();
+        
         // Hide all panels to ensure only one is visible at a time
         if (ActionPanel != null)
         {
@@ -445,4 +482,142 @@ public class ActionPanelManager : MonoBehaviour
             }
         }
     }
+    
+    #region Button Selection Mode
+    
+    /// <summary>
+    /// Enables button selection mode for cycling between SkillsButton and ItemsButton
+    /// </summary>
+    private void EnableButtonSelectionMode()
+    {
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+            if (selection == null)
+            {
+                Debug.LogWarning("ActionPanelManager: Selection component not found. Button selection mode disabled.");
+                return;
+            }
+        }
+        
+        isButtonSelectionMode = true;
+        
+        // Set up selection with the two buttons
+        Button[] buttons = new Button[] { SkillsButton, ItemsButton };
+        selection.SetSelection(buttons, SelectionType.UIButtons);
+        
+        // Update markers based on initial selection
+        UpdateButtonSelectionMarkers();
+    }
+    
+    /// <summary>
+    /// Disables button selection mode
+    /// </summary>
+    private void DisableButtonSelectionMode()
+    {
+        isButtonSelectionMode = false;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+            selection.HideAllUISelectionMarkers();
+        }
+    }
+    
+    /// <summary>
+    /// Handles input for button selection mode (arrow keys/WASD to cycle, Enter/Space to activate)
+    /// </summary>
+    private void HandleButtonSelectionInput()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        // Cycle with arrow keys or WASD (W/A = previous, S/D = next)
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.UpArrow) || 
+            Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A))
+        {
+            selection.Previous();
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.DownArrow) || 
+                 Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D))
+        {
+            selection.Next();
+        }
+        
+        // Activate selected button with Enter or Space
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        {
+            ActivateSelectedButton();
+        }
+    }
+    
+    /// <summary>
+    /// Activates the currently selected button
+    /// </summary>
+    private void ActivateSelectedButton()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        object selectedItem = selection.CurrentSelection;
+        if (selectedItem is Button button)
+        {
+            if (button == SkillsButton)
+            {
+                ShowSkillsPanel();
+            }
+            else if (button == ItemsButton)
+            {
+                ShowItemsPanel();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Called when button selection changes - updates the visual markers
+    /// </summary>
+    private void OnButtonSelectionChanged(object selectedItem)
+    {
+        if (!isButtonSelectionMode || selection == null)
+            return;
+        
+        UpdateButtonSelectionMarkers();
+    }
+    
+    /// <summary>
+    /// Updates the visual markers based on current button selection
+    /// </summary>
+    private void UpdateButtonSelectionMarkers()
+    {
+        if (selection == null)
+            return;
+        
+        // Hide all markers first
+        selection.HideAllUISelectionMarkers();
+        
+        // Show marker for currently selected button
+        if (selection.IsValidSelection())
+        {
+            object selectedItem = selection.CurrentSelection;
+            if (selectedItem is Button button)
+            {
+                int markerIndex = -1;
+                if (button == SkillsButton)
+                {
+                    markerIndex = 0; // SelectMarker1 for SkillsButton
+                }
+                else if (button == ItemsButton)
+                {
+                    markerIndex = 1; // SelectMarker2 for ItemsButton
+                }
+                
+                if (markerIndex >= 0)
+                {
+                    selection.SetUISelectionMarker(markerIndex, true);
+                }
+            }
+        }
+    }
+    
+    #endregion
 }

@@ -45,6 +45,11 @@ public class Selection : MonoBehaviour
     // Inspect mode color override (null when not in inspect mode)
     private Color? inspectModeColor = null;
 
+    [Header("UI Selection Markers")]
+    [Tooltip("GameObjects for highlighting UI button selections")]
+    public GameObject SelectMarker1;
+    public GameObject SelectMarker2;
+
     [Header("Mouse Hover Settings")]
     [Tooltip("Maximum distance for mouse hover detection (in world units)")]
     public float hoverDetectionDistance = 2f;
@@ -118,6 +123,16 @@ public class Selection : MonoBehaviour
             {
                 marker.gameObject.SetActive(false);
             }
+        }
+        
+        // Initially disable UI selection markers
+        if (SelectMarker1 != null)
+        {
+            SelectMarker1.SetActive(false);
+        }
+        if (SelectMarker2 != null)
+        {
+            SelectMarker2.SetActive(false);
         }
         
         // Find camera if not assigned
@@ -1003,6 +1018,48 @@ public class Selection : MonoBehaviour
     }
 
     #endregion
+
+    #region UI Selection Markers
+
+    /// <summary>
+    /// Shows or hides the UI selection marker at the specified index (0 or 1)
+    /// </summary>
+    /// <param name="markerIndex">Index of the marker (0 for SelectMarker1, 1 for SelectMarker2)</param>
+    /// <param name="active">Whether to show (true) or hide (false) the marker</param>
+    public void SetUISelectionMarker(int markerIndex, bool active)
+    {
+        GameObject marker = null;
+        if (markerIndex == 0)
+        {
+            marker = SelectMarker1;
+        }
+        else if (markerIndex == 1)
+        {
+            marker = SelectMarker2;
+        }
+
+        if (marker != null)
+        {
+            marker.SetActive(active);
+        }
+    }
+
+    /// <summary>
+    /// Hides all UI selection markers
+    /// </summary>
+    public void HideAllUISelectionMarkers()
+    {
+        if (SelectMarker1 != null)
+        {
+            SelectMarker1.SetActive(false);
+        }
+        if (SelectMarker2 != null)
+        {
+            SelectMarker2.SetActive(false);
+        }
+    }
+
+    #endregion
 }
 
 #region Enums
@@ -1030,6 +1087,7 @@ public enum SelectionType
     Units,
     Skills,
     Items,
+    UIButtons,
     Generic
 }
 
