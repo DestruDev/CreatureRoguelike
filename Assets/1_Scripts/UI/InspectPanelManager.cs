@@ -201,12 +201,12 @@ public class InspectPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Handles navigation in inspect mode (arrow keys/WASD, ESC/right-click to exit)
+    /// Handles navigation in inspect mode (arrow keys/WASD, ESC/right-click/X to exit)
     /// </summary>
     private void HandleInspectNavigation()
     {
-        // Exit with ESC or right-click
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+        // Exit with ESC, right-click, or X key
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.X))
         {
             ExitInspectMode();
             return;
