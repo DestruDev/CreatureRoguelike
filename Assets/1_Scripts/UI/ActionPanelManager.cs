@@ -90,9 +90,18 @@ public class ActionPanelManager : MonoBehaviour
         }
         
         // Check for ESC key press or right-click to return to ActionPanel
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.X))
         {
             GoBackToActionPanel();
+        }
+        
+        // Check for E key to end turn (only when ActionPanel is active)
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (ActionPanel != null && ActionPanel.activeSelf)
+            {
+                EndTurn();
+            }
         }
         
         // Handle button selection mode input
@@ -262,6 +271,12 @@ public class ActionPanelManager : MonoBehaviour
             return;
         }
         
+        // If SkillsPanel is already shown, don't do anything (prevent hiding it)
+        if (SkillsPanel != null && SkillsPanel.activeSelf)
+        {
+            return;
+        }
+        
         // Disable button selection mode when leaving ActionPanel
         DisableButtonSelectionMode();
         
@@ -274,6 +289,16 @@ public class ActionPanelManager : MonoBehaviour
             SkillsPanel.SetActive(true);
         }
         
+        // Enable button selection mode for skill buttons
+        SkillPanelManager skillPanelManager = FindFirstObjectByType<SkillPanelManager>();
+        if (skillPanelManager != null)
+        {
+            // Update skills first to ensure buttons are properly set up
+            skillPanelManager.UpdateSkills();
+            // Then enable button selection
+            skillPanelManager.EnableButtonSelectionMode();
+        }
+        
         // Update back button visibility
         UpdateBackButtonVisibility();
     }
@@ -282,6 +307,12 @@ public class ActionPanelManager : MonoBehaviour
     {
         // Don't allow if in inspect mode
         if (IsInInspectMode())
+        {
+            return;
+        }
+        
+        // If ItemsPanel is already shown, don't do anything (prevent hiding it)
+        if (ItemsPanel != null && ItemsPanel.activeSelf)
         {
             return;
         }
@@ -298,11 +329,12 @@ public class ActionPanelManager : MonoBehaviour
             ItemsPanel.SetActive(true);
         }
         
-        // Update item panel display
+        // Update item panel display and enable button selection
         ItemPanelManager itemPanelManager = FindFirstObjectByType<ItemPanelManager>();
         if (itemPanelManager != null)
         {
             itemPanelManager.UpdateItems();
+            itemPanelManager.EnableButtonSelectionMode();
         }
         
         // Update back button visibility
@@ -313,6 +345,17 @@ public class ActionPanelManager : MonoBehaviour
     {
         // Disable button selection mode when hiding panels
         DisableButtonSelectionMode();
+        
+        // Clear selection to hide selection markers when panels are hidden
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+        }
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
         
         // Hide all panels to ensure only one is visible at a time
         if (ActionPanel != null)
@@ -347,6 +390,29 @@ public class ActionPanelManager : MonoBehaviour
     /// </summary>
     private void GoBackToActionPanel()
     {
+        // First, cancel any active selection modes (target selection)
+        SkillPanelManager skillPanelManager = FindFirstObjectByType<SkillPanelManager>();
+        if (skillPanelManager != null && skillPanelManager.IsInSelectionMode())
+        {
+            skillPanelManager.CancelSelectionModePublic();
+            // Don't return to ActionPanel if we're still in SkillsPanel
+            if (SkillsPanel != null && SkillsPanel.activeSelf)
+            {
+                return; // Stay in SkillsPanel, just cancel target selection
+            }
+        }
+        
+        ItemPanelManager itemPanelManager = FindFirstObjectByType<ItemPanelManager>();
+        if (itemPanelManager != null && itemPanelManager.IsInSelectionMode())
+        {
+            itemPanelManager.CancelSelectionModePublic();
+            // Don't return to ActionPanel if we're still in ItemsPanel
+            if (ItemsPanel != null && ItemsPanel.activeSelf)
+            {
+                return; // Stay in ItemsPanel, just cancel target selection
+            }
+        }
+        
         // If SkillsPanel or ItemsPanel is active, return to ActionPanel
         if (SkillsPanel != null && SkillsPanel.activeSelf)
         {
@@ -405,6 +471,18 @@ public class ActionPanelManager : MonoBehaviour
             return;
         }
         
+        // Don't allow if ActionPanel is not active (animations may be playing)
+        if (ActionPanel == null || !ActionPanel.activeSelf)
+        {
+            return;
+        }
+        
+        // Don't allow if skill execution is in progress
+        if (IsSkillExecuting())
+        {
+            return;
+        }
+        
         // Advance to next turn (this will reset the gauge)
         // Note: StartTurn is now called in GameManager.SetCurrentUnit when a player unit's turn begins
         if (turnOrder == null)
@@ -429,6 +507,17 @@ public class ActionPanelManager : MonoBehaviour
     {
         // Set flag to block UpdatePanelVisibility from showing UI during skill execution
         isSkillExecuting = true;
+        
+        // Clear selection to hide selection markers during animations
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+        }
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
         
         // Hide user panel root which contains all UI elements
         if (gameManager == null)
@@ -525,21 +614,20 @@ public class ActionPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Handles input for button selection mode (arrow keys/WASD to cycle, Enter/Space to activate)
+    /// Handles input for button selection mode (Left/Right arrows or A/D to cycle, Enter/Space to activate)
     /// </summary>
     private void HandleButtonSelectionInput()
     {
         if (selection == null || !selection.IsValidSelection())
             return;
         
-        // Cycle with arrow keys or WASD (W/A = previous, S/D = next)
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.UpArrow) || 
-            Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A))
+        // Cycle with Left/Right arrow keys or A/D (A = previous, D = next)
+        // Up/Down and W/S are disabled for horizontal button navigation
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {
             selection.Previous();
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.DownArrow) || 
-                 Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D))
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
         {
             selection.Next();
         }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 
@@ -15,40 +16,12 @@ public class Selection : MonoBehaviour
     [Tooltip("Allow selecting nothing (selection index = -1)")]
     public bool allowNoSelection = false;
 
-    [Header("Creature Highlight Markers")]
-    [Tooltip("Sprite renderers for highlighting creature units (player units)")]
-    public SpriteRenderer creatureHighlightMarker1;
-    public SpriteRenderer creatureHighlightMarker2;
-    public SpriteRenderer creatureHighlightMarker3;
-
-    [Header("Enemy Highlight Markers")]
-    [Tooltip("Sprite renderers for highlighting enemy units")]
-    public SpriteRenderer enemyHighlightMarker1;
-    public SpriteRenderer enemyHighlightMarker2;
-    public SpriteRenderer enemyHighlightMarker3;
-
-    [Header("Highlight Colors")]
-    [Tooltip("Color for creature highlight markers")]
-    public Color creatureHighlightColor = Color.white;
+    [Header("Simple Selection Marker")]
+    [Tooltip("UI Image prefab to instantiate as a selection marker (should be a square UI Image)")]
+    public GameObject SimpleSelectionMarker;
     
-    [Tooltip("Transparency/Alpha for creature highlight markers (0 = fully transparent, 1 = fully opaque)")]
-    [Range(0f, 1f)]
-    public float creatureHighlightAlpha = 1f;
-    
-    [Tooltip("Color for enemy highlight markers")]
-    public Color enemyHighlightColor = Color.white;
-    
-    [Tooltip("Transparency/Alpha for enemy highlight markers (0 = fully transparent, 1 = fully opaque)")]
-    [Range(0f, 1f)]
-    public float enemyHighlightAlpha = 1f;
-    
-    // Inspect mode color override (null when not in inspect mode)
-    private Color? inspectModeColor = null;
-
-    [Header("UI Selection Markers")]
-    [Tooltip("GameObjects for highlighting UI button selections")]
-    public GameObject SelectMarker1;
-    public GameObject SelectMarker2;
+    [Tooltip("Canvas to parent the selection markers to (if null, will try to find one automatically)")]
+    public Canvas markerCanvas;
 
     [Header("Mouse Hover Settings")]
     [Tooltip("Maximum distance for mouse hover detection (in world units)")]
@@ -66,17 +39,14 @@ public class Selection : MonoBehaviour
     // Selection type to determine behavior
     private SelectionType currentSelectionType = SelectionType.Units;
     
-    // Highlight markers array
-    private SpriteRenderer[] highlightMarkers;
-    
-    // Mapping of units to their highlight marker indices
-    private Dictionary<Unit, int> unitToMarkerIndex = new Dictionary<Unit, int>();
-    
     // Currently hovered unit (from mouse)
     private Unit hoveredUnit = null;
     
     // Currently selected unit (from keyboard navigation)
     private Unit selectedUnit = null;
+    
+    // Dictionary to track instantiated selection markers for each selectable item
+    private Dictionary<object, GameObject> selectionMarkers = new Dictionary<object, GameObject>();
 
     // Events
     public event Action<object> OnSelectionChanged; // Called when selection changes (passes selected item)
@@ -108,41 +78,17 @@ public class Selection : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // Initialize highlight markers array
-        // Indices 0-2: Creatures, Indices 3-5: Enemies
-        highlightMarkers = new SpriteRenderer[]
-        {
-            creatureHighlightMarker1, creatureHighlightMarker2, creatureHighlightMarker3,
-            enemyHighlightMarker1, enemyHighlightMarker2, enemyHighlightMarker3
-        };
-        
-        // Initially disable all highlight markers
-        foreach (var marker in highlightMarkers)
-        {
-            if (marker != null)
-            {
-                marker.gameObject.SetActive(false);
-            }
-        }
-        
-        // Initially disable UI selection markers
-        if (SelectMarker1 != null)
-        {
-            SelectMarker1.SetActive(false);
-        }
-        if (SelectMarker2 != null)
-        {
-            SelectMarker2.SetActive(false);
-        }
-        
         // Find camera if not assigned
         if (raycastCamera == null)
         {
             raycastCamera = Camera.main;
         }
         
-        // Build unit to marker index mapping
-        BuildUnitMarkerMapping();
+        // Find canvas if not assigned
+        if (markerCanvas == null)
+        {
+            markerCanvas = FindFirstObjectByType<Canvas>();
+        }
     }
 
     // Update is called once per frame
@@ -161,6 +107,16 @@ public class Selection : MonoBehaviour
                 ClearHoverHighlight();
             }
         }
+        
+        // Update simple selection marker position (in case object moved)
+        if (SimpleSelectionMarker != null && IsValidSelection())
+        {
+            object selectedItem = selectableItems[currentIndex];
+            if (selectedItem != null && selectionMarkers.ContainsKey(selectedItem))
+            {
+                UpdateSimpleSelectionMarker(selectedItem);
+            }
+        }
     }
 
     #region Unit Selection
@@ -174,9 +130,6 @@ public class Selection : MonoBehaviour
     public void SetupUnitSelection(UnitTargetType targetType, Unit caster = null, Skill skill = null)
     {
         List<Unit> validUnits = GetValidUnits(targetType, caster, skill);
-        
-        // Rebuild unit marker mapping BEFORE setting selection (so highlights can work immediately)
-        RebuildUnitMarkerMapping();
         
         // Clear any existing hover (but not keyboard selection)
         hoveredUnit = null;
@@ -423,6 +376,9 @@ public class Selection : MonoBehaviour
         // Clear both hover and keyboard selection highlights
         ClearHoverHighlight();
         
+        // Clear all simple selection markers
+        ClearAllSimpleSelectionMarkers();
+        
         NotifySelectionChanged();
     }
 
@@ -586,33 +542,10 @@ public class Selection : MonoBehaviour
             OnSelectionChanged?.Invoke(null);
         }
         
-        // Update highlight markers for keyboard-selected unit
-        if (currentSelectionType == SelectionType.Units)
-        {
-            UpdateKeyboardSelectionHighlight(previousSelectedUnit, selectedUnit);
-        }
+        // Update simple selection markers
+        UpdateSimpleSelectionMarkers();
     }
     
-    /// <summary>
-    /// Updates highlight markers based on keyboard selection
-    /// </summary>
-    private void UpdateKeyboardSelectionHighlight(Unit previousUnit, Unit newUnit)
-    {
-        // Clear previous selection highlight (only if it's different from the new one and not being hovered)
-        if (previousUnit != null && previousUnit != newUnit && previousUnit != hoveredUnit)
-        {
-            SetHighlightMarkerForUnit(previousUnit, false);
-        }
-        
-        // Set new selection highlight
-        // If it's being hovered, the hover highlight will handle it, but we still want it active
-        // So we always set it to true for the selected unit
-        if (newUnit != null)
-        {
-            SetHighlightMarkerForUnit(newUnit, true);
-        }
-    }
-
     #endregion
 
     #region Utility
@@ -667,43 +600,10 @@ public class Selection : MonoBehaviour
 
     #endregion
 
-    #region Mouse Hover Highlighting
+    #region Mouse Hover Tracking
 
     /// <summary>
-    /// Builds a mapping between units and their highlight marker indices
-    /// </summary>
-    private void BuildUnitMarkerMapping()
-    {
-        unitToMarkerIndex.Clear();
-        
-        // Get all units in the scene
-        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        
-        // Find TurnOrder to get spawn indices (similar to how GameManager does it)
-        TurnOrder turnOrder = FindFirstObjectByType<TurnOrder>();
-        if (turnOrder == null)
-        {
-            Debug.LogWarning("Selection: TurnOrder not found. Cannot build unit marker mapping.");
-            return;
-        }
-        
-        // Map units to indices (0-5) based on spawn position
-        for (int i = 0; i < allUnits.Length; i++)
-        {
-            Unit unit = allUnits[i];
-            if (unit == null) continue;
-            
-            // Try to get spawn index from TurnOrder
-            int spawnIndex = GetUnitSpawnIndex(unit);
-            if (spawnIndex >= 0 && spawnIndex < 6)
-            {
-                unitToMarkerIndex[unit] = spawnIndex;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the spawn index (0-5) for a unit
+    /// Gets the spawn index (0-5) for a unit (used for sorting)
     /// </summary>
     private int GetUnitSpawnIndex(Unit unit)
     {
@@ -767,7 +667,7 @@ public class Selection : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates mouse hover highlight based on which unit the mouse is over
+    /// Updates mouse hover tracking based on which unit the mouse is over
     /// </summary>
     private void UpdateMouseHoverHighlight()
     {
@@ -780,41 +680,8 @@ public class Selection : MonoBehaviour
         
         Unit newHoveredUnit = GetUnitUnderMouse();
         
-        // If hovered unit changed, update highlights
-        if (newHoveredUnit != hoveredUnit)
-        {
-            // Clear previous hover (only if it's not the currently selected unit)
-            if (hoveredUnit != null && hoveredUnit != selectedUnit)
-            {
-                SetHighlightMarkerForUnit(hoveredUnit, false);
-            }
-            
-            hoveredUnit = newHoveredUnit;
-            
-            // Set new hover (only if it's not already selected via keyboard)
-            if (hoveredUnit != null)
-            {
-                // Only highlight if this unit is in the selectable items list
-                if (IsUnitSelectable(hoveredUnit))
-                {
-                    // Only highlight if it's not already highlighted by keyboard selection
-                    if (hoveredUnit != selectedUnit)
-                    {
-                        SetHighlightMarkerForUnit(hoveredUnit, true);
-                    }
-                }
-                else
-                {
-                    hoveredUnit = null; // Don't highlight non-selectable units
-                }
-            }
-        }
-        
-        // Make sure the currently selected unit is always highlighted
-        if (selectedUnit != null)
-        {
-            SetHighlightMarkerForUnit(selectedUnit, true);
-        }
+        // Update hovered unit tracking
+        hoveredUnit = newHoveredUnit;
     }
 
     /// <summary>
@@ -893,128 +760,12 @@ public class Selection : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets the highlight marker for a unit active or inactive
-    /// </summary>
-    private void SetHighlightMarkerForUnit(Unit unit, bool active)
-    {
-        if (unit == null || !unitToMarkerIndex.ContainsKey(unit))
-            return;
-        
-        int markerIndex = unitToMarkerIndex[unit];
-        if (markerIndex >= 0 && markerIndex < highlightMarkers.Length)
-        {
-            SpriteRenderer marker = highlightMarkers[markerIndex];
-            if (marker != null)
-            {
-                marker.gameObject.SetActive(active);
-                
-                // Apply color based on whether it's a creature (0-2) or enemy (3-5) marker
-                if (active)
-                {
-                    // Use inspect mode color if set, otherwise use normal colors
-                    if (inspectModeColor.HasValue)
-                    {
-                        Color colorWithAlpha = inspectModeColor.Value;
-                        marker.color = colorWithAlpha;
-                    }
-                    else
-                    {
-                        if (markerIndex < 3)
-                        {
-                            // Creature marker (indices 0-2)
-                            Color colorWithAlpha = creatureHighlightColor;
-                            colorWithAlpha.a = creatureHighlightAlpha;
-                            marker.color = colorWithAlpha;
-                        }
-                        else
-                        {
-                            // Enemy marker (indices 3-5)
-                            Color colorWithAlpha = enemyHighlightColor;
-                            colorWithAlpha.a = enemyHighlightAlpha;
-                            marker.color = colorWithAlpha;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Sets the inspect mode color override (used when in inspect mode)
-    /// </summary>
-    public void SetInspectModeColor(Color color, float alpha)
-    {
-        Color colorWithAlpha = color;
-        colorWithAlpha.a = alpha;
-        inspectModeColor = colorWithAlpha;
-        
-        // Update all currently active markers to use the inspect color
-        foreach (var marker in highlightMarkers)
-        {
-            if (marker != null && marker.gameObject.activeSelf)
-            {
-                marker.color = colorWithAlpha;
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Clears the inspect mode color override (restores normal colors)
-    /// </summary>
-    public void ClearInspectModeColor()
-    {
-        inspectModeColor = null;
-        
-        // Update all currently active markers to use normal colors
-        foreach (var marker in highlightMarkers)
-        {
-            if (marker != null && marker.gameObject.activeSelf)
-            {
-                int markerIndex = System.Array.IndexOf(highlightMarkers, marker);
-                if (markerIndex >= 0)
-                {
-                    if (markerIndex < 3)
-                    {
-                        Color colorWithAlpha = creatureHighlightColor;
-                        colorWithAlpha.a = creatureHighlightAlpha;
-                        marker.color = colorWithAlpha;
-                    }
-                    else
-                    {
-                        Color colorWithAlpha = enemyHighlightColor;
-                        colorWithAlpha.a = enemyHighlightAlpha;
-                        marker.color = colorWithAlpha;
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Clears the hover highlight
+    /// Clears the hover tracking
     /// </summary>
     private void ClearHoverHighlight()
     {
-        if (hoveredUnit != null && hoveredUnit != selectedUnit)
-        {
-            SetHighlightMarkerForUnit(hoveredUnit, false);
-        }
         hoveredUnit = null;
-        
-        // Also clear keyboard selection highlight
-        if (selectedUnit != null)
-        {
-            SetHighlightMarkerForUnit(selectedUnit, false);
-            selectedUnit = null;
-        }
-    }
-
-    /// <summary>
-    /// Rebuilds the unit marker mapping (call this when units are spawned or destroyed)
-    /// </summary>
-    public void RebuildUnitMarkerMapping()
-    {
-        BuildUnitMarkerMapping();
+        selectedUnit = null;
     }
 
     #endregion
@@ -1023,42 +774,497 @@ public class Selection : MonoBehaviour
 
     /// <summary>
     /// Shows or hides the UI selection marker at the specified index (0 or 1)
+    /// Deprecated: This method is kept for compatibility but does nothing.
+    /// Use SimpleSelectionMarker instead.
     /// </summary>
     /// <param name="markerIndex">Index of the marker (0 for SelectMarker1, 1 for SelectMarker2)</param>
     /// <param name="active">Whether to show (true) or hide (false) the marker</param>
     public void SetUISelectionMarker(int markerIndex, bool active)
     {
-        GameObject marker = null;
-        if (markerIndex == 0)
-        {
-            marker = SelectMarker1;
-        }
-        else if (markerIndex == 1)
-        {
-            marker = SelectMarker2;
-        }
-
-        if (marker != null)
-        {
-            marker.SetActive(active);
-        }
+        // Deprecated: SelectMarker1 and SelectMarker2 have been removed.
+        // Use SimpleSelectionMarker instead, which is automatically managed.
     }
 
     /// <summary>
     /// Hides all UI selection markers
+    /// Deprecated: This method is kept for compatibility but does nothing.
+    /// Use SimpleSelectionMarker instead.
     /// </summary>
     public void HideAllUISelectionMarkers()
     {
-        if (SelectMarker1 != null)
-        {
-            SelectMarker1.SetActive(false);
-        }
-        if (SelectMarker2 != null)
-        {
-            SelectMarker2.SetActive(false);
-        }
+        // Deprecated: SelectMarker1 and SelectMarker2 have been removed.
+        // Use SimpleSelectionMarker instead, which is automatically managed.
     }
 
+    #endregion
+    
+    #region Simple Selection Markers
+    
+    /// <summary>
+    /// Updates simple selection markers - only shows marker for currently selected item
+    /// </summary>
+    private void UpdateSimpleSelectionMarkers()
+    {
+        if (SimpleSelectionMarker == null)
+            return;
+        
+        // Get the currently selected item
+        object selectedItem = IsValidSelection() ? selectableItems[currentIndex] : null;
+        
+        // Clear markers for items that are no longer selectable or not currently selected
+        List<object> itemsToRemove = new List<object>();
+        foreach (var kvp in selectionMarkers)
+        {
+            if (!selectableItems.Contains(kvp.Key) || kvp.Key != selectedItem)
+            {
+                itemsToRemove.Add(kvp.Key);
+            }
+        }
+        
+        foreach (var item in itemsToRemove)
+        {
+            DestroySimpleSelectionMarker(item);
+        }
+        
+        // Create/update marker only for the currently selected item
+        if (selectedItem != null)
+        {
+            // Check if selected item is a Button and if it's active in hierarchy
+            if (selectedItem is Button button)
+            {
+                if (!button.gameObject.activeInHierarchy)
+                {
+                    // Button is in an inactive panel, don't show marker
+                    if (selectionMarkers.ContainsKey(selectedItem))
+                    {
+                        GameObject marker = selectionMarkers[selectedItem];
+                        if (marker != null)
+                        {
+                            marker.SetActive(false);
+                        }
+                    }
+                    return;
+                }
+            }
+            
+            if (!selectionMarkers.ContainsKey(selectedItem))
+            {
+                CreateSimpleSelectionMarker(selectedItem);
+            }
+            
+            UpdateSimpleSelectionMarker(selectedItem);
+        }
+    }
+    
+    /// <summary>
+    /// Creates a simple selection marker for a selectable item
+    /// </summary>
+    private void CreateSimpleSelectionMarker(object item)
+    {
+        if (SimpleSelectionMarker == null || item == null)
+            return;
+        
+        // Find or get canvas
+        Canvas canvas = markerCanvas;
+        if (canvas == null)
+        {
+            canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogWarning("Selection: No Canvas found for SimpleSelectionMarker. Cannot create marker.");
+                return;
+            }
+        }
+        
+        // Instantiate marker
+        GameObject marker = Instantiate(SimpleSelectionMarker, canvas.transform);
+        marker.SetActive(true);
+        selectionMarkers[item] = marker;
+        
+        // Ensure it has a RectTransform
+        RectTransform rectTransform = marker.GetComponent<RectTransform>();
+        if (rectTransform == null)
+        {
+            rectTransform = marker.AddComponent<RectTransform>();
+        }
+        
+        // Set initial position and scale
+        UpdateSimpleSelectionMarker(item);
+    }
+    
+    /// <summary>
+    /// Updates the position and scale of a simple selection marker to cover the selected object
+    /// </summary>
+    private void UpdateSimpleSelectionMarker(object item)
+    {
+        if (item == null || !selectionMarkers.ContainsKey(item))
+            return;
+        
+        GameObject marker = selectionMarkers[item];
+        if (marker == null)
+        {
+            selectionMarkers.Remove(item);
+            return;
+        }
+        
+        RectTransform markerRect = marker.GetComponent<RectTransform>();
+        if (markerRect == null)
+            return;
+        
+        // Handle different object types
+        if (item is Unit unit)
+        {
+            UpdateMarkerForUnit(markerRect, unit);
+        }
+        else if (item is Button button)
+        {
+            // Handle Button components specifically (most common case for selection)
+            UpdateMarkerForButton(markerRect, button);
+        }
+        else if (item is GameObject gameObj)
+        {
+            UpdateMarkerForGameObject(markerRect, gameObj);
+        }
+        else if (item is Component component)
+        {
+            UpdateMarkerForGameObject(markerRect, component.gameObject);
+        }
+        else
+        {
+            // For other types, try to find a GameObject or Component
+            // This is a fallback for skills, items, etc.
+            UpdateMarkerForGenericObject(markerRect, item);
+        }
+    }
+    
+    /// <summary>
+    /// Updates marker position and scale for a Unit
+    /// </summary>
+    private void UpdateMarkerForUnit(RectTransform markerRect, Unit unit)
+    {
+        if (unit == null || unit.transform == null)
+            return;
+        
+        // Get camera for world to screen conversion
+        Camera cam = raycastCamera;
+        if (cam == null)
+            cam = Camera.main;
+        
+        if (cam == null)
+            return;
+        
+        // Get unit bounds (try to get renderer bounds, or use a default size)
+        Bounds bounds = GetUnitBounds(unit);
+        
+        // Convert world bounds to screen space - use all 8 corners of the bounding box
+        Vector3[] worldCorners = new Vector3[]
+        {
+            bounds.center + new Vector3(-bounds.extents.x, bounds.extents.y, bounds.extents.z),
+            bounds.center + new Vector3(bounds.extents.x, bounds.extents.y, bounds.extents.z),
+            bounds.center + new Vector3(bounds.extents.x, -bounds.extents.y, bounds.extents.z),
+            bounds.center + new Vector3(-bounds.extents.x, -bounds.extents.y, bounds.extents.z),
+            bounds.center + new Vector3(-bounds.extents.x, bounds.extents.y, -bounds.extents.z),
+            bounds.center + new Vector3(bounds.extents.x, bounds.extents.y, -bounds.extents.z),
+            bounds.center + new Vector3(bounds.extents.x, -bounds.extents.y, -bounds.extents.z),
+            bounds.center + new Vector3(-bounds.extents.x, -bounds.extents.y, -bounds.extents.z)
+        };
+        
+        Vector2 minScreen = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 maxScreen = new Vector2(float.MinValue, float.MinValue);
+        
+        foreach (var corner in worldCorners)
+        {
+            Vector3 screenPoint = cam.WorldToScreenPoint(corner);
+            minScreen.x = Mathf.Min(minScreen.x, screenPoint.x);
+            minScreen.y = Mathf.Min(minScreen.y, screenPoint.y);
+            maxScreen.x = Mathf.Max(maxScreen.x, screenPoint.x);
+            maxScreen.y = Mathf.Max(maxScreen.y, screenPoint.y);
+        }
+        
+        // Convert screen space to canvas space
+        Canvas canvas = markerRect.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+            if (canvasRect != null)
+            {
+                Vector2 minCanvas, maxCanvas;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, minScreen, canvas.worldCamera, out minCanvas);
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, maxScreen, canvas.worldCamera, out maxCanvas);
+                
+                // Set marker position and size
+                markerRect.anchoredPosition = (minCanvas + maxCanvas) / 2f;
+                markerRect.sizeDelta = maxCanvas - minCanvas;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Updates marker position and scale for a Button (UI element)
+    /// </summary>
+    private void UpdateMarkerForButton(RectTransform markerRect, Button button)
+    {
+        if (button == null || button.transform == null)
+            return;
+        
+        // Check if button is active in hierarchy (if panel is hidden, button won't be active)
+        if (!button.gameObject.activeInHierarchy)
+        {
+            // Hide marker if button is not active
+            if (markerRect != null)
+            {
+                markerRect.gameObject.SetActive(false);
+            }
+            return;
+        }
+        
+        // Show marker if button is active
+        if (markerRect != null)
+        {
+            markerRect.gameObject.SetActive(true);
+        }
+        
+        RectTransform buttonRect = button.GetComponent<RectTransform>();
+        if (buttonRect == null)
+        {
+            // Fallback to GameObject method if no RectTransform
+            UpdateMarkerForGameObject(markerRect, button.gameObject);
+            return;
+        }
+        
+        // Get the canvas that contains the marker
+        Canvas markerCanvas = markerRect.GetComponentInParent<Canvas>();
+        Canvas buttonCanvas = buttonRect.GetComponentInParent<Canvas>();
+        
+        if (markerCanvas == null || buttonCanvas == null)
+        {
+            // Fallback if canvas not found
+            UpdateMarkerForGameObject(markerRect, button.gameObject);
+            return;
+        }
+        
+        // Get world corners of the button
+        Vector3[] buttonWorldCorners = new Vector3[4];
+        buttonRect.GetWorldCorners(buttonWorldCorners);
+        
+        // Convert button's world corners to canvas local space
+        RectTransform canvasRect = markerCanvas.GetComponent<RectTransform>();
+        if (canvasRect == null)
+        {
+            UpdateMarkerForGameObject(markerRect, button.gameObject);
+            return;
+        }
+        
+        // Convert world corners to canvas local points
+        Vector2 minLocal = Vector2.zero;
+        Vector2 maxLocal = Vector2.zero;
+        
+        bool firstPoint = true;
+        foreach (Vector3 worldCorner in buttonWorldCorners)
+        {
+            Vector2 localPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect, 
+                RectTransformUtility.WorldToScreenPoint(buttonCanvas.worldCamera ?? Camera.main, worldCorner),
+                markerCanvas.worldCamera ?? Camera.main,
+                out localPoint);
+            
+            if (firstPoint)
+            {
+                minLocal = localPoint;
+                maxLocal = localPoint;
+                firstPoint = false;
+            }
+            else
+            {
+                minLocal.x = Mathf.Min(minLocal.x, localPoint.x);
+                minLocal.y = Mathf.Min(minLocal.y, localPoint.y);
+                maxLocal.x = Mathf.Max(maxLocal.x, localPoint.x);
+                maxLocal.y = Mathf.Max(maxLocal.y, localPoint.y);
+            }
+        }
+        
+        // Set marker to cover the button's area
+        markerRect.anchoredPosition = (minLocal + maxLocal) / 2f;
+        markerRect.sizeDelta = maxLocal - minLocal;
+        
+        // Set anchors to stretch mode for easier positioning
+        markerRect.anchorMin = new Vector2(0.5f, 0.5f);
+        markerRect.anchorMax = new Vector2(0.5f, 0.5f);
+        markerRect.pivot = new Vector2(0.5f, 0.5f);
+    }
+    
+    /// <summary>
+    /// Updates marker position and scale for a GameObject
+    /// </summary>
+    private void UpdateMarkerForGameObject(RectTransform markerRect, GameObject gameObj)
+    {
+        if (gameObj == null)
+            return;
+        
+        // Check if it's a UI element (has RectTransform)
+        RectTransform targetRect = gameObj.GetComponent<RectTransform>();
+        if (targetRect != null)
+        {
+            // It's a UI element - copy its rect
+            markerRect.position = targetRect.position;
+            markerRect.sizeDelta = targetRect.sizeDelta;
+            markerRect.anchorMin = targetRect.anchorMin;
+            markerRect.anchorMax = targetRect.anchorMax;
+            markerRect.pivot = targetRect.pivot;
+        }
+        else
+        {
+            // It's a world-space object - convert to screen space
+            Camera cam = raycastCamera;
+            if (cam == null)
+                cam = Camera.main;
+            
+            if (cam == null)
+                return;
+            
+            // Get bounds
+            Bounds bounds = GetGameObjectBounds(gameObj);
+            
+            // Convert to screen space (similar to unit method) - use all 8 corners of the bounding box
+            Vector3[] worldCorners = new Vector3[]
+            {
+                bounds.center + new Vector3(-bounds.extents.x, bounds.extents.y, bounds.extents.z),
+                bounds.center + new Vector3(bounds.extents.x, bounds.extents.y, bounds.extents.z),
+                bounds.center + new Vector3(bounds.extents.x, -bounds.extents.y, bounds.extents.z),
+                bounds.center + new Vector3(-bounds.extents.x, -bounds.extents.y, bounds.extents.z),
+                bounds.center + new Vector3(-bounds.extents.x, bounds.extents.y, -bounds.extents.z),
+                bounds.center + new Vector3(bounds.extents.x, bounds.extents.y, -bounds.extents.z),
+                bounds.center + new Vector3(bounds.extents.x, -bounds.extents.y, -bounds.extents.z),
+                bounds.center + new Vector3(-bounds.extents.x, -bounds.extents.y, -bounds.extents.z)
+            };
+            
+            Vector2 minScreen = new Vector2(float.MaxValue, float.MaxValue);
+            Vector2 maxScreen = new Vector2(float.MinValue, float.MinValue);
+            
+            foreach (var corner in worldCorners)
+            {
+                Vector3 screenPoint = cam.WorldToScreenPoint(corner);
+                minScreen.x = Mathf.Min(minScreen.x, screenPoint.x);
+                minScreen.y = Mathf.Min(minScreen.y, screenPoint.y);
+                maxScreen.x = Mathf.Max(maxScreen.x, screenPoint.x);
+                maxScreen.y = Mathf.Max(maxScreen.y, screenPoint.y);
+            }
+            
+            // Convert to canvas space
+            Canvas canvas = markerRect.GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                if (canvasRect != null)
+                {
+                    Vector2 minCanvas, maxCanvas;
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, minScreen, canvas.worldCamera, out minCanvas);
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, maxScreen, canvas.worldCamera, out maxCanvas);
+                    
+                    markerRect.anchoredPosition = (minCanvas + maxCanvas) / 2f;
+                    markerRect.sizeDelta = maxCanvas - minCanvas;
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Updates marker for generic objects (skills, items, etc.)
+    /// </summary>
+    private void UpdateMarkerForGenericObject(RectTransform markerRect, object item)
+    {
+        // For generic objects, try to find associated UI elements or use a default size
+        // This is a fallback - you may want to customize this based on your needs
+        
+        // Try to find if there's a UI button or element associated with this item
+        // For now, we'll just hide the marker if we can't determine its position
+        markerRect.gameObject.SetActive(false);
+    }
+    
+    /// <summary>
+    /// Gets the bounds of a Unit for marker sizing
+    /// </summary>
+    private Bounds GetUnitBounds(Unit unit)
+    {
+        if (unit == null || unit.transform == null)
+            return new Bounds(Vector3.zero, Vector3.one);
+        
+        // Try to get renderer bounds
+        Renderer renderer = unit.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            return renderer.bounds;
+        }
+        
+        // Try sprite renderer
+        SpriteRenderer spriteRenderer = unit.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            return spriteRenderer.bounds;
+        }
+        
+        // Fallback: use a default size based on transform
+        return new Bounds(unit.transform.position, Vector3.one * 2f);
+    }
+    
+    /// <summary>
+    /// Gets the bounds of a GameObject for marker sizing
+    /// </summary>
+    private Bounds GetGameObjectBounds(GameObject gameObj)
+    {
+        if (gameObj == null)
+            return new Bounds(Vector3.zero, Vector3.one);
+        
+        // Try to get renderer bounds
+        Renderer renderer = gameObj.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            return renderer.bounds;
+        }
+        
+        // Try sprite renderer
+        SpriteRenderer spriteRenderer = gameObj.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            return spriteRenderer.bounds;
+        }
+        
+        // Fallback: use a default size based on transform
+        return new Bounds(gameObj.transform.position, Vector3.one * 2f);
+    }
+    
+    /// <summary>
+    /// Destroys a simple selection marker for an item
+    /// </summary>
+    private void DestroySimpleSelectionMarker(object item)
+    {
+        if (item != null && selectionMarkers.ContainsKey(item))
+        {
+            GameObject marker = selectionMarkers[item];
+            if (marker != null)
+            {
+                Destroy(marker);
+            }
+            selectionMarkers.Remove(item);
+        }
+    }
+    
+    /// <summary>
+    /// Clears all simple selection markers
+    /// </summary>
+    private void ClearAllSimpleSelectionMarkers()
+    {
+        foreach (var kvp in selectionMarkers)
+        {
+            if (kvp.Value != null)
+            {
+                Destroy(kvp.Value);
+            }
+        }
+        selectionMarkers.Clear();
+    }
+    
     #endregion
 }
 

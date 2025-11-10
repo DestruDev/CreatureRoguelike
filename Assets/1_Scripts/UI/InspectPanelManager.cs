@@ -154,8 +154,6 @@ public class InspectPanelManager : MonoBehaviour
         if (selection != null)
         {
             selection.SetupUnitSelection(UnitTargetType.AnyAlive);
-            // Set inspect mode color override with alpha
-            selection.SetInspectModeColor(inspectHighlightColor, inspectHighlightAlpha);
         }
         
         // Hide user panel root which contains all UI elements
@@ -185,12 +183,10 @@ public class InspectPanelManager : MonoBehaviour
             InspectPanel.SetActive(false);
         }
         
-        // Clear selection and restore normal colors
+        // Clear selection
         if (selection != null)
         {
             selection.ClearSelection();
-            // Clear inspect mode color override to restore normal colors
-            selection.ClearInspectModeColor();
         }
         
         // Restore action panels

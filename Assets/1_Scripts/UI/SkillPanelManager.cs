@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class SkillPanelManager : MonoBehaviour
 {
@@ -55,6 +56,10 @@ public class SkillPanelManager : MonoBehaviour
     private int selectedSkillIndex = -1; // The skill index that triggered selection mode
     private Unit currentCastingUnit = null; // The unit casting the skill
     private Skill currentSkill = null; // The skill being cast
+    
+    // Button selection mode state (for navigating skill buttons)
+    private bool isButtonSelectionMode = false;
+    private bool ignoreInputThisFrame = false; // Prevents accidental activation when opening panel
 
     private void Start()
     {
@@ -95,11 +100,131 @@ public class SkillPanelManager : MonoBehaviour
         // Update skills on start
         UpdateSkills();
     }
+    
+    /// <summary>
+    /// Called when the Skills panel becomes visible - enables button selection mode
+    /// </summary>
+    private void OnEnable()
+    {
+        EnableButtonSelectionMode();
+    }
+    
+    /// <summary>
+    /// Called when the Skills panel becomes hidden - disables button selection mode
+    /// </summary>
+    private void OnDisable()
+    {
+        DisableButtonSelectionMode();
+    }
+    
+    /// <summary>
+    /// Enables button selection mode for navigating skill buttons vertically
+    /// </summary>
+    public void EnableButtonSelectionMode()
+    {
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+            if (selection == null)
+            {
+                Debug.LogWarning("SkillPanelManager: Selection component not found. Button selection mode disabled.");
+                return;
+            }
+        }
+        
+        isButtonSelectionMode = true;
+        
+        // Get available skill buttons (only buttons with skills)
+        List<Button> availableButtons = new List<Button>();
+        if (gameManager != null)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && currentUnit.Skills != null)
+            {
+                for (int i = 0; i < 4 && i < currentUnit.Skills.Length; i++)
+                {
+                    if (currentUnit.Skills[i] != null && skillButtons[i] != null)
+                    {
+                        availableButtons.Add(skillButtons[i]);
+                    }
+                }
+            }
+        }
+        
+        // Set up selection with available buttons
+        if (availableButtons.Count > 0)
+        {
+            selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
+            // Ignore input for this frame to prevent accidental activation
+            ignoreInputThisFrame = true;
+        }
+    }
+    
+    /// <summary>
+    /// Disables button selection mode
+    /// </summary>
+    private void DisableButtonSelectionMode()
+    {
+        isButtonSelectionMode = false;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+    }
+    
+    /// <summary>
+    /// Handles input for button selection mode (Up/Down or W/S to cycle, Enter/Space to activate)
+    /// </summary>
+    private void HandleButtonSelectionInput()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+        {
+            selection.Previous();
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+        {
+            selection.Next();
+        }
+        
+        // Activate selected button with Enter or Space
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        {
+            ActivateSelectedButton();
+        }
+    }
+    
+    /// <summary>
+    /// Activates the currently selected skill button
+    /// </summary>
+    private void ActivateSelectedButton()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        object selectedItem = selection.CurrentSelection;
+        if (selectedItem is Button button)
+        {
+            // Find which skill button was selected
+            for (int i = 0; i < skillButtons.Length; i++)
+            {
+                if (skillButtons[i] == button)
+                {
+                    OnSkillButtonClicked(i);
+                    break;
+                }
+            }
+        }
+    }
 
     private void Update()
     {
         // Update skills to reflect cooldown changes (only for player units, and only update brightness)
-        if (gameManager != null && !isSelectionMode)
+        if (gameManager != null && !isSelectionMode && !isButtonSelectionMode)
         {
             Unit currentUnit = gameManager.GetCurrentUnit();
             if (currentUnit != null && currentUnit.IsPlayerUnit && currentUnit == lastDisplayedUnit)
@@ -118,37 +243,59 @@ public class SkillPanelManager : MonoBehaviour
             }
         }
         
+        // Handle button selection mode (vertical navigation through skill buttons)
+        if (isButtonSelectionMode && !isSelectionMode)
+        {
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+            }
+            else
+            {
+                HandleButtonSelectionInput();
+            }
+        }
+        
         // Check for cancellation (right click or ESC)
         if (isSelectionMode)
         {
-            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
             {
-                CancelSelectionMode();
+                ignoreInputThisFrame = false;
             }
-            // Check for mouse click on a unit (direct selection)
-            else if (Input.GetMouseButtonDown(0))
+            else
             {
-                HandleMouseClickOnUnit();
-            }
-            // Navigate through targets with arrow keys or WASD
-            else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
-            {
-                if (selection != null)
+                if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
                 {
-                    selection.Previous();
+                    CancelSelectionMode();
                 }
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
-            {
-                if (selection != null)
+                // Check for mouse click on a unit (direct selection)
+                else if (Input.GetMouseButtonDown(0))
                 {
-                    selection.Next();
+                    HandleMouseClickOnUnit();
                 }
-            }
-            // Confirm selection with Enter or Space (keyboard navigation confirmation)
-            else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
-            {
-                ConfirmSelection();
+                // Navigate through targets with arrow keys or WASD
+                else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+                {
+                    if (selection != null)
+                    {
+                        selection.Previous();
+                    }
+                }
+                else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+                {
+                    if (selection != null)
+                    {
+                        selection.Next();
+                    }
+                }
+                // Confirm selection with Enter or Space (keyboard navigation confirmation)
+                else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                {
+                    ConfirmSelection();
+                }
             }
         }
     }
@@ -270,6 +417,12 @@ public class SkillPanelManager : MonoBehaviour
                 // Reset stored flag
                 originalColorsStored[i] = false;
             }
+        }
+        
+        // Refresh button selection if in button selection mode (in case available buttons changed)
+        if (isButtonSelectionMode)
+        {
+            EnableButtonSelectionMode();
         }
     }
 
@@ -506,6 +659,9 @@ public class SkillPanelManager : MonoBehaviour
             return;
         }
 
+        // Disable button selection mode before entering target selection mode
+        DisableButtonSelectionMode();
+
         isSelectionMode = true;
         selectedSkillIndex = skillIndex;
         currentCastingUnit = caster;
@@ -524,7 +680,11 @@ public class SkillPanelManager : MonoBehaviour
         {
             Debug.LogWarning("No valid targets for this skill!");
             CancelSelectionMode();
+            return;
         }
+        
+        // Ignore input for this frame to prevent accidental confirmation
+        ignoreInputThisFrame = true;
     }
 
     /// <summary>
@@ -715,6 +875,22 @@ public class SkillPanelManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Checks if we're currently in target selection mode
+    /// </summary>
+    public bool IsInSelectionMode()
+    {
+        return isSelectionMode;
+    }
+    
+    /// <summary>
+    /// Cancels selection mode (public method for external cancellation)
+    /// </summary>
+    public void CancelSelectionModePublic()
+    {
+        CancelSelectionMode();
+    }
+    
+    /// <summary>
     /// Cancels selection mode
     /// </summary>
     private void CancelSelectionMode()
@@ -731,6 +907,9 @@ public class SkillPanelManager : MonoBehaviour
         {
             selection.ClearSelection();
         }
+
+        // Re-enable button selection mode to return to skill button navigation
+        EnableButtonSelectionMode();
 
         Debug.Log("Selection mode cancelled");
     }

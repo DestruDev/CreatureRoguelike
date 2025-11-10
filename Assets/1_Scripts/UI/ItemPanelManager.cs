@@ -59,6 +59,10 @@ public class ItemPanelManager : MonoBehaviour
     private bool isSelectionMode = false;
     private Item currentItem = null;
     private int currentItemIndex = -1;
+    
+    // Button selection mode state (for navigating item buttons)
+    private bool isButtonSelectionMode = false;
+    private bool ignoreInputThisFrame = false; // Prevents accidental activation when opening panel
 
     private void Start()
     {
@@ -110,7 +114,7 @@ public class ItemPanelManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Called when the Items panel becomes visible - refreshes the display
+    /// Called when the Items panel becomes visible - refreshes the display and enables button selection
     /// </summary>
     private void OnEnable()
     {
@@ -118,42 +122,178 @@ public class ItemPanelManager : MonoBehaviour
         if (itemNames != null && itemIcons != null && itemButtons != null)
         {
             UpdateItems();
+            EnableButtonSelectionMode();
+        }
+    }
+    
+    /// <summary>
+    /// Called when the Items panel becomes hidden - disables button selection mode
+    /// </summary>
+    private void OnDisable()
+    {
+        DisableButtonSelectionMode();
+    }
+    
+    /// <summary>
+    /// Enables button selection mode for navigating item buttons vertically
+    /// </summary>
+    public void EnableButtonSelectionMode()
+    {
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+            if (selection == null)
+            {
+                Debug.LogWarning("ItemPanelManager: Selection component not found. Button selection mode disabled.");
+                return;
+            }
+        }
+        
+        if (inventory == null)
+        {
+            inventory = FindFirstObjectByType<Inventory>();
+        }
+        
+        isButtonSelectionMode = true;
+        
+        // Get available item buttons (only buttons with items)
+        List<Button> availableButtons = new List<Button>();
+        if (inventory != null && inventory.Items != null)
+        {
+            for (int i = 0; i < 4 && i < inventory.Items.Count; i++)
+            {
+                if (inventory.Items[i] != null && inventory.Items[i].item != null && itemButtons[i] != null)
+                {
+                    availableButtons.Add(itemButtons[i]);
+                }
+            }
+        }
+        
+        // Set up selection with available buttons
+        if (availableButtons.Count > 0)
+        {
+            selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
+            // Ignore input for this frame to prevent accidental activation
+            ignoreInputThisFrame = true;
+        }
+    }
+    
+    /// <summary>
+    /// Disables button selection mode
+    /// </summary>
+    private void DisableButtonSelectionMode()
+    {
+        isButtonSelectionMode = false;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+    }
+    
+    /// <summary>
+    /// Handles input for button selection mode (Up/Down or W/S to cycle, Enter/Space to activate)
+    /// </summary>
+    private void HandleButtonSelectionInput()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+        {
+            selection.Previous();
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+        {
+            selection.Next();
+        }
+        
+        // Activate selected button with Enter or Space
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        {
+            ActivateSelectedButton();
+        }
+    }
+    
+    /// <summary>
+    /// Activates the currently selected item button
+    /// </summary>
+    private void ActivateSelectedButton()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        object selectedItem = selection.CurrentSelection;
+        if (selectedItem is Button button)
+        {
+            // Find which item button was selected
+            for (int i = 0; i < itemButtons.Length; i++)
+            {
+                if (itemButtons[i] == button)
+                {
+                    OnItemButtonClicked(i);
+                    break;
+                }
+            }
         }
     }
 
     private void Update()
     {
+        // Handle button selection mode (vertical navigation through item buttons)
+        if (isButtonSelectionMode && !isSelectionMode)
+        {
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+            }
+            else
+            {
+                HandleButtonSelectionInput();
+            }
+        }
+        
         // Handle selection mode input
         if (isSelectionMode)
         {
-            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
             {
-                CancelSelectionMode();
+                ignoreInputThisFrame = false;
             }
-            // Check for mouse click on a unit (direct selection)
-            else if (Input.GetMouseButtonDown(0))
+            else
             {
-                HandleMouseClickOnUnit();
-            }
-            // Navigate through targets with arrow keys or WASD
-            else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
-            {
-                if (selection != null)
+                if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
                 {
-                    selection.Previous();
+                    CancelSelectionMode();
                 }
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
-            {
-                if (selection != null)
+                // Check for mouse click on a unit (direct selection)
+                else if (Input.GetMouseButtonDown(0))
                 {
-                    selection.Next();
+                    HandleMouseClickOnUnit();
                 }
-            }
-            // Confirm selection with Enter or Space
-            else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
-            {
-                ConfirmSelection();
+                // Navigate through targets with arrow keys or WASD
+                else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+                {
+                    if (selection != null)
+                    {
+                        selection.Previous();
+                    }
+                }
+                else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+                {
+                    if (selection != null)
+                    {
+                        selection.Next();
+                    }
+                }
+                // Confirm selection with Enter or Space
+                else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                {
+                    ConfirmSelection();
+                }
             }
         }
     }
@@ -295,6 +435,12 @@ public class ItemPanelManager : MonoBehaviour
                 // Clear empty slot
                 ClearItemSlot(i);
             }
+        }
+        
+        // Refresh button selection if in button selection mode (in case available buttons changed)
+        if (isButtonSelectionMode)
+        {
+            EnableButtonSelectionMode();
         }
     }
     
@@ -545,6 +691,9 @@ public class ItemPanelManager : MonoBehaviour
             return;
         }
 
+        // Disable button selection mode before entering target selection mode
+        DisableButtonSelectionMode();
+
         isSelectionMode = true;
         currentItemIndex = itemIndex;
         currentItem = item;
@@ -562,7 +711,11 @@ public class ItemPanelManager : MonoBehaviour
         {
             Debug.LogWarning("No valid targets for this item!");
             CancelSelectionMode();
+            return;
         }
+        
+        // Ignore input for this frame to prevent accidental confirmation
+        ignoreInputThisFrame = true;
     }
     
     /// <summary>
@@ -633,6 +786,22 @@ public class ItemPanelManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Checks if we're currently in target selection mode
+    /// </summary>
+    public bool IsInSelectionMode()
+    {
+        return isSelectionMode;
+    }
+    
+    /// <summary>
+    /// Cancels selection mode (public method for external cancellation)
+    /// </summary>
+    public void CancelSelectionModePublic()
+    {
+        CancelSelectionMode();
+    }
+    
+    /// <summary>
     /// Cancels selection mode
     /// </summary>
     private void CancelSelectionMode()
@@ -645,6 +814,9 @@ public class ItemPanelManager : MonoBehaviour
         {
             selection.ClearSelection();
         }
+        
+        // Re-enable button selection mode to return to item button navigation
+        EnableButtonSelectionMode();
         
         Debug.Log("Cancelled item selection mode");
     }
