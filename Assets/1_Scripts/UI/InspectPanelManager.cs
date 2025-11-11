@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class InspectPanelManager : MonoBehaviour
 {
@@ -31,6 +33,9 @@ public class InspectPanelManager : MonoBehaviour
     
     // Inspect mode state
     private bool inspectMode = false;
+    
+    // Store the previously selected button index before entering inspect mode
+    private int previousButtonSelectionIndex = 0;
     
     private void Start()
     {
@@ -96,7 +101,7 @@ public class InspectPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Checks if inspect mode can be entered (player turn, not during animations)
+    /// Checks if inspect mode can be entered (player turn, not during animations, not inside SkillsPanel or ItemsPanel)
     /// </summary>
     private bool CanEnterInspectMode()
     {
@@ -132,6 +137,17 @@ public class InspectPanelManager : MonoBehaviour
             return false;
         }
         
+        // Check if we're inside SkillsPanel or ItemsPanel - inspection mode should only be available from the outermost UI panel (ActionPanel)
+        if (actionPanelManager.SkillsPanel != null && actionPanelManager.SkillsPanel.activeSelf)
+        {
+            return false;
+        }
+        
+        if (actionPanelManager.ItemsPanel != null && actionPanelManager.ItemsPanel.activeSelf)
+        {
+            return false;
+        }
+        
         return true;
     }
     
@@ -141,6 +157,35 @@ public class InspectPanelManager : MonoBehaviour
     private void EnterInspectMode()
     {
         if (inspectMode) return;
+        
+        // Store the current button selection before entering inspect mode
+        // This allows us to restore it when exiting
+        if (selection != null && actionPanelManager != null)
+        {
+            // Check if we're in button selection mode (ActionPanel is active)
+            if (actionPanelManager.ActionPanel != null && actionPanelManager.ActionPanel.activeSelf)
+            {
+                // Check if the current selection is a button
+                if (selection.IsValidSelection() && selection.CurrentSelection is Button)
+                {
+                    // Find which button index it is
+                    Button[] buttons = new Button[] { actionPanelManager.SkillsButton, actionPanelManager.ItemsButton };
+                    for (int i = 0; i < buttons.Length; i++)
+                    {
+                        if (buttons[i] == selection.CurrentSelection)
+                        {
+                            previousButtonSelectionIndex = i;
+                            break;
+                        }
+                    }
+                }
+                else if (selection.IsValidSelection())
+                {
+                    // If there's a valid selection but it's not a button, store the index anyway
+                    previousButtonSelectionIndex = selection.CurrentIndex;
+                }
+            }
+        }
         
         inspectMode = true;
         
@@ -183,7 +228,7 @@ public class InspectPanelManager : MonoBehaviour
             InspectPanel.SetActive(false);
         }
         
-        // Clear selection
+        // Clear selection (this will clear all markers)
         if (selection != null)
         {
             selection.ClearSelection();
@@ -195,6 +240,10 @@ public class InspectPanelManager : MonoBehaviour
             actionPanelManager.ShowActionPanel();
             // ShowEndTurnButton will be handled by UpdatePanelVisibility
             actionPanelManager.UpdatePanelVisibility();
+            
+            // Force a selection update to ensure markers are properly restored
+            // Use a coroutine to wait a frame, ensuring buttons are active in hierarchy before refreshing markers
+            StartCoroutine(RefreshSelectionMarkersAfterExit());
         }
         
         Debug.Log("Exited Inspect Mode");
@@ -287,6 +336,34 @@ public class InspectPanelManager : MonoBehaviour
     public bool IsInspectMode()
     {
         return inspectMode;
+    }
+    
+    /// <summary>
+    /// Coroutine to refresh selection markers after exiting inspect mode
+    /// Waits a frame to ensure buttons are active in hierarchy before refreshing
+    /// </summary>
+    private IEnumerator RefreshSelectionMarkersAfterExit()
+    {
+        // Wait one frame to ensure ActionPanel and buttons are fully active
+        yield return null;
+        
+        // Now refresh the selection markers and restore the previous button selection
+        if (selection != null && actionPanelManager != null && 
+            actionPanelManager.ActionPanel != null && actionPanelManager.ActionPanel.activeSelf)
+        {
+            // Restore the previously selected button
+            if (selection.IsValidSelection() && selection.Count > 0)
+            {
+                // Clamp the previous index to valid range
+                int indexToRestore = Mathf.Clamp(previousButtonSelectionIndex, 0, selection.Count - 1);
+                selection.SetIndex(indexToRestore);
+            }
+            else if (selection.IsValidSelection())
+            {
+                // If there's a valid selection, trigger a refresh
+                selection.SetIndex(selection.CurrentIndex);
+            }
+        }
     }
     
     private void OnDestroy()
