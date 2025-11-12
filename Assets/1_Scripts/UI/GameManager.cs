@@ -381,6 +381,29 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Public method to execute a skill directly (not from unit's skills array) with proper timing delays
+	/// </summary>
+	public void ExecuteSkillDirect(Unit caster, Skill skill, Unit target, bool autoAdvanceTurn = false)
+	{
+		if (skill == null || caster == null)
+		{
+			Debug.LogWarning($"Invalid skill or caster for ExecuteSkillDirect");
+			return;
+		}
+		
+		// Hide action UI immediately to prevent input during skill execution
+		HideActionUI();
+		
+		// Log skill usage immediately (before starting coroutine for instant display)
+		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
+		
+		// Start coroutine for delayed effects
+		StartCoroutine(ExecuteSkillWithDelayCoroutine(caster, skill, target, autoAdvanceTurn));
+	}
+	
+	/// <summary>
 	/// Coroutine to execute skill with proper timing delays
 	/// </summary>
 	private System.Collections.IEnumerator ExecuteSkillWithDelayCoroutine(Unit caster, Skill skill, Unit target, bool autoAdvanceTurn)

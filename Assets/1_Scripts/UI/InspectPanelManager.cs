@@ -166,13 +166,13 @@ public class InspectPanelManager : MonoBehaviour
             if (actionPanelManager.ActionPanel != null && actionPanelManager.ActionPanel.activeSelf)
             {
                 // Check if the current selection is a button
-                if (selection.IsValidSelection() && selection.CurrentSelection is Button)
+                if (selection.IsValidSelection() && selection.CurrentSelection is Button currentButton)
                 {
-                    // Find which button index it is
-                    Button[] buttons = new Button[] { actionPanelManager.SkillsButton, actionPanelManager.ItemsButton };
+                    // Find which button index it is (include NormalAttackButton in the array)
+                    Button[] buttons = new Button[] { actionPanelManager.SkillsButton, actionPanelManager.NormalAttackButton, actionPanelManager.ItemsButton };
                     for (int i = 0; i < buttons.Length; i++)
                     {
-                        if (buttons[i] == selection.CurrentSelection)
+                        if (buttons[i] == currentButton)
                         {
                             previousButtonSelectionIndex = i;
                             break;
@@ -347,22 +347,12 @@ public class InspectPanelManager : MonoBehaviour
         // Wait one frame to ensure ActionPanel and buttons are fully active
         yield return null;
         
-        // Now refresh the selection markers and restore the previous button selection
-        if (selection != null && actionPanelManager != null && 
+        // Now refresh the selection markers and default to NormalAttackButton
+        if (actionPanelManager != null && 
             actionPanelManager.ActionPanel != null && actionPanelManager.ActionPanel.activeSelf)
         {
-            // Restore the previously selected button
-            if (selection.IsValidSelection() && selection.Count > 0)
-            {
-                // Clamp the previous index to valid range
-                int indexToRestore = Mathf.Clamp(previousButtonSelectionIndex, 0, selection.Count - 1);
-                selection.SetIndex(indexToRestore);
-            }
-            else if (selection.IsValidSelection())
-            {
-                // If there's a valid selection, trigger a refresh
-                selection.SetIndex(selection.CurrentIndex);
-            }
+            // Always default to NormalAttackButton when exiting inspect mode
+            actionPanelManager.SelectNormalAttackButton();
         }
     }
     

@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
+using System.Collections.Generic;
 
 public class ActionPanelManager : MonoBehaviour
 {
@@ -14,6 +16,10 @@ public class ActionPanelManager : MonoBehaviour
     public Button ItemsButton;
     public Button EndTurnButton;
     public Button BackButton;
+    public Button NormalAttackButton;
+    
+    [Header("Normal Attack")]
+    public Skill normalAttackSkill;
     
     [Header("Unit Info")]
     public TextMeshProUGUI UnitNameText;
@@ -35,6 +41,11 @@ public class ActionPanelManager : MonoBehaviour
     
     // Track if we're in button selection mode
     private bool isButtonSelectionMode = false;
+    
+    // Track NormalAttack selection mode state
+    private bool isNormalAttackSelectionMode = false;
+    private Unit normalAttackCastingUnit = null;
+    private Skill normalAttackCurrentSkill = null;
 
     private void Start()
     {
@@ -74,6 +85,11 @@ public class ActionPanelManager : MonoBehaviour
             BackButton.onClick.AddListener(OnBackButtonClicked);
         }
         
+        if (NormalAttackButton != null)
+        {
+            NormalAttackButton.onClick.AddListener(OnNormalAttackClicked);
+        }
+        
         // Subscribe to selection changes
         if (selection != null)
         {
@@ -89,9 +105,15 @@ public class ActionPanelManager : MonoBehaviour
             return;
         }
         
-        // Check for ESC key press or right-click to return to ActionPanel
+        // Check for ESC key press or right-click to return to ActionPanel or cancel selection
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.X))
         {
+            // If in NormalAttack selection mode, cancel it first
+            if (isNormalAttackSelectionMode)
+            {
+                CancelNormalAttackSelectionMode();
+                return; // Don't go back to ActionPanel, just cancel selection
+            }
             GoBackToActionPanel();
         }
         
@@ -108,6 +130,12 @@ public class ActionPanelManager : MonoBehaviour
         if (isButtonSelectionMode && ActionPanel != null && ActionPanel.activeSelf)
         {
             HandleButtonSelectionInput();
+        }
+        
+        // Handle NormalAttack selection mode input
+        if (isNormalAttackSelectionMode)
+        {
+            HandleNormalAttackSelectionInput();
         }
         
         // Update back button visibility
@@ -232,6 +260,11 @@ public class ActionPanelManager : MonoBehaviour
             BackButton.onClick.RemoveListener(OnBackButtonClicked);
         }
         
+        if (NormalAttackButton != null)
+        {
+            NormalAttackButton.onClick.RemoveListener(OnNormalAttackClicked);
+        }
+        
         // Unsubscribe from selection changes
         if (selection != null)
         {
@@ -247,6 +280,10 @@ public class ActionPanelManager : MonoBehaviour
             return;
         }
         
+        // Check if we're returning from SkillsPanel or ItemsPanel (before hiding panels)
+        bool returningFromSubPanel = (SkillsPanel != null && SkillsPanel.activeSelf) || 
+                                     (ItemsPanel != null && ItemsPanel.activeSelf);
+        
         // Hide all panels first
         HideAllPanels();
 
@@ -258,6 +295,12 @@ public class ActionPanelManager : MonoBehaviour
         
         // Enable button selection mode
         EnableButtonSelectionMode();
+        
+        // If returning from SkillsPanel or ItemsPanel, select NormalAttackButton by default
+        if (returningFromSubPanel && NormalAttackButton != null)
+        {
+            SelectNormalAttackButton();
+        }
         
         // Update back button visibility
         UpdateBackButtonVisibility();
@@ -411,6 +454,14 @@ public class ActionPanelManager : MonoBehaviour
             {
                 return; // Stay in ItemsPanel, just cancel target selection
             }
+        }
+        
+        // Cancel NormalAttack selection mode if active
+        if (isNormalAttackSelectionMode)
+        {
+            CancelNormalAttackSelectionMode();
+            // Don't return to ActionPanel if we're still in selection mode
+            return;
         }
         
         // If SkillsPanel or ItemsPanel is active, return to ActionPanel
@@ -572,10 +623,244 @@ public class ActionPanelManager : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Called when the NormalAttack button is clicked
+    /// </summary>
+    private void OnNormalAttackClicked()
+    {
+        // Don't allow if in inspect mode
+        if (IsInInspectMode())
+        {
+            return;
+        }
+        
+        // Don't allow if skill execution is in progress
+        if (IsSkillExecuting())
+        {
+            return;
+        }
+        
+        // Check if normalAttackSkill is assigned
+        if (normalAttackSkill == null)
+        {
+            Debug.LogWarning("ActionPanelManager: NormalAttack skill is not assigned!");
+            return;
+        }
+        
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager == null)
+            {
+                Debug.LogWarning("ActionPanelManager: GameManager not found!");
+                return;
+            }
+        }
+        
+        Unit currentUnit = gameManager.GetCurrentUnit();
+        
+        // Only allow during player unit's turn
+        if (currentUnit == null || !currentUnit.IsPlayerUnit || isNormalAttackSelectionMode)
+        {
+            return;
+        }
+        
+        // If skill targets self, execute immediately
+        if (normalAttackSkill.targetType == SkillTargetType.Self)
+        {
+            if (gameManager != null)
+            {
+                gameManager.ExecuteSkillDirect(currentUnit, normalAttackSkill, currentUnit, false);
+                // Advance turn after delays complete
+                StartCoroutine(DelayedAdvanceTurnAfterNormalAttack());
+            }
+            return;
+        }
+        
+        // Enter selection mode for other target types
+        EnterNormalAttackSelectionMode(currentUnit, normalAttackSkill);
+    }
+    
+    /// <summary>
+    /// Enters selection mode for NormalAttack target selection
+    /// </summary>
+    private void EnterNormalAttackSelectionMode(Unit caster, Skill skill)
+    {
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+            if (selection == null)
+            {
+                Debug.LogWarning("ActionPanelManager: Selection component not found!");
+                return;
+            }
+        }
+        
+        // Disable button selection mode before entering target selection mode
+        DisableButtonSelectionMode();
+        
+        isNormalAttackSelectionMode = true;
+        normalAttackCastingUnit = caster;
+        normalAttackCurrentSkill = skill;
+        
+        // Convert SkillTargetType to UnitTargetType
+        UnitTargetType targetType = ConvertTargetType(skill.targetType);
+        
+        // Setup unit selection
+        selection.SetupUnitSelection(targetType, caster, skill);
+        
+        Debug.Log($"Entered NormalAttack selection mode for skill: {skill.skillName}, Target type: {targetType}");
+        
+        // If no valid targets, exit selection mode
+        if (selection.Count == 0)
+        {
+            Debug.LogWarning("No valid targets for NormalAttack!");
+            CancelNormalAttackSelectionMode();
+            return;
+        }
+    }
+    
+    /// <summary>
+    /// Converts SkillTargetType to UnitTargetType
+    /// </summary>
+    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
+    {
+        switch (skillTargetType)
+        {
+            case SkillTargetType.Self:
+                return UnitTargetType.Self;
+            case SkillTargetType.Ally:
+                return UnitTargetType.Allies;
+            case SkillTargetType.Enemy:
+                return UnitTargetType.Enemies;
+            case SkillTargetType.Any:
+                return UnitTargetType.Any;
+            default:
+                return UnitTargetType.Any;
+        }
+    }
+    
+    /// <summary>
+    /// Cancels NormalAttack selection mode
+    /// </summary>
+    private void CancelNormalAttackSelectionMode()
+    {
+        if (!isNormalAttackSelectionMode)
+            return;
+        
+        isNormalAttackSelectionMode = false;
+        normalAttackCastingUnit = null;
+        normalAttackCurrentSkill = null;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+        
+        // Re-enable button selection mode
+        EnableButtonSelectionMode();
+        
+        Debug.Log("NormalAttack selection mode cancelled");
+    }
+    
+    /// <summary>
+    /// Confirms the NormalAttack target selection and executes the skill
+    /// </summary>
+    private void ConfirmNormalAttackSelection()
+    {
+        if (!isNormalAttackSelectionMode || selection == null)
+            return;
+        
+        Unit selectedTarget = selection.GetSelectedUnit();
+        
+        if (selectedTarget != null && normalAttackCastingUnit != null && normalAttackCurrentSkill != null)
+        {
+            // Save references before clearing selection mode
+            Unit caster = normalAttackCastingUnit;
+            Skill skill = normalAttackCurrentSkill;
+            Unit target = selectedTarget;
+            
+            // Exit selection mode
+            CancelNormalAttackSelectionMode();
+            
+            // Execute the skill on the selected target
+            Debug.Log($"[ActionPanel] ConfirmNormalAttackSelection: caster={caster.UnitName}, skill={skill.skillName}, target={target.UnitName}");
+            if (gameManager != null)
+            {
+                gameManager.ExecuteSkillDirect(caster, skill, target, false);
+                // Advance turn after delays complete
+                StartCoroutine(DelayedAdvanceTurnAfterNormalAttack());
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to advance turn after NormalAttack animation delays complete
+    /// </summary>
+    private System.Collections.IEnumerator DelayedAdvanceTurnAfterNormalAttack()
+    {
+        if (gameManager == null)
+            yield break;
+            
+        // Wait for skill animation + hit animation delays
+        float totalDelay = gameManager.skillAnimationDelay + gameManager.hitAnimationDelay;
+        yield return new WaitForSeconds(totalDelay);
+        
+        // Advance turn
+        if (turnOrder == null)
+        {
+            turnOrder = FindFirstObjectByType<TurnOrder>();
+        }
+        
+        if (turnOrder != null)
+        {
+            turnOrder.AdvanceToNextTurn();
+        }
+    }
+    
+    /// <summary>
+    /// Handles input for NormalAttack selection mode
+    /// </summary>
+    private void HandleNormalAttackSelectionInput()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        // Cancel with ESC or right-click (handled in Update)
+        
+        // Navigate through targets with arrow keys or WASD
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        {
+            if (selection != null)
+            {
+                selection.Previous();
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        {
+            if (selection != null)
+            {
+                selection.Next();
+            }
+        }
+        // Confirm selection with Enter or Space
+        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        {
+            ConfirmNormalAttackSelection();
+        }
+        // Handle mouse click on unit (direct selection)
+        else if (Input.GetMouseButtonDown(0))
+        {
+            // For now, just confirm current selection
+            // Could be enhanced with raycast detection for direct unit clicking
+            ConfirmNormalAttackSelection();
+        }
+    }
+    
     #region Button Selection Mode
     
     /// <summary>
-    /// Enables button selection mode for cycling between SkillsButton and ItemsButton
+    /// Enables button selection mode for cycling between SkillsButton, NormalAttackButton, and ItemsButton
     /// </summary>
     private void EnableButtonSelectionMode()
     {
@@ -591,12 +876,42 @@ public class ActionPanelManager : MonoBehaviour
         
         isButtonSelectionMode = true;
         
-        // Set up selection with the two buttons
-        Button[] buttons = new Button[] { SkillsButton, ItemsButton };
+        // Set up selection with the three buttons (only include non-null buttons)
+        List<Button> buttonList = new List<Button>();
+        if (SkillsButton != null) buttonList.Add(SkillsButton);
+        if (NormalAttackButton != null) buttonList.Add(NormalAttackButton);
+        if (ItemsButton != null) buttonList.Add(ItemsButton);
+        
+        Button[] buttons = buttonList.ToArray();
         selection.SetSelection(buttons, SelectionType.UIButtons);
         
         // Update markers based on initial selection
         UpdateButtonSelectionMarkers();
+    }
+    
+    /// <summary>
+    /// Selects the NormalAttackButton in the current button selection
+    /// </summary>
+    public void SelectNormalAttackButton()
+    {
+        if (selection == null || NormalAttackButton == null)
+            return;
+        
+        // Get all items from selection (even if not valid yet, GetAllItems should still work)
+        object[] allItems = selection.GetAllItems();
+        if (allItems == null || allItems.Length == 0)
+            return;
+        
+        // Find the index of NormalAttackButton in the selection
+        for (int i = 0; i < allItems.Length; i++)
+        {
+            if (allItems[i] is Button button && button == NormalAttackButton)
+            {
+                selection.SetIndex(i);
+                UpdateButtonSelectionMarkers();
+                return;
+            }
+        }
     }
     
     /// <summary>
@@ -654,6 +969,10 @@ public class ActionPanelManager : MonoBehaviour
             {
                 ShowSkillsPanel();
             }
+            else if (button == NormalAttackButton)
+            {
+                OnNormalAttackClicked();
+            }
             else if (button == ItemsButton)
             {
                 ShowItemsPanel();
@@ -690,13 +1009,20 @@ public class ActionPanelManager : MonoBehaviour
             if (selectedItem is Button button)
             {
                 int markerIndex = -1;
+                
+                // Map button to marker index based on button order
+                // SkillsButton = 0, NormalAttackButton = 1, ItemsButton = 2
                 if (button == SkillsButton)
                 {
                     markerIndex = 0; // SelectMarker1 for SkillsButton
                 }
+                else if (button == NormalAttackButton)
+                {
+                    markerIndex = 1; // SelectMarker2 for NormalAttackButton
+                }
                 else if (button == ItemsButton)
                 {
-                    markerIndex = 1; // SelectMarker2 for ItemsButton
+                    markerIndex = 2; // SelectMarker3 for ItemsButton
                 }
                 
                 if (markerIndex >= 0)
