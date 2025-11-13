@@ -296,11 +296,8 @@ public class ActionPanelManager : MonoBehaviour
         // Enable button selection mode
         EnableButtonSelectionMode();
         
-        // If returning from SkillsPanel or ItemsPanel, select NormalAttackButton by default
-        if (returningFromSubPanel && NormalAttackButton != null)
-        {
-            SelectNormalAttackButton();
-        }
+        // Always default to NormalAttackButton (attack) when showing action panel
+        SelectNormalAttackButton();
         
         // Update back button visibility
         UpdateBackButtonVisibility();
@@ -759,6 +756,9 @@ public class ActionPanelManager : MonoBehaviour
         
         // Re-enable button selection mode
         EnableButtonSelectionMode();
+        
+        // Default selection back to NormalAttackButton (attack)
+        SelectNormalAttackButton();
         
         Debug.Log("NormalAttack selection mode cancelled");
     }

@@ -881,6 +881,14 @@ public class Selection : MonoBehaviour
         marker.SetActive(true);
         selectionMarkers[item] = marker;
         
+        // Disable raycast targeting on all Graphic components (Image, Text, RawImage, etc.)
+        // so the marker doesn't block button clicks underneath
+        Graphic[] graphics = marker.GetComponentsInChildren<Graphic>(true);
+        foreach (Graphic graphic in graphics)
+        {
+            graphic.raycastTarget = false;
+        }
+        
         // Ensure it has a RectTransform
         RectTransform rectTransform = marker.GetComponent<RectTransform>();
         if (rectTransform == null)
