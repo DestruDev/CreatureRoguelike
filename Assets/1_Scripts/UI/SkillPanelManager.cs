@@ -324,7 +324,8 @@ public class SkillPanelManager : MonoBehaviour
                 // Only confirm if we have a valid unit selected (not empty space)
                 if (selectedUnit != null)
                 {
-                    ConfirmSelection();
+                    // Show marker briefly before confirming to give visual feedback
+                    StartCoroutine(DelayedConfirmSelection(0.15f));
                 }
             }
         }
@@ -859,6 +860,15 @@ public class SkillPanelManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Coroutine to delay confirmation so selection marker is visible
+    /// </summary>
+    private System.Collections.IEnumerator DelayedConfirmSelection(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ConfirmSelection();
+    }
+    
     /// <summary>
     /// Confirms the current selection and uses the skill
     /// </summary>

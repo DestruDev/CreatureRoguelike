@@ -170,7 +170,8 @@ public class ActionPanelManager : MonoBehaviour
                 {
                     // Reset ignore flag since we're processing a valid unit click
                     ignoreNextMouseClick = false;
-                    ConfirmNormalAttackSelection();
+                    // Show marker briefly before confirming to give visual feedback
+                    StartCoroutine(DelayedConfirmNormalAttackSelection(0.15f));
                     return;
                 }
             }
@@ -845,6 +846,15 @@ public class ActionPanelManager : MonoBehaviour
         SelectNormalAttackButton();
         
         Debug.Log("NormalAttack selection mode cancelled");
+    }
+    
+    /// <summary>
+    /// Coroutine to delay confirmation so selection marker is visible
+    /// </summary>
+    private System.Collections.IEnumerator DelayedConfirmNormalAttackSelection(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ConfirmNormalAttackSelection();
     }
     
     /// <summary>
