@@ -3911,7 +3911,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Hover
   HoverUI: {fileID: 109220678}
   hoverText: {fileID: 1962038955}
-  hoverTriggerObjects: []
+  hoverTriggerObjects:
+  - triggerObject: {fileID: 244986931}
+    positionOffset: {x: 100, y: -90}
 --- !u!1 &444719010
 GameObject:
   m_ObjectHideFlags: 0

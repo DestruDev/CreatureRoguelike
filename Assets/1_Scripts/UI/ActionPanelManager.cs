@@ -46,6 +46,8 @@ public class ActionPanelManager : MonoBehaviour
     private bool isNormalAttackSelectionMode = false;
     private Unit normalAttackCastingUnit = null;
     private Skill normalAttackCurrentSkill = null;
+    private bool ignoreNextMouseClick = false; // Prevents immediate confirmation when entering selection mode
+    private bool ignoreNextKeyboardConfirm = false; // Prevents immediate confirmation when entering selection mode via keyboard
 
     private void Start()
     {
@@ -145,6 +147,43 @@ public class ActionPanelManager : MonoBehaviour
         UpdatePanelVisibility();
     }
     
+    void LateUpdate()
+    {
+        // Check for mouse click confirmation after Selection class has processed clicks
+        // This ensures we check after Selection's Update has run
+        if (isNormalAttackSelectionMode && Input.GetMouseButtonDown(0))
+        {
+            // Don't process if clicking on UI elements
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+            
+            // Check if Selection class selected a unit (meaning user clicked on a valid target)
+            if (selection != null && selection.IsValidSelection())
+            {
+                Unit selectedUnit = selection.GetSelectedUnit();
+                // If a valid unit was selected, it means the click was on a unit (not the button)
+                // So we should process it even if ignoreNextMouseClick is true
+                if (selectedUnit != null)
+                {
+                    // Reset ignore flag since we're processing a valid unit click
+                    ignoreNextMouseClick = false;
+                    ConfirmNormalAttackSelection();
+                    return;
+                }
+            }
+            
+            // If no valid unit was selected, check ignore flag (prevents button click from auto-confirming)
+            if (ignoreNextMouseClick)
+            {
+                ignoreNextMouseClick = false;
+                return;
+            }
+        }
+    }
+    
     /// <summary>
     /// Checks if inspect mode is currently active
     /// </summary>
@@ -165,6 +204,25 @@ public class ActionPanelManager : MonoBehaviour
     {
         // Don't update visibility during skill execution or inspect mode
         if (isSkillExecuting || IsInInspectMode())
+        {
+            return;
+        }
+        
+        // Don't update visibility during selection mode (skill/item/normal attack target selection)
+        if (isNormalAttackSelectionMode)
+        {
+            return;
+        }
+        
+        // Check if skill or item selection mode is active
+        SkillPanelManager skillPanelManager = FindFirstObjectByType<SkillPanelManager>();
+        if (skillPanelManager != null && skillPanelManager.IsInSelectionMode())
+        {
+            return;
+        }
+        
+        ItemPanelManager itemPanelManager = FindFirstObjectByType<ItemPanelManager>();
+        if (itemPanelManager != null && itemPanelManager.IsInSelectionMode())
         {
             return;
         }
@@ -700,6 +758,20 @@ public class ActionPanelManager : MonoBehaviour
         normalAttackCastingUnit = caster;
         normalAttackCurrentSkill = skill;
         
+        // Hide user panel when entering selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.HideUserPanel();
+        }
+        
+        // Ignore the next mouse click and keyboard confirm to prevent immediate confirmation from button activation
+        ignoreNextMouseClick = true;
+        ignoreNextKeyboardConfirm = true;
+        
         // Convert SkillTargetType to UnitTargetType
         UnitTargetType targetType = ConvertTargetType(skill.targetType);
         
@@ -748,10 +820,22 @@ public class ActionPanelManager : MonoBehaviour
         isNormalAttackSelectionMode = false;
         normalAttackCastingUnit = null;
         normalAttackCurrentSkill = null;
+        ignoreNextMouseClick = false; // Reset flags
+        ignoreNextKeyboardConfirm = false;
         
         if (selection != null)
         {
             selection.ClearSelection();
+        }
+        
+        // Show user panel again when exiting selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
         }
         
         // Re-enable button selection mode
@@ -846,15 +930,16 @@ public class ActionPanelManager : MonoBehaviour
         // Confirm selection with Enter or Space
         else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
         {
+            // Ignore confirm if we just entered selection mode (prevents button activation from auto-confirming)
+            if (ignoreNextKeyboardConfirm)
+            {
+                ignoreNextKeyboardConfirm = false;
+                return;
+            }
+            
             ConfirmNormalAttackSelection();
         }
-        // Handle mouse click on unit (direct selection)
-        else if (Input.GetMouseButtonDown(0))
-        {
-            // For now, just confirm current selection
-            // Could be enhanced with raycast detection for direct unit clicking
-            ConfirmNormalAttackSelection();
-        }
+        // Mouse click handling is done in LateUpdate to ensure Selection class processes it first
     }
     
     #region Button Selection Mode

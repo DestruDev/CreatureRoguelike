@@ -269,11 +269,7 @@ public class ItemPanelManager : MonoBehaviour
                 {
                     CancelSelectionMode();
                 }
-                // Check for mouse click on a unit (direct selection)
-                else if (Input.GetMouseButtonDown(0))
-                {
-                    HandleMouseClickOnUnit();
-                }
+                // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
                 // Navigate through targets with arrow keys or WASD
                 else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
                 {
@@ -291,6 +287,40 @@ public class ItemPanelManager : MonoBehaviour
                 }
                 // Confirm selection with Enter or Space
                 else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                {
+                    ConfirmSelection();
+                }
+            }
+        }
+    }
+    
+    void LateUpdate()
+    {
+        // Check for mouse click confirmation after Selection class has processed clicks
+        // This ensures we check after Selection's Update has run
+        if (isSelectionMode && Input.GetMouseButtonDown(0))
+        {
+            // Don't process if clicking on UI elements
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+            
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+                return;
+            }
+            
+            // The Selection class's Update() has already handled the mouse click and selected the unit
+            // We just need to confirm if there's a valid selection (meaning a unit was clicked)
+            if (selection != null && selection.IsValidSelection())
+            {
+                Unit selectedUnit = selection.GetSelectedUnit();
+                // Only confirm if we have a valid unit selected (not empty space)
+                if (selectedUnit != null)
                 {
                     ConfirmSelection();
                 }
@@ -698,6 +728,12 @@ public class ItemPanelManager : MonoBehaviour
         currentItemIndex = itemIndex;
         currentItem = item;
 
+        // Hide user panel when entering selection mode
+        if (gameManager != null)
+        {
+            gameManager.HideUserPanel();
+        }
+
         // Convert SkillTargetType to UnitTargetType
         UnitTargetType targetType = ConvertTargetType(item.targetType);
 
@@ -754,10 +790,24 @@ public class ItemPanelManager : MonoBehaviour
         if (!isSelectionMode || selection == null)
             return;
 
-        // Try to get unit under mouse (similar to SkillPanelManager)
-        // For now, use keyboard selection confirmation
-        // This could be enhanced with raycast detection
-        ConfirmSelection();
+        // Don't process if clicking on UI elements
+        if (UnityEngine.EventSystems.EventSystem.current != null && 
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
+        // The Selection class's Update() has already handled the mouse click and selected the unit
+        // We just need to confirm if there's a valid selection (meaning a unit was clicked)
+        if (selection.IsValidSelection())
+        {
+            Unit selectedUnit = selection.GetSelectedUnit();
+            // Only confirm if we have a valid unit selected (not empty space)
+            if (selectedUnit != null)
+            {
+                ConfirmSelection();
+            }
+        }
     }
     
     /// <summary>
@@ -813,6 +863,16 @@ public class ItemPanelManager : MonoBehaviour
         if (selection != null)
         {
             selection.ClearSelection();
+        }
+        
+        // Show user panel again when exiting selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
         }
         
         // Re-enable button selection mode to return to item button navigation

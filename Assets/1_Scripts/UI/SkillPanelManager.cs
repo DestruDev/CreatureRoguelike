@@ -271,11 +271,7 @@ public class SkillPanelManager : MonoBehaviour
                 {
                     CancelSelectionMode();
                 }
-                // Check for mouse click on a unit (direct selection)
-                else if (Input.GetMouseButtonDown(0))
-                {
-                    HandleMouseClickOnUnit();
-                }
+                // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
                 // Navigate through targets with arrow keys or WASD
                 else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
                 {
@@ -293,6 +289,40 @@ public class SkillPanelManager : MonoBehaviour
                 }
                 // Confirm selection with Enter or Space (keyboard navigation confirmation)
                 else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                {
+                    ConfirmSelection();
+                }
+            }
+        }
+    }
+    
+    void LateUpdate()
+    {
+        // Check for mouse click confirmation after Selection class has processed clicks
+        // This ensures we check after Selection's Update has run
+        if (isSelectionMode && Input.GetMouseButtonDown(0))
+        {
+            // Don't process if clicking on UI elements
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+            
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+                return;
+            }
+            
+            // The Selection class's Update() has already handled the mouse click and selected the unit
+            // We just need to confirm if there's a valid selection (meaning a unit was clicked)
+            if (selection != null && selection.IsValidSelection())
+            {
+                Unit selectedUnit = selection.GetSelectedUnit();
+                // Only confirm if we have a valid unit selected (not empty space)
+                if (selectedUnit != null)
                 {
                     ConfirmSelection();
                 }
@@ -667,6 +697,16 @@ public class SkillPanelManager : MonoBehaviour
         currentCastingUnit = caster;
         currentSkill = skill;
 
+        // Hide user panel when entering selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.HideUserPanel();
+        }
+
         // Convert SkillTargetType to UnitTargetType
         UnitTargetType targetType = ConvertTargetType(skill.targetType);
 
@@ -727,22 +767,24 @@ public class SkillPanelManager : MonoBehaviour
         if (!isSelectionMode || selection == null)
             return;
 
-        // Get the unit under the mouse cursor
-        Unit clickedUnit = GetUnitUnderMouse();
-        
-        if (clickedUnit != null)
+        // Don't process if clicking on UI elements
+        if (UnityEngine.EventSystems.EventSystem.current != null && 
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            // Check if the clicked unit is selectable
-            if (IsUnitSelectable(clickedUnit))
+            return;
+        }
+
+        // The Selection class's Update() has already handled the mouse click and selected the unit
+        // We just need to confirm if there's a valid selection (meaning a unit was clicked)
+        if (selection.IsValidSelection())
+        {
+            Unit selectedUnit = selection.GetSelectedUnit();
+            // Only confirm if we have a valid unit selected (not empty space)
+            if (selectedUnit != null)
             {
-                // Select and immediately confirm this unit
-                selection.SelectItem(clickedUnit);
                 ConfirmSelection();
-                return;
             }
         }
-        
-        // If no unit was clicked, do nothing (don't confirm keyboard selection on random clicks)
     }
 
     /// <summary>
@@ -906,6 +948,16 @@ public class SkillPanelManager : MonoBehaviour
         if (selection != null)
         {
             selection.ClearSelection();
+        }
+
+        // Show user panel again when exiting selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
         }
 
         // Re-enable button selection mode to return to skill button navigation

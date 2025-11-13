@@ -98,6 +98,12 @@ public class Selection : MonoBehaviour
         if (currentSelectionType == SelectionType.Units)
         {
             UpdateMouseHoverHighlight();
+            
+            // Handle mouse click selection for units
+            if (Input.GetMouseButtonDown(0))
+            {
+                HandleMouseClickSelection();
+            }
         }
         else
         {
@@ -687,7 +693,7 @@ public class Selection : MonoBehaviour
     /// <summary>
     /// Gets the unit that the mouse is currently hovering over
     /// </summary>
-    private Unit GetUnitUnderMouse()
+    public Unit GetUnitUnderMouse()
     {
         if (raycastCamera == null)
             return null;
@@ -697,11 +703,21 @@ public class Selection : MonoBehaviour
         mousePos.z = raycastCamera.nearClipPlane + 1f; // Set appropriate distance
         Vector3 worldPos = raycastCamera.ScreenToWorldPoint(mousePos);
         
-        // Raycast from camera through mouse position
+        // Try 2D physics raycast first (for sprites with 2D colliders)
+        Vector3 mouseWorldPos2D = raycastCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, raycastCamera.nearClipPlane));
+        Collider2D hit2D = Physics2D.OverlapPoint(new Vector2(mouseWorldPos2D.x, mouseWorldPos2D.y));
+        if (hit2D != null)
+        {
+            Unit unit = hit2D.GetComponent<Unit>();
+            if (unit != null && unit.IsAlive())
+            {
+                return unit;
+            }
+        }
+        
+        // Try 3D physics raycast (if units have 3D colliders)
         Ray ray = raycastCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        
-        // Try physics raycast first (if units have colliders)
         if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
             Unit unit = hit.collider.GetComponent<Unit>();
@@ -766,6 +782,28 @@ public class Selection : MonoBehaviour
     {
         hoveredUnit = null;
         selectedUnit = null;
+    }
+    
+    /// <summary>
+    /// Handles mouse click to select a unit directly
+    /// </summary>
+    private void HandleMouseClickSelection()
+    {
+        // Don't process clicks if clicking on UI elements
+        if (UnityEngine.EventSystems.EventSystem.current != null && 
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+        
+        // Get the unit under the mouse cursor
+        Unit clickedUnit = GetUnitUnderMouse();
+        
+        if (clickedUnit != null && IsUnitSelectable(clickedUnit))
+        {
+            // Select the clicked unit
+            SelectItem(clickedUnit);
+        }
     }
 
     #endregion

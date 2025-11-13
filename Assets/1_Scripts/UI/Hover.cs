@@ -22,9 +22,32 @@ public class Hover : MonoBehaviour
     private Canvas canvas;
     private Vector2 currentOffset = Vector2.zero;
     
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        // Ensure default position offset is applied in the Editor when items are added
+        foreach (var triggerObj in hoverTriggerObjects)
+        {
+            if (triggerObj != null && triggerObj.positionOffset == Vector2.zero)
+            {
+                triggerObj.positionOffset = new Vector2(100, -90);
+            }
+        }
+    }
+#endif
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // Ensure default position offset is applied to any items that don't have it set
+        foreach (var triggerObj in hoverTriggerObjects)
+        {
+            if (triggerObj != null && triggerObj.positionOffset == Vector2.zero)
+            {
+                triggerObj.positionOffset = new Vector2(100, -90);
+            }
+        }
+        
         // Hide the UI GameObject by default
         if (HoverUI != null)
         {
