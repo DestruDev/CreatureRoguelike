@@ -844,7 +844,10 @@ public class Selection : MonoBehaviour
     private void UpdateSimpleSelectionMarkers()
     {
         if (SimpleSelectionMarker == null)
+        {
+            Debug.LogWarning("Selection: SimpleSelectionMarker is null! Cannot update markers.");
             return;
+        }
         
         // Get the currently selected item
         object selectedItem = IsValidSelection() ? selectableItems[currentIndex] : null;

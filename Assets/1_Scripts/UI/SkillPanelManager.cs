@@ -133,6 +133,9 @@ public class SkillPanelManager : MonoBehaviour
             }
         }
         
+        // Clear any existing selection first to ensure we start fresh
+        selection.ClearSelection();
+        
         isButtonSelectionMode = true;
         
         // Get available skill buttons (only buttons with skills)
@@ -224,6 +227,18 @@ public class SkillPanelManager : MonoBehaviour
 
     private void Update()
     {
+        // Only process input if this GameObject is active in the hierarchy
+        if (!gameObject.activeInHierarchy)
+            return;
+        
+        // Check if SkillsPanel is actually visible (via ActionPanelManager)
+        ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        if (actionPanelManager != null && actionPanelManager.SkillsPanel != null && !actionPanelManager.SkillsPanel.activeSelf)
+        {
+            // Skills panel is not visible, don't process input
+            return;
+        }
+        
         // Update skills to reflect cooldown changes (only for player units, and only update brightness)
         if (gameManager != null && !isSelectionMode && !isButtonSelectionMode)
         {

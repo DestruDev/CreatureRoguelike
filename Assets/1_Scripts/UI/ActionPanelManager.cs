@@ -433,6 +433,8 @@ public class ActionPanelManager : MonoBehaviour
         if (itemPanelManager != null)
         {
             itemPanelManager.UpdateItems();
+            // EnableButtonSelectionMode will be called by OnEnable, but we call it here too
+            // to ensure it's set up even if OnEnable was already called
             itemPanelManager.EnableButtonSelectionMode();
         }
         

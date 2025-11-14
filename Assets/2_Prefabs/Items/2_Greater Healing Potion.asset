@@ -10,15 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9fc035a6e25d2e14c83858eeae172353, type: 3}
-  m_Name: Healing Potion
+  m_Name: 2_Greater Healing Potion
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  itemName: Healing Potion
-  itemID: 1
-  itemDescription: 'A healing potion.
-
-'
-  icon: {fileID: 1764758472, guid: ae2c6821683db024e9aaaa3c70f68f6a, type: 3}
+  itemName: G. Healing Potion
+  itemID: 2
+  itemDescription: A better healing potion.
+  icon: {fileID: -286221771, guid: ae2c6821683db024e9aaaa3c70f68f6a, type: 3}
   itemType: 0
   consumableSubtype: 0
-  healAmount: 50
+  healAmount: 100
   targetType: 1

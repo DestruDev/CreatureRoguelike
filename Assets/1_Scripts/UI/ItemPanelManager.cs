@@ -6,9 +6,9 @@ using System.Collections.Generic;
 public class ItemPanelManager : MonoBehaviour
 {
     [Header("References")]
+    public GameManager gameManager;
+    public Selection selection; // Reference to Selection component
     private Inventory inventory;
-    private GameManager gameManager;
-    private Selection selection;
     private ActionPanelManager actionPanelManager;
 
     [Header("Item Names")]
@@ -63,6 +63,8 @@ public class ItemPanelManager : MonoBehaviour
     // Button selection mode state (for navigating item buttons)
     private bool isButtonSelectionMode = false;
     private bool ignoreInputThisFrame = false; // Prevents accidental activation when opening panel
+    private bool isEnablingButtonSelection = false; // Prevents double-calling EnableButtonSelectionMode
+    private int lastSelectedButtonIndex = -1; // Track which button was selected before entering selection mode
 
     private void Start()
     {
@@ -122,6 +124,7 @@ public class ItemPanelManager : MonoBehaviour
         if (itemNames != null && itemIcons != null && itemButtons != null)
         {
             UpdateItems();
+            // Enable button selection mode when panel becomes visible (same as SkillPanelManager)
             EnableButtonSelectionMode();
         }
     }
@@ -139,12 +142,19 @@ public class ItemPanelManager : MonoBehaviour
     /// </summary>
     public void EnableButtonSelectionMode()
     {
+        // Prevent double-calling
+        if (isEnablingButtonSelection)
+            return;
+            
+        isEnablingButtonSelection = true;
+        
         if (selection == null)
         {
             selection = FindFirstObjectByType<Selection>();
             if (selection == null)
             {
                 Debug.LogWarning("ItemPanelManager: Selection component not found. Button selection mode disabled.");
+                isEnablingButtonSelection = false;
                 return;
             }
         }
@@ -154,15 +164,27 @@ public class ItemPanelManager : MonoBehaviour
             inventory = FindFirstObjectByType<Inventory>();
         }
         
+        // Clear any existing selection first to ensure we start fresh
+        selection.ClearSelection();
+        
         isButtonSelectionMode = true;
         
-        // Get available item buttons (only buttons with items)
+        // Get available item buttons (only buttons with items and that are active in hierarchy)
         List<Button> availableButtons = new List<Button>();
-        if (inventory != null && inventory.Items != null)
+        
+        if (inventory == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Inventory is null in EnableButtonSelectionMode!");
+        }
+        else if (inventory.Items == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Inventory.Items is null in EnableButtonSelectionMode!");
+        }
+        else
         {
             for (int i = 0; i < 4 && i < inventory.Items.Count; i++)
             {
-                if (inventory.Items[i] != null && inventory.Items[i].item != null && itemButtons[i] != null)
+                if (inventory.Items[i] != null && inventory.Items[i].item != null && itemButtons[i] != null && itemButtons[i].gameObject.activeInHierarchy)
                 {
                     availableButtons.Add(itemButtons[i]);
                 }
@@ -176,6 +198,14 @@ public class ItemPanelManager : MonoBehaviour
             // Ignore input for this frame to prevent accidental activation
             ignoreInputThisFrame = true;
         }
+        else
+        {
+            Debug.LogWarning($"ItemPanelManager: No available item buttons to select! inventory={inventory != null}, items={inventory?.Items != null}, itemsCount={inventory?.Items?.Count ?? 0}");
+            // Still set isButtonSelectionMode to false if we can't set up selection
+            isButtonSelectionMode = false;
+        }
+        
+        isEnablingButtonSelection = false;
     }
     
     /// <summary>
@@ -196,8 +226,17 @@ public class ItemPanelManager : MonoBehaviour
     /// </summary>
     private void HandleButtonSelectionInput()
     {
-        if (selection == null || !selection.IsValidSelection())
+        if (selection == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Selection is null in HandleButtonSelectionInput!");
             return;
+        }
+        
+        if (!selection.IsValidSelection())
+        {
+            Debug.LogWarning($"ItemPanelManager: Selection is not valid! Count: {selection.Count}, CurrentIndex: {selection.CurrentIndex}");
+            return;
+        }
         
         // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
         if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
@@ -241,6 +280,21 @@ public class ItemPanelManager : MonoBehaviour
 
     private void Update()
     {
+        // Only process input if this GameObject is active in the hierarchy
+        if (!gameObject.activeInHierarchy)
+            return;
+        
+        // Check if ItemsPanel is actually visible (via ActionPanelManager)
+        if (actionPanelManager == null)
+        {
+            actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        }
+        if (actionPanelManager != null && actionPanelManager.ItemsPanel != null && !actionPanelManager.ItemsPanel.activeSelf)
+        {
+            // Items panel is not visible, don't process input
+            return;
+        }
+        
         // Handle button selection mode (vertical navigation through item buttons)
         if (isButtonSelectionMode && !isSelectionMode)
         {
@@ -251,8 +305,26 @@ public class ItemPanelManager : MonoBehaviour
             }
             else
             {
-                HandleButtonSelectionInput();
+                // Debug: Check if we're in the right state
+                if (selection != null)
+                {
+                    HandleButtonSelectionInput();
+                }
+                else
+                {
+                    Debug.LogWarning("ItemPanelManager: Selection is null in Update()!");
+                }
             }
+        }
+        else if (isButtonSelectionMode && isSelectionMode)
+        {
+            // Debug: We're in button selection mode but also in selection mode (shouldn't happen)
+            Debug.LogWarning($"ItemPanelManager: isButtonSelectionMode={isButtonSelectionMode}, isSelectionMode={isSelectionMode}");
+        }
+        else if (!isButtonSelectionMode && !isSelectionMode)
+        {
+            // Debug: Check if we should be in button selection mode
+            // This shouldn't log constantly, so only log once
         }
         
         // Handle selection mode input
@@ -469,10 +541,8 @@ public class ItemPanelManager : MonoBehaviour
         }
         
         // Refresh button selection if in button selection mode (in case available buttons changed)
-        if (isButtonSelectionMode)
-        {
-            EnableButtonSelectionMode();
-        }
+        // Note: Don't call EnableButtonSelectionMode here if it was just called by ShowItemsPanel
+        // to avoid double-calling. The selection should already be set up.
     }
     
     /// <summary>
@@ -722,6 +792,24 @@ public class ItemPanelManager : MonoBehaviour
             return;
         }
 
+        // Store the currently selected button index before disabling button selection mode
+        if (selection != null && selection.IsValidSelection())
+        {
+            object selectedItem = selection.CurrentSelection;
+            if (selectedItem is Button button)
+            {
+                // Find which item button was selected
+                for (int i = 0; i < itemButtons.Length; i++)
+                {
+                    if (itemButtons[i] == button)
+                    {
+                        lastSelectedButtonIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
         // Disable button selection mode before entering target selection mode
         DisableButtonSelectionMode();
 
@@ -888,7 +976,61 @@ public class ItemPanelManager : MonoBehaviour
         // Re-enable button selection mode to return to item button navigation
         EnableButtonSelectionMode();
         
+        // Restore selection to the previously selected button (if it's still available)
+        // Use a coroutine to restore after EnableButtonSelectionMode has fully set up the selection
+        if (lastSelectedButtonIndex >= 0)
+        {
+            StartCoroutine(RestoreButtonSelectionAfterDelay());
+        }
+        
         Debug.Log("Cancelled item selection mode");
+    }
+    
+    /// <summary>
+    /// Coroutine to restore button selection after EnableButtonSelectionMode has set up the selection
+    /// </summary>
+    private System.Collections.IEnumerator RestoreButtonSelectionAfterDelay()
+    {
+        // Wait a frame to ensure EnableButtonSelectionMode has fully set up the selection
+        yield return null;
+        
+        // Only restore if we're still in button selection mode (not if something else changed)
+        if (!isButtonSelectionMode || selection == null)
+        {
+            lastSelectedButtonIndex = -1;
+            yield break;
+        }
+        
+        // Restore selection to the previously selected button (if it's still available)
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        lastSelectedButtonIndex = -1; // Reset immediately to prevent issues
+        
+        if (buttonIndexToRestore >= 0 && buttonIndexToRestore < itemButtons.Length && itemButtons[buttonIndexToRestore] != null)
+        {
+            // Check if the button has an item (is available)
+            if (inventory != null && inventory.Items != null && 
+                buttonIndexToRestore < inventory.Items.Count && 
+                inventory.Items[buttonIndexToRestore] != null && 
+                inventory.Items[buttonIndexToRestore].item != null)
+            {
+                // Button is available, restore selection to it
+                if (selection.IsValidSelection())
+                {
+                    object[] allItems = selection.GetAllItems();
+                    if (allItems != null)
+                    {
+                        for (int i = 0; i < allItems.Length; i++)
+                        {
+                            if (allItems[i] is Button button && button == itemButtons[buttonIndexToRestore])
+                            {
+                                selection.SetIndex(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     /// <summary>
