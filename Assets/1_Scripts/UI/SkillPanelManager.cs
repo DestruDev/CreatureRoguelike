@@ -56,7 +56,6 @@ public class SkillPanelManager : MonoBehaviour
     private int selectedSkillIndex = -1; // The skill index that triggered selection mode
     private Unit currentCastingUnit = null; // The unit casting the skill
     private Skill currentSkill = null; // The skill being cast
-    private Unit lastSelectedUnit = null; // Track which unit was selected before entering selection mode
     
     // Button selection mode state (for navigating skill buttons)
     private bool isButtonSelectionMode = false;
@@ -743,23 +742,11 @@ public class SkillPanelManager : MonoBehaviour
             gameManager.HideUserPanel();
         }
 
-        // Store the currently selected unit before setting up new selection
-        if (selection != null && selection.IsValidSelection() && selection.CurrentSelection is Unit unit)
-        {
-            lastSelectedUnit = unit;
-        }
-
         // Convert SkillTargetType to UnitTargetType
         UnitTargetType targetType = ConvertTargetType(skill.targetType);
 
-        // Setup unit selection
+        // Setup unit selection (will automatically restore previously selected unit based on target type)
         selection.SetupUnitSelection(targetType, caster, skill);
-        
-        // Restore selection to previously selected unit if it's still valid
-        if (lastSelectedUnit != null && selection != null && selection.IsValidSelection())
-        {
-            selection.SelectItem(lastSelectedUnit);
-        }
 
         Debug.Log($"Entered selection mode for skill: {skill.skillName}, Target type: {targetType}");
 
@@ -997,10 +984,10 @@ public class SkillPanelManager : MonoBehaviour
         if (!isSelectionMode)
             return;
 
-        // Store the currently selected unit before clearing (for next time)
-        if (selection != null && selection.IsValidSelection() && selection.CurrentSelection is Unit unit)
+        // Store the currently selected unit before clearing (for next time, based on target type)
+        if (selection != null && currentCastingUnit != null)
         {
-            lastSelectedUnit = unit;
+            selection.StoreLastSelectedUnit(currentCastingUnit);
         }
 
         isSelectionMode = false;

@@ -45,6 +45,10 @@ public class Selection : MonoBehaviour
     // Currently selected unit (from keyboard navigation)
     private Unit selectedUnit = null;
     
+    // Store last selected units by target type (for restoring selection when re-entering selection mode)
+    private Unit lastSelectedAlly = null;
+    private Unit lastSelectedEnemy = null;
+    
     // Dictionary to track instantiated selection markers for each selectable item
     private Dictionary<object, GameObject> selectionMarkers = new Dictionary<object, GameObject>();
 
@@ -142,6 +146,82 @@ public class Selection : MonoBehaviour
         
         // Set the selection (this will trigger NotifySelectionChanged which will highlight the first unit)
         SetSelection(validUnits.ToArray(), SelectionType.Units);
+        
+        // Restore previously selected unit based on target type (allies vs enemies)
+        Unit unitToRestore = null;
+        if (caster != null)
+        {
+            // Determine if we're selecting allies or enemies
+            bool isSelectingAllies = targetType == UnitTargetType.Allies || 
+                                     targetType == UnitTargetType.AllAllies || 
+                                     targetType == UnitTargetType.Self;
+            bool isSelectingEnemies = targetType == UnitTargetType.Enemies || 
+                                      targetType == UnitTargetType.AllEnemies;
+            
+            // For "Any" or "AnyAlive", determine based on what units are actually in the list
+            if (targetType == UnitTargetType.Any || targetType == UnitTargetType.AnyAlive)
+            {
+                // Check if we have a stored unit that matches the caster's team
+                if (lastSelectedAlly != null && lastSelectedAlly.IsPlayerUnit == caster.IsPlayerUnit && validUnits.Contains(lastSelectedAlly))
+                {
+                    unitToRestore = lastSelectedAlly;
+                }
+                else if (lastSelectedEnemy != null && lastSelectedEnemy.IsPlayerUnit != caster.IsPlayerUnit && validUnits.Contains(lastSelectedEnemy))
+                {
+                    unitToRestore = lastSelectedEnemy;
+                }
+            }
+            else if (isSelectingAllies && lastSelectedAlly != null && validUnits.Contains(lastSelectedAlly))
+            {
+                unitToRestore = lastSelectedAlly;
+            }
+            else if (isSelectingEnemies && lastSelectedEnemy != null && validUnits.Contains(lastSelectedEnemy))
+            {
+                unitToRestore = lastSelectedEnemy;
+            }
+        }
+        
+        // Restore the unit if we found one
+        if (unitToRestore != null && IsValidSelection())
+        {
+            SelectItem(unitToRestore);
+        }
+    }
+    
+    /// <summary>
+    /// Stores the currently selected unit based on target type (for restoring later)
+    /// Should be called when backing out of selection mode
+    /// </summary>
+    /// <param name="caster">The unit that was casting/using the skill/item</param>
+    public void StoreLastSelectedUnit(Unit caster = null)
+    {
+        if (IsValidSelection() && CurrentSelection is Unit unit)
+        {
+            // Determine if this is an ally or enemy relative to the caster
+            if (caster != null)
+            {
+                if (unit.IsPlayerUnit == caster.IsPlayerUnit)
+                {
+                    lastSelectedAlly = unit;
+                }
+                else
+                {
+                    lastSelectedEnemy = unit;
+                }
+            }
+            else
+            {
+                // If no caster, store based on unit type (player = ally, enemy = enemy)
+                if (unit.IsPlayerUnit)
+                {
+                    lastSelectedAlly = unit;
+                }
+                else
+                {
+                    lastSelectedEnemy = unit;
+                }
+            }
+        }
     }
 
     /// <summary>

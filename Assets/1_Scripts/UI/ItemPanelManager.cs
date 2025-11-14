@@ -59,7 +59,7 @@ public class ItemPanelManager : MonoBehaviour
     private bool isSelectionMode = false;
     private Item currentItem = null;
     private int currentItemIndex = -1;
-    private Unit lastSelectedUnit = null; // Track which unit was selected before entering selection mode
+    private Unit currentCastingUnit = null; // Store the unit using the item for restoring selection
     
     // Button selection mode state (for navigating item buttons)
     private bool isButtonSelectionMode = false;
@@ -824,23 +824,14 @@ public class ItemPanelManager : MonoBehaviour
             gameManager.HideUserPanel();
         }
 
-        // Store the currently selected unit before setting up new selection
-        if (selection != null && selection.IsValidSelection() && selection.CurrentSelection is Unit unit)
-        {
-            lastSelectedUnit = unit;
-        }
+        // Store the current unit for restoring selection later
+        currentCastingUnit = currentUnit;
 
         // Convert SkillTargetType to UnitTargetType
         UnitTargetType targetType = ConvertTargetType(item.targetType);
 
-        // Setup unit selection
+        // Setup unit selection (will automatically restore previously selected unit based on target type)
         selection.SetupUnitSelection(targetType, currentUnit);
-        
-        // Restore selection to previously selected unit if it's still valid
-        if (lastSelectedUnit != null && selection != null && selection.IsValidSelection())
-        {
-            selection.SelectItem(lastSelectedUnit);
-        }
 
         Debug.Log($"Entered selection mode for item: {item.itemName}, Target type: {targetType}");
 
@@ -967,15 +958,16 @@ public class ItemPanelManager : MonoBehaviour
     /// </summary>
     private void CancelSelectionMode()
     {
-        // Store the currently selected unit before clearing (for next time)
-        if (selection != null && selection.IsValidSelection() && selection.CurrentSelection is Unit unit)
+        // Store the currently selected unit before clearing (for next time, based on target type)
+        if (selection != null && currentCastingUnit != null)
         {
-            lastSelectedUnit = unit;
+            selection.StoreLastSelectedUnit(currentCastingUnit);
         }
 
         isSelectionMode = false;
         currentItem = null;
         currentItemIndex = -1;
+        currentCastingUnit = null;
         
         if (selection != null)
         {
