@@ -60,6 +60,7 @@ public class SkillPanelManager : MonoBehaviour
     // Button selection mode state (for navigating skill buttons)
     private bool isButtonSelectionMode = false;
     private bool ignoreInputThisFrame = false; // Prevents accidental activation when opening panel
+    private int lastSelectedButtonIndex = -1; // Track which button was selected before entering selection mode
 
     private void Start()
     {
@@ -690,6 +691,24 @@ public class SkillPanelManager : MonoBehaviour
             return;
         }
 
+        // Store which button was selected before entering selection mode
+        if (selection != null && selection.IsValidSelection())
+        {
+            object selectedItem = selection.CurrentSelection;
+            if (selectedItem is Button button)
+            {
+                // Find which skill button was selected
+                for (int i = 0; i < skillButtons.Length; i++)
+                {
+                    if (skillButtons[i] == button)
+                    {
+                        lastSelectedButtonIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
         // Disable button selection mode before entering target selection mode
         DisableButtonSelectionMode();
 
@@ -738,9 +757,9 @@ public class SkillPanelManager : MonoBehaviour
             case SkillTargetType.Self:
                 return UnitTargetType.Self;
             case SkillTargetType.Ally:
-                return UnitTargetType.Allies;
+                return UnitTargetType.AllAllies; // Use AllAllies to include self (for heal abilities)
             case SkillTargetType.Enemy:
-                return UnitTargetType.Enemies;
+                return UnitTargetType.AllEnemies;
             case SkillTargetType.Any:
                 return UnitTargetType.Any;
             default:
@@ -972,8 +991,65 @@ public class SkillPanelManager : MonoBehaviour
 
         // Re-enable button selection mode to return to skill button navigation
         EnableButtonSelectionMode();
+        
+        // Restore selection to the previously selected button (if it's still available)
+        // Use a coroutine to restore after EnableButtonSelectionMode has fully set up the selection
+        if (lastSelectedButtonIndex >= 0)
+        {
+            StartCoroutine(RestoreButtonSelectionAfterDelay());
+        }
 
         Debug.Log("Selection mode cancelled");
+    }
+    
+    /// <summary>
+    /// Coroutine to restore button selection after EnableButtonSelectionMode has set up the selection
+    /// </summary>
+    private System.Collections.IEnumerator RestoreButtonSelectionAfterDelay()
+    {
+        // Wait a frame to ensure EnableButtonSelectionMode has fully set up the selection
+        yield return null;
+        
+        // Only restore if we're still in button selection mode (not if something else changed)
+        if (!isButtonSelectionMode || selection == null)
+        {
+            lastSelectedButtonIndex = -1;
+            yield break;
+        }
+        
+        // Restore selection to the previously selected button (if it's still available)
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        lastSelectedButtonIndex = -1; // Reset immediately to prevent issues
+        
+        if (buttonIndexToRestore >= 0 && buttonIndexToRestore < skillButtons.Length && skillButtons[buttonIndexToRestore] != null)
+        {
+            // Check if the button has a skill (is available)
+            if (gameManager != null)
+            {
+                Unit currentUnit = gameManager.GetCurrentUnit();
+                if (currentUnit != null && currentUnit.Skills != null && 
+                    buttonIndexToRestore < currentUnit.Skills.Length && 
+                    currentUnit.Skills[buttonIndexToRestore] != null)
+                {
+                    // Button is available, restore selection to it
+                    if (selection.IsValidSelection())
+                    {
+                        object[] allItems = selection.GetAllItems();
+                        if (allItems != null)
+                        {
+                            for (int i = 0; i < allItems.Length; i++)
+                            {
+                                if (allItems[i] is Button button && button == skillButtons[buttonIndexToRestore])
+                                {
+                                    selection.SetIndex(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>

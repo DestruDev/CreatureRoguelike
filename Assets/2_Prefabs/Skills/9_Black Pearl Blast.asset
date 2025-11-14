@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
   m_Name: 9_Black Pearl Blast
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: 9_Black Pearl Blast
+  skillName: Black Pearl Blast
   skillID: 9
   description: A black pearl blast.
   icon: {fileID: -5906973516983679737, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}

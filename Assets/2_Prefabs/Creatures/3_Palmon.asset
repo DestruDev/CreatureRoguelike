@@ -19,6 +19,6 @@ MonoBehaviour:
   maxHP: 100
   currentHP: 100
   defense: 6
-  speed: 20
+  speed: 16
   skills:
   - {fileID: 11400000, guid: 9dc9250914aae8749bdd97487a6f87f8, type: 2}

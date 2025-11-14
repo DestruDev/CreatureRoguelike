@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 3_Heal
   m_EditorClassIdentifier: Assembly-CSharp::Skill
   skillName: Heal
+  skillID: 3
   description: A heal.
   icon: {fileID: 8020143640844766479, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
   damage: 0
