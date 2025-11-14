@@ -94,16 +94,16 @@ public class Skill : ScriptableObject
     {
         if (target == null) return false;
         
-        // Check if target is enemy or ally
-        bool isEnemy = true; // You'll need to implement team checking
-        bool isAlly = !isEnemy;
+        // Check if target is enemy or ally based on team assignment
+        bool isEnemy = caster != null && target.IsPlayerUnit != caster.IsPlayerUnit;
+        bool isAlly = caster != null && target.IsPlayerUnit == caster.IsPlayerUnit;
         
         switch (targetType)
         {
             case SkillTargetType.Self:
                 return target == caster;
             case SkillTargetType.Ally:
-                return isAlly;
+                return isAlly; // Includes self (same team)
             case SkillTargetType.Enemy:
                 return isEnemy;
             case SkillTargetType.Any:
