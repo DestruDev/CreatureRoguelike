@@ -47,11 +47,14 @@ public class InfoPanel : MonoBehaviour
         bool shouldShow = false;
         Skill currentSkill = null;
         Item currentItem = null;
+        int currentSkillIndex = -1;
         
         // Check if skills panel is active
         if (enableSkillInfo && actionPanelManager != null && actionPanelManager.SkillsPanel != null && actionPanelManager.SkillsPanel.activeSelf)
         {
-            currentSkill = GetSelectedSkill();
+            var skillData = GetSelectedSkill();
+            currentSkill = skillData.skill;
+            currentSkillIndex = skillData.index;
             if (currentSkill != null)
             {
                 shouldShow = true;
@@ -79,7 +82,7 @@ public class InfoPanel : MonoBehaviour
             {
                 if (currentSkill != null)
                 {
-                    infoText.text = FormatSkillInfo(currentSkill);
+                    infoText.text = FormatSkillInfo(currentSkill, currentSkillIndex);
                 }
                 else if (currentItem != null)
                 {
@@ -100,13 +103,13 @@ public class InfoPanel : MonoBehaviour
         }
     }
     
-    // Get the currently selected skill from the selection system
-    Skill GetSelectedSkill()
+    // Get the currently selected skill from the selection system (returns skill and index)
+    (Skill skill, int index) GetSelectedSkill()
     {
-        if (skillPanelManager == null || gameManager == null || selection == null) return null;
+        if (skillPanelManager == null || gameManager == null || selection == null) return (null, -1);
         
         Unit currentUnit = gameManager.GetCurrentUnit();
-        if (currentUnit == null || currentUnit.Skills == null) return null;
+        if (currentUnit == null || currentUnit.Skills == null) return (null, -1);
         
         // Check if there's a selected button
         if (selection.IsValidSelection())
@@ -116,13 +119,13 @@ public class InfoPanel : MonoBehaviour
             {
                 // Find which skill button was selected
                 if (button == skillPanelManager.skill1Button && currentUnit.Skills.Length > 0 && currentUnit.Skills[0] != null)
-                    return currentUnit.Skills[0];
+                    return (currentUnit.Skills[0], 0);
                 if (button == skillPanelManager.skill2Button && currentUnit.Skills.Length > 1 && currentUnit.Skills[1] != null)
-                    return currentUnit.Skills[1];
+                    return (currentUnit.Skills[1], 1);
                 if (button == skillPanelManager.skill3Button && currentUnit.Skills.Length > 2 && currentUnit.Skills[2] != null)
-                    return currentUnit.Skills[2];
+                    return (currentUnit.Skills[2], 2);
                 if (button == skillPanelManager.skill4Button && currentUnit.Skills.Length > 3 && currentUnit.Skills[3] != null)
-                    return currentUnit.Skills[3];
+                    return (currentUnit.Skills[3], 3);
             }
         }
         
@@ -131,11 +134,11 @@ public class InfoPanel : MonoBehaviour
         {
             if (currentUnit.Skills[i] != null)
             {
-                return currentUnit.Skills[i];
+                return (currentUnit.Skills[i], i);
             }
         }
         
-        return null;
+        return (null, -1);
     }
     
     // Get the currently selected item from the selection system
@@ -173,12 +176,23 @@ public class InfoPanel : MonoBehaviour
         return null;
     }
     
-    // Format skill information for display (same as Hover.cs)
-    string FormatSkillInfo(Skill skill)
+    // Format skill information for display (same as Hover.cs, but with unusability info)
+    string FormatSkillInfo(Skill skill, int skillIndex)
     {
         if (skill == null) return "";
         
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        
+        // Check if skill is unusable and get reason
+        string unusableReason = "";
+        if (gameManager != null && skillIndex >= 0)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && !currentUnit.CanUseSkill(skillIndex))
+            {
+                unusableReason = currentUnit.GetSkillUnusableReason(skillIndex);
+            }
+        }
         
         // Target Type
         sb.AppendLine($"<b>Target:</b> {skill.targetType}");
@@ -193,6 +207,13 @@ public class InfoPanel : MonoBehaviour
             sb.AppendLine($"<b>Heal:</b> {skill.healAmount}");
         }
         
+        // Show unusability reason if skill cannot be used
+        if (!string.IsNullOrEmpty(unusableReason))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"<color=red><b>Cannot use:</b> {unusableReason}</color>");
+        }
+        
         // Description
         if (!string.IsNullOrEmpty(skill.description))
         {
@@ -203,12 +224,23 @@ public class InfoPanel : MonoBehaviour
         return sb.ToString();
     }
     
-    // Format item information for display (same as Hover.cs)
+    // Format item information for display (same as Hover.cs, but with unusability info)
     string FormatItemInfo(Item item)
     {
         if (item == null) return "";
         
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        
+        // Check if item is unusable and get reason
+        string unusableReason = "";
+        if (itemPanelManager != null && gameManager != null)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null)
+            {
+                unusableReason = itemPanelManager.GetItemUnusableReason(item, currentUnit);
+            }
+        }
         
         // Target Type
         sb.AppendLine($"<b>Target:</b> {item.targetType}");
@@ -224,6 +256,13 @@ public class InfoPanel : MonoBehaviour
                 sb.AppendLine($"<b>Amount:</b> {item.healAmount}");
             }
             // Note: Currently items only have healAmount field. If damage/status amounts are added later, extend this.
+        }
+        
+        // Show unusability reason if item cannot be used
+        if (!string.IsNullOrEmpty(unusableReason))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"<color=red><b>Cannot use:</b> {unusableReason}</color>");
         }
         
         // Description

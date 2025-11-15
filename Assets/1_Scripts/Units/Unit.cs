@@ -361,7 +361,76 @@ public class Unit : MonoBehaviour
     
     public bool CanUseSkill(int skillIndex)
     {
-        return skillIndex >= 0 && skillIndex < Skills.Length && skillCooldowns[skillIndex] == 0;
+        if (skillIndex < 0 || skillIndex >= Skills.Length || skillCooldowns[skillIndex] > 0)
+        {
+            return false;
+        }
+        
+        Skill skill = Skills[skillIndex];
+        if (skill == null) return false;
+        
+        // Check if heal skill can be used (at least one valid target needs healing)
+        if (skill.effectType == SkillEffectType.Heal)
+        {
+            return CanUseHealSkill(skill);
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Checks if a heal skill can be used (at least one valid target needs healing)
+    /// </summary>
+    public bool CanUseHealSkill(Skill skill)
+    {
+        if (skill == null || skill.effectType != SkillEffectType.Heal) return false;
+        
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null) return false;
+        
+        // Check if any valid target needs healing
+        foreach (Unit unit in allUnits)
+        {
+            if (unit == null || !unit.IsAlive()) continue;
+            
+            // Check if this unit is a valid target for the skill
+            if (skill.CanTarget(unit, this))
+            {
+                // If target needs healing (not at full HP), skill can be used
+                if (unit.CurrentHP < unit.MaxHP)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // No valid targets need healing
+        return false;
+    }
+    
+    /// <summary>
+    /// Gets the reason why a skill cannot be used (for display purposes)
+    /// </summary>
+    public string GetSkillUnusableReason(int skillIndex)
+    {
+        if (skillIndex < 0 || skillIndex >= Skills.Length) return "";
+        
+        Skill skill = Skills[skillIndex];
+        if (skill == null) return "";
+        
+        // Check cooldown
+        if (skillCooldowns[skillIndex] > 0)
+        {
+            return $"On cooldown ({skillCooldowns[skillIndex]} turns remaining)";
+        }
+        
+        // Check if heal skill can be used
+        if (skill.effectType == SkillEffectType.Heal && !CanUseHealSkill(skill))
+        {
+            return "All allies are at full HP";
+        }
+        
+        return "";
     }
     
     /// <summary>

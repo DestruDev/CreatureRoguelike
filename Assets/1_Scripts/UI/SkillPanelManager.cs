@@ -251,8 +251,8 @@ public class SkillPanelManager : MonoBehaviour
                 {
                     if (skills[i] != null && originalColorsStored[i])
                     {
-                        bool isOnCooldown = !currentUnit.CanUseSkill(i);
-                        UpdateSkillBrightness(i, isOnCooldown);
+                        bool isUnusable = !currentUnit.CanUseSkill(i);
+                        UpdateSkillBrightness(i, isUnusable);
                         UpdateCooldownText(i, currentUnit);
                     }
                 }
@@ -421,9 +421,9 @@ public class SkillPanelManager : MonoBehaviour
                     }
                 }
                 
-                // Update brightness based on cooldown
-                bool isOnCooldown = !currentUnit.CanUseSkill(i);
-                UpdateSkillBrightness(i, isOnCooldown);
+                // Update brightness based on cooldown or unusability
+                bool isUnusable = !currentUnit.CanUseSkill(i);
+                UpdateSkillBrightness(i, isUnusable);
                 
                 // Update cooldown text
                 UpdateCooldownText(i, currentUnit);

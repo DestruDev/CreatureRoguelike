@@ -137,9 +137,9 @@ public class Selection : MonoBehaviour
     /// <param name="targetType">Type of units to select from</param>
     /// <param name="caster">The unit casting/using the skill/item (for target validation)</param>
     /// <param name="skill">Optional skill to validate targets against</param>
-    public void SetupUnitSelection(UnitTargetType targetType, Unit caster = null, Skill skill = null)
+    public void SetupUnitSelection(UnitTargetType targetType, Unit caster = null, Skill skill = null, Item item = null)
     {
-        List<Unit> validUnits = GetValidUnits(targetType, caster, skill);
+        List<Unit> validUnits = GetValidUnits(targetType, caster, skill, item);
         
         // Clear any existing hover (but not keyboard selection)
         hoveredUnit = null;
@@ -228,10 +228,21 @@ public class Selection : MonoBehaviour
     /// Gets valid units based on target type and optional skill requirements
     /// Units are sorted by spawn index for consistent ordering
     /// </summary>
-    private List<Unit> GetValidUnits(UnitTargetType targetType, Unit caster = null, Skill skill = null)
+    private List<Unit> GetValidUnits(UnitTargetType targetType, Unit caster = null, Skill skill = null, Item item = null)
     {
         List<Unit> validUnits = new List<Unit>();
         Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        // Check if we're using a healing skill or item
+        bool isHealing = false;
+        if (skill != null && skill.effectType == SkillEffectType.Heal)
+        {
+            isHealing = true;
+        }
+        else if (item != null && item.itemType == ItemType.Consumable && item.consumableSubtype == ConsumableSubtype.Heal)
+        {
+            isHealing = true;
+        }
 
         foreach (var unit in allUnits)
         {
@@ -275,6 +286,41 @@ public class Selection : MonoBehaviour
             if (isValid && skill != null && caster != null)
             {
                 isValid = skill.CanTarget(unit, caster);
+            }
+            
+            // If an item is provided, validate against item's targeting requirements
+            if (isValid && item != null && caster != null)
+            {
+                bool isItemValidTarget = false;
+                switch (item.targetType)
+                {
+                    case SkillTargetType.Self:
+                        isItemValidTarget = unit == caster;
+                        break;
+                    case SkillTargetType.Ally:
+                        isItemValidTarget = caster.IsPlayerUnit == unit.IsPlayerUnit;
+                        break;
+                    case SkillTargetType.Enemy:
+                        isItemValidTarget = caster.IsPlayerUnit != unit.IsPlayerUnit;
+                        break;
+                    case SkillTargetType.Any:
+                        isItemValidTarget = true;
+                        break;
+                }
+                isValid = isItemValidTarget;
+            }
+
+            // If using a healing skill/item and targeting an ally, exclude full HP allies
+            if (isValid && isHealing && caster != null)
+            {
+                // Check if this unit is an ally (for healing purposes)
+                bool isAlly = caster.IsPlayerUnit == unit.IsPlayerUnit;
+                
+                if (isAlly && unit.CurrentHP >= unit.MaxHP)
+                {
+                    // Skip this unit - it's at full HP and doesn't need healing
+                    isValid = false;
+                }
             }
 
             if (isValid)

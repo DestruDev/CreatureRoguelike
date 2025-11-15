@@ -525,13 +525,16 @@ public class ItemPanelManager : MonoBehaviour
                     }
                 }
 
-                // Update brightness based on item usage
-                UpdateItemBrightness(i, itemUsedThisTurn);
+                // Check if item is unusable (healing items when all allies are at full HP)
+                bool isUnusable = itemUsedThisTurn || !CanUseHealingItem(item, currentUnit);
+                
+                // Update brightness based on item usage or unusability
+                UpdateItemBrightness(i, isUnusable);
 
-                // Enable/disable button based on item usage
+                // Enable/disable button based on item usage or unusability
                 if (itemButtons != null && i < itemButtons.Length && itemButtons[i] != null)
                 {
-                    itemButtons[i].interactable = !itemUsedThisTurn;
+                    itemButtons[i].interactable = !isUnusable;
                 }
             }
             else
@@ -547,9 +550,78 @@ public class ItemPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Updates the brightness of an item button/icon based on usage
+    /// Checks if a healing item can be used (at least one valid target needs healing)
     /// </summary>
-    private void UpdateItemBrightness(int itemIndex, bool isUsed)
+    private bool CanUseHealingItem(Item item, Unit currentUnit)
+    {
+        if (item == null || currentUnit == null) return true; // Default to usable if we can't check
+        
+        // Only check healing consumables
+        if (item.itemType != ItemType.Consumable || item.consumableSubtype != ConsumableSubtype.Heal)
+        {
+            return true; // Non-healing items are always usable (if not used this turn)
+        }
+        
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null) return true;
+        
+        // Check if any valid target needs healing
+        foreach (Unit unit in allUnits)
+        {
+            if (unit == null || !unit.IsAlive()) continue;
+            
+            // Check if this unit is a valid target for the item (based on targetType)
+            bool isValidTarget = false;
+            switch (item.targetType)
+            {
+                case SkillTargetType.Self:
+                    isValidTarget = unit == currentUnit;
+                    break;
+                case SkillTargetType.Ally:
+                    isValidTarget = currentUnit.IsPlayerUnit == unit.IsPlayerUnit;
+                    break;
+                case SkillTargetType.Enemy:
+                    isValidTarget = currentUnit.IsPlayerUnit != unit.IsPlayerUnit;
+                    break;
+                case SkillTargetType.Any:
+                    isValidTarget = true;
+                    break;
+            }
+            
+            if (isValidTarget)
+            {
+                // If target needs healing (not at full HP), item can be used
+                if (unit.CurrentHP < unit.MaxHP)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // No valid targets need healing
+        return false;
+    }
+    
+    /// <summary>
+    /// Gets the reason why an item cannot be used (for display purposes)
+    /// </summary>
+    public string GetItemUnusableReason(Item item, Unit currentUnit)
+    {
+        if (item == null || currentUnit == null) return "";
+        
+        // Check if healing item can be used
+        if (item.itemType == ItemType.Consumable && item.consumableSubtype == ConsumableSubtype.Heal && !CanUseHealingItem(item, currentUnit))
+        {
+            return "All allies are at full HP";
+        }
+        
+        return "";
+    }
+    
+    /// <summary>
+    /// Updates the brightness of an item button/icon based on usage or unusability
+    /// </summary>
+    private void UpdateItemBrightness(int itemIndex, bool isUnusable)
     {
         if (itemIndex < 0 || itemIndex >= 4)
             return;
@@ -557,7 +629,7 @@ public class ItemPanelManager : MonoBehaviour
         // Update icon brightness
         if (itemIcons != null && itemIndex < itemIcons.Length && itemIcons[itemIndex] != null && itemIcons[itemIndex].enabled)
         {
-            if (isUsed)
+            if (isUnusable)
             {
                 // Apply brightness value to icon
                 Color originalColor = originalIconColors[itemIndex];
@@ -582,7 +654,7 @@ public class ItemPanelManager : MonoBehaviour
         // Update button brightness
         if (itemButtons != null && itemIndex < itemButtons.Length && itemButtons[itemIndex] != null && itemButtons[itemIndex].image != null)
         {
-            if (isUsed)
+            if (isUnusable)
             {
                 // Apply brightness value to button
                 Color originalColor = originalButtonColors[itemIndex];
@@ -831,7 +903,7 @@ public class ItemPanelManager : MonoBehaviour
         UnitTargetType targetType = ConvertTargetType(item.targetType);
 
         // Setup unit selection (will automatically restore previously selected unit based on target type)
-        selection.SetupUnitSelection(targetType, currentUnit);
+        selection.SetupUnitSelection(targetType, currentUnit, null, item);
 
         Debug.Log($"Entered selection mode for item: {item.itemName}, Target type: {targetType}");
 
