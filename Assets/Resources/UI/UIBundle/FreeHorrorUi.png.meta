@@ -1,0 +1,2206 @@
+fileFormatVersion: 2
+guid: 0eafb7a7c57e0a146b29cb7e09abf49c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3735604927057173224
+    second: FreeHorrorUi_0
+  - first:
+      213: 3412908974078662053
+    second: FreeHorrorUi_1
+  - first:
+      213: -3386700755105933963
+    second: FreeHorrorUi_2
+  - first:
+      213: -5110282528694087207
+    second: FreeHorrorUi_3
+  - first:
+      213: 3131327218617273930
+    second: FreeHorrorUi_4
+  - first:
+      213: -2388103545054656625
+    second: FreeHorrorUi_5
+  - first:
+      213: 5725411828417273304
+    second: FreeHorrorUi_6
+  - first:
+      213: 3943819839544499570
+    second: FreeHorrorUi_7
+  - first:
+      213: -2670005257551732186
+    second: FreeHorrorUi_8
+  - first:
+      213: -755497942177090690
+    second: FreeHorrorUi_9
+  - first:
+      213: -4326741067478105218
+    second: FreeHorrorUi_10
+  - first:
+      213: -1100964326124839571
+    second: FreeHorrorUi_11
+  - first:
+      213: -3629780832964895454
+    second: FreeHorrorUi_12
+  - first:
+      213: -4351099127630799546
+    second: FreeHorrorUi_13
+  - first:
+      213: -4260191638534455345
+    second: FreeHorrorUi_14
+  - first:
+      213: -1361251136162588239
+    second: FreeHorrorUi_15
+  - first:
+      213: 1561989630658268293
+    second: FreeHorrorUi_16
+  - first:
+      213: 3879113135053142354
+    second: FreeHorrorUi_17
+  - first:
+      213: 8477184557094100301
+    second: FreeHorrorUi_18
+  - first:
+      213: -6492662112595808452
+    second: FreeHorrorUi_19
+  - first:
+      213: -1491228976723088534
+    second: FreeHorrorUi_20
+  - first:
+      213: -2954639417128557731
+    second: FreeHorrorUi_21
+  - first:
+      213: 3206052651678734511
+    second: FreeHorrorUi_22
+  - first:
+      213: -3958787842300726070
+    second: FreeHorrorUi_23
+  - first:
+      213: 5937284905945296920
+    second: FreeHorrorUi_24
+  - first:
+      213: -6452111738120785809
+    second: FreeHorrorUi_25
+  - first:
+      213: -2610818094343666903
+    second: FreeHorrorUi_26
+  - first:
+      213: 8268743307548645265
+    second: FreeHorrorUi_27
+  - first:
+      213: -3643783592864820341
+    second: FreeHorrorUi_28
+  - first:
+      213: -2332427826322876968
+    second: FreeHorrorUi_29
+  - first:
+      213: 1992099610151002712
+    second: FreeHorrorUi_30
+  - first:
+      213: 2128513322193284723
+    second: FreeHorrorUi_31
+  - first:
+      213: 1721193257302142445
+    second: FreeHorrorUi_32
+  - first:
+      213: -2366932461649675244
+    second: FreeHorrorUi_33
+  - first:
+      213: 126997491458012940
+    second: FreeHorrorUi_34
+  - first:
+      213: 7265638077977237465
+    second: FreeHorrorUi_35
+  - first:
+      213: -3862672774226258445
+    second: FreeHorrorUi_36
+  - first:
+      213: 1945907973903106780
+    second: FreeHorrorUi_37
+  - first:
+      213: -1776141344125795734
+    second: FreeHorrorUi_38
+  - first:
+      213: -4821331397419902732
+    second: FreeHorrorUi_39
+  - first:
+      213: -4327465499980095640
+    second: FreeHorrorUi_40
+  - first:
+      213: 2865737465513546482
+    second: FreeHorrorUi_41
+  - first:
+      213: -5399540770975652347
+    second: FreeHorrorUi_42
+  - first:
+      213: -5078066462307985550
+    second: FreeHorrorUi_43
+  - first:
+      213: -4260649203688207405
+    second: FreeHorrorUi_44
+  - first:
+      213: -6426722688151505985
+    second: FreeHorrorUi_45
+  - first:
+      213: -5310378646754128820
+    second: FreeHorrorUi_46
+  - first:
+      213: -3748242802081626062
+    second: FreeHorrorUi_47
+  - first:
+      213: -5325260455907744825
+    second: FreeHorrorUi_48
+  - first:
+      213: 3127333856546162941
+    second: FreeHorrorUi_49
+  - first:
+      213: 4918890275466644024
+    second: FreeHorrorUi_50
+  - first:
+      213: 6325523777945863205
+    second: FreeHorrorUi_51
+  - first:
+      213: -1127398398404235808
+    second: FreeHorrorUi_52
+  - first:
+      213: -2430349654397211282
+    second: FreeHorrorUi_53
+  - first:
+      213: 5491652103975585499
+    second: FreeHorrorUi_54
+  - first:
+      213: 7271829884475791025
+    second: FreeHorrorUi_55
+  - first:
+      213: -6333243661565206645
+    second: FreeHorrorUi_56
+  - first:
+      213: -3804616350149020081
+    second: FreeHorrorUi_57
+  - first:
+      213: 6829492351423596854
+    second: FreeHorrorUi_58
+  - first:
+      213: 2491128980637532833
+    second: FreeHorrorUi_59
+  - first:
+      213: 8550669224464366566
+    second: FreeHorrorUi_60
+  - first:
+      213: 4342960087083040735
+    second: FreeHorrorUi_61
+  - first:
+      213: 1103346364904990735
+    second: FreeHorrorUi_62
+  - first:
+      213: -8190991059085000782
+    second: FreeHorrorUi_63
+  - first:
+      213: -7572114376539145286
+    second: FreeHorrorUi_64
+  - first:
+      213: 2618620145029098787
+    second: FreeHorrorUi_65
+  - first:
+      213: 8106208417429961080
+    second: FreeHorrorUi_66
+  - first:
+      213: 5167370086180681270
+    second: FreeHorrorUi_67
+  - first:
+      213: -3777024388529957586
+    second: FreeHorrorUi_68
+  - first:
+      213: -9112082050731872376
+    second: FreeHorrorUi_69
+  - first:
+      213: 6230726363748547609
+    second: FreeHorrorUi_70
+  - first:
+      213: 2870330696884780755
+    second: FreeHorrorUi_71
+  - first:
+      213: -2229780479743375007
+    second: FreeHorrorUi_72
+  - first:
+      213: 5028095057263332631
+    second: FreeHorrorUi_73
+  - first:
+      213: 1995420688547248844
+    second: FreeHorrorUi_74
+  - first:
+      213: 2335190635260003971
+    second: FreeHorrorUi_75
+  - first:
+      213: 5827804167784711079
+    second: FreeHorrorUi_76
+  - first:
+      213: -743073658642746847
+    second: FreeHorrorUi_77
+  - first:
+      213: -6316473585962384903
+    second: FreeHorrorUi_78
+  - first:
+      213: 1700192620017014457
+    second: FreeHorrorUi_79
+  - first:
+      213: 6911374189384653789
+    second: FreeHorrorUi_80
+  - first:
+      213: -1804404147673635326
+    second: FreeHorrorUi_81
+  - first:
+      213: -2938433135930364473
+    second: FreeHorrorUi_82
+  - first:
+      213: 6471588691701913538
+    second: FreeHorrorUi_83
+  - first:
+      213: 4431086654201859827
+    second: FreeHorrorUi_84
+  - first:
+      213: -2603993684076153194
+    second: FreeHorrorUi_85
+  - first:
+      213: 1724286083118405642
+    second: FreeHorrorUi_86
+  - first:
+      213: -7436958650624062802
+    second: FreeHorrorUi_87
+  - first:
+      213: -5960030357524467174
+    second: FreeHorrorUi_88
+  - first:
+      213: 7778703194151365338
+    second: FreeHorrorUi_89
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 16
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: FreeHorrorUi_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5c616ce09c1abe438cf4fef6e2ce9dd
+      internalID: -1282278875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_1
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 549fe5abe3c0df04c925a73e77cc8f7b
+      internalID: -1035102316
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_2
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 22b6e78c0347c274092832db7339eb58
+      internalID: -1222485411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_3
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ed2fd42728a9a9409e5af64f2322905
+      internalID: -1137470275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_4
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3349bd15b9b2dc4a821393265d6d3a3
+      internalID: -883089291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_5
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49a15d7f9077c3e43913c493c88209fd
+      internalID: 796467326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_6
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6564d63fc5febfa49978e81bce5a1d7e
+      internalID: -1160980789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_7
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a773f1c68b82ce84aa91f69a0940a439
+      internalID: 1750278936
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_15
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dbcbc97cdb167f444972b90ab03a2973
+      internalID: 1857723851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_16
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e510f3f301cbeda4c9bcf711bc946f46
+      internalID: -636807791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_17
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fc96975dfd2aa5d448439b1f703ff35f
+      internalID: 1107926671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_18
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed13803844054e649843791beb5c15f6
+      internalID: -857876919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_19
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66a80c11579b5d144a612c85bc626d38
+      internalID: 286307124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_20
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 640edf8746f7cb74ab6077d246aadd9b
+      internalID: 330221852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_21
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ecd1bd73a2b9e99468b144ae73ad98b3
+      internalID: -115282667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_22
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 224
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3dc9409ffa701ea4cb8aabcf4cfe59d9
+      internalID: 1103654640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_30
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ce7416a853831084abfee14a7b5ad763
+      internalID: 83532532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_31
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ecb1654d4f5def47940594dadc6a555
+      internalID: -1721296199
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_32
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a825ad50868664e40aaab47a68ea52fa
+      internalID: 132519004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_33
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe4ecb1e49c0e554b9298dc9dfbcc592
+      internalID: -303265683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_34
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 01825506497b146408823d1344c6dcfb
+      internalID: -705598944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_35
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8aa8bcd58fb41454fb3b0f8d13636290
+      internalID: 1858129522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_36
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 486a7096205c945489d4bcf3ed798b88
+      internalID: -680438096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_37
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 208
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 48dfa01561f627446b7d328128071a77
+      internalID: 1569016734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_45
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a115dee4d2b2d584e8e7428366cba0dd
+      internalID: -1725322817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_46
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c9aed570e3b7b34caa5a50e9009ff6b
+      internalID: -1264396248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_47
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc38f00a924d5314c90a2a9f3412f42c
+      internalID: -308269366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_48
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d6af2435bdd3064e898f90dd515ba7f
+      internalID: 875122875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_49
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2c30d70e8b253544ea96e47f69eb9444
+      internalID: -1246177838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_50
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ead36fa7ca024db4ab2426fa6afcbc65
+      internalID: 2079869006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_51
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 52c1f8d4ab6b9a149b646f9eee01a689
+      internalID: -105495040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_52
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 192
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9deb3efc7c8d64d429dd40c305bbe9ba
+      internalID: -239593352
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_53
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 192
+        width: 112
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6113f8d4a57fabf428e560e335f96aa4
+      internalID: -161071315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_60
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6533c3a9d1cc9de4b921244f72bcdf09
+      internalID: 2031921771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_61
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a29e3753bd454b43aa3fd2f4c8ef164
+      internalID: -1074196198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_62
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f1d9ecea247b0a543b9489fb31f322b3
+      internalID: 1721579077
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_63
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b625cc3bf70d41a4db909da464654ed6
+      internalID: -1517487921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_64
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3f149ad049131b488bde7af3c7df4bd
+      internalID: 1775917145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_65
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49a006d2f01762c4f994101c642111d6
+      internalID: 664909462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_66
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e1807169769ddfb4fbc857e14bc735ef
+      internalID: -1585821026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_67
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2fc4355ecdb69642bc5979970151895
+      internalID: -1625907041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_72
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0ffca82720c796f41b7e958136893abb
+      internalID: 149602844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_73
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f1fe4dddb083244e82fae5109993616
+      internalID: 1348764907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_74
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6a8a8a2a6b66d3f43bec2bcfe0849ec2
+      internalID: 1184264001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_75
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3c40235392809e46845787dd89402c0
+      internalID: 427611362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_76
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d116122d750bf84881d29a88a9110d8
+      internalID: 1640821098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_77
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c25783c45c768e349943270e75f6eced
+      internalID: -382323493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_78
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 975adf9a62ad0f54cb62ab1a3bdafbbc
+      internalID: 1075990252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_79
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 160
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed8c27f9556102348b4832d77cf166a3
+      internalID: -45683772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_80
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 160
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8606682b3358d9e46914b33f58154085
+      internalID: 1820624656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_82
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 160
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2529ece3ddeb2224487c53c4544f214c
+      internalID: 1405276806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_98
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 128
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cee33760012e0d2469a950e471ce66b0
+      internalID: 851638389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_102
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 128
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad2ffd71875583c429801f140ca1bdc0
+      internalID: 1799228400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_104
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 128
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39a739c6d95eec84b81e042987ccac4a
+      internalID: -530557395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_106
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 128
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bca1da6eafbf8fc4aa33a78d5cd58511
+      internalID: 1449810842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_108
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 128
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e6a9663525279a34890e85c925540614
+      internalID: 2103586094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_110
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 128
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a564f39da675fa648977633b9bf5de20
+      internalID: -335686983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_128
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 96
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c91798a0590849a4aa4bab41c2962c73
+      internalID: -1275850385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_132
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 96
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6d99117855375547ab02497178d9940
+      internalID: -237537149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_140
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0fb1b4fd55e0b44c9957bd66202db18
+      internalID: -1375007173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_142
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9f5fccfdf0f13249823d2dbb08787f5
+      internalID: -1162815639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_160
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 244fe44ecc951bc428298bf16bea6a0c
+      internalID: -649446694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_164
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6afd1fe6381970a479e2f0a44aa7d78a
+      internalID: 500534818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_172
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1de4f8da597a10f4ca8d2ff684328cf0
+      internalID: 585515836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_174
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 520858aefd34f5540a6101da5564d122
+      internalID: -1926874853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_184
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 48
+        width: 64
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 261e3639158a63540af016b927265804
+      internalID: 103611825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_192
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 32
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3666aad4af346fb498c881fca103dba0
+      internalID: -230387446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_196
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 32
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 359814cca6b9bef408a3239f2e17f464
+      internalID: -489666681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_200
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3955c4eb3d8bebb40bd01dabdeaae97a
+      internalID: 1565740025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_202
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e045418f1d568cc4f993a65eba7ca2d5
+      internalID: -814913921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_212
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 787e924682b6a6540b520e6b675b853c
+      internalID: 1274002253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FreeHorrorUi_216
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aab9da297deba3840afd608e461771a3
+      internalID: 670072697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: ad572f8cac6fa5a46a3993d84ac67a24
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      FreeHorrorUi_0: -1282278875
+      FreeHorrorUi_1: -1035102316
+      FreeHorrorUi_10: 159316574
+      FreeHorrorUi_100: -729002382
+      FreeHorrorUi_101: -1039625083
+      FreeHorrorUi_102: 1799228400
+      FreeHorrorUi_103: -1062505525
+      FreeHorrorUi_104: -530557395
+      FreeHorrorUi_105: -121150588
+      FreeHorrorUi_106: 1449810842
+      FreeHorrorUi_107: -1568931802
+      FreeHorrorUi_108: 2103586094
+      FreeHorrorUi_109: 1220243080
+      FreeHorrorUi_11: -1454097368
+      FreeHorrorUi_110: -335686983
+      FreeHorrorUi_111: 1282944444
+      FreeHorrorUi_112: -214048158
+      FreeHorrorUi_113: -2122962464
+      FreeHorrorUi_114: 691063196
+      FreeHorrorUi_115: 475090102
+      FreeHorrorUi_116: 807464744
+      FreeHorrorUi_117: -642752477
+      FreeHorrorUi_118: 747637374
+      FreeHorrorUi_119: -1538443138
+      FreeHorrorUi_12: 1475724271
+      FreeHorrorUi_120: -766052851
+      FreeHorrorUi_121: 1575502009
+      FreeHorrorUi_122: 1870385050
+      FreeHorrorUi_123: 966092609
+      FreeHorrorUi_124: 1449428136
+      FreeHorrorUi_125: -270937937
+      FreeHorrorUi_126: 2022372701
+      FreeHorrorUi_127: 659594671
+      FreeHorrorUi_128: -1275850385
+      FreeHorrorUi_129: -136264596
+      FreeHorrorUi_13: -368750281
+      FreeHorrorUi_130: -382049939
+      FreeHorrorUi_131: 931632831
+      FreeHorrorUi_132: -237537149
+      FreeHorrorUi_133: -1876317322
+      FreeHorrorUi_134: -1279832940
+      FreeHorrorUi_135: 1767167828
+      FreeHorrorUi_136: 1382827646
+      FreeHorrorUi_137: 1738802467
+      FreeHorrorUi_138: 1672344619
+      FreeHorrorUi_139: 1855016020
+      FreeHorrorUi_14: -1628464045
+      FreeHorrorUi_140: -1375007173
+      FreeHorrorUi_141: 506403450
+      FreeHorrorUi_142: -1162815639
+      FreeHorrorUi_143: -1926429650
+      FreeHorrorUi_144: -534849120
+      FreeHorrorUi_145: 702123604
+      FreeHorrorUi_146: -202807541
+      FreeHorrorUi_147: -1253853022
+      FreeHorrorUi_148: 636356590
+      FreeHorrorUi_149: 1848567952
+      FreeHorrorUi_15: 1857723851
+      FreeHorrorUi_150: -1410897351
+      FreeHorrorUi_151: -1325323348
+      FreeHorrorUi_152: 920041035
+      FreeHorrorUi_153: 539450007
+      FreeHorrorUi_154: 1724647510
+      FreeHorrorUi_155: 1865783049
+      FreeHorrorUi_156: -1786898153
+      FreeHorrorUi_157: -1170886859
+      FreeHorrorUi_158: -543418608
+      FreeHorrorUi_159: -432572032
+      FreeHorrorUi_16: -636807791
+      FreeHorrorUi_160: -649446694
+      FreeHorrorUi_161: 39001336
+      FreeHorrorUi_162: 1782409312
+      FreeHorrorUi_163: -1045756070
+      FreeHorrorUi_164: 500534818
+      FreeHorrorUi_165: 1521597315
+      FreeHorrorUi_166: 1250870769
+      FreeHorrorUi_167: -217377014
+      FreeHorrorUi_168: 1942232354
+      FreeHorrorUi_169: -1604359160
+      FreeHorrorUi_17: 1107926671
+      FreeHorrorUi_170: 935762423
+      FreeHorrorUi_171: 289071710
+      FreeHorrorUi_172: 585515836
+      FreeHorrorUi_173: -1977900496
+      FreeHorrorUi_174: -1926874853
+      FreeHorrorUi_175: 1564062644
+      FreeHorrorUi_176: -1368987058
+      FreeHorrorUi_177: 675221581
+      FreeHorrorUi_178: -245017644
+      FreeHorrorUi_179: -1751592872
+      FreeHorrorUi_18: -857876919
+      FreeHorrorUi_180: 1793906644
+      FreeHorrorUi_181: 969696321
+      FreeHorrorUi_182: -933993966
+      FreeHorrorUi_183: -1449211837
+      FreeHorrorUi_184: 103611825
+      FreeHorrorUi_185: -185838223
+      FreeHorrorUi_186: 46020591
+      FreeHorrorUi_187: -1646678950
+      FreeHorrorUi_188: -586501183
+      FreeHorrorUi_189: -364276596
+      FreeHorrorUi_19: 286307124
+      FreeHorrorUi_190: 870759903
+      FreeHorrorUi_191: 647645248
+      FreeHorrorUi_192: -230387446
+      FreeHorrorUi_193: -185464461
+      FreeHorrorUi_194: 1923513841
+      FreeHorrorUi_195: -387327717
+      FreeHorrorUi_196: -489666681
+      FreeHorrorUi_197: 171121997
+      FreeHorrorUi_198: -1030792633
+      FreeHorrorUi_199: 1397090119
+      FreeHorrorUi_2: -1222485411
+      FreeHorrorUi_20: 330221852
+      FreeHorrorUi_200: 1565740025
+      FreeHorrorUi_201: -1568593814
+      FreeHorrorUi_202: -814913921
+      FreeHorrorUi_203: -1857087689
+      FreeHorrorUi_204: -1124075868
+      FreeHorrorUi_205: -104173713
+      FreeHorrorUi_206: -217796718
+      FreeHorrorUi_207: 1451969014
+      FreeHorrorUi_208: 1505442782
+      FreeHorrorUi_209: -971245024
+      FreeHorrorUi_21: -115282667
+      FreeHorrorUi_210: -1670839453
+      FreeHorrorUi_211: -962640552
+      FreeHorrorUi_212: 1274002253
+      FreeHorrorUi_213: 842752006
+      FreeHorrorUi_214: -1779615172
+      FreeHorrorUi_215: -938515768
+      FreeHorrorUi_216: 670072697
+      FreeHorrorUi_217: -440803598
+      FreeHorrorUi_218: -1589568395
+      FreeHorrorUi_219: 268986595
+      FreeHorrorUi_22: 1103654640
+      FreeHorrorUi_23: -1835158966
+      FreeHorrorUi_24: -1344530332
+      FreeHorrorUi_25: 184565337
+      FreeHorrorUi_26: -1503584539
+      FreeHorrorUi_27: -1496722256
+      FreeHorrorUi_28: -851098296
+      FreeHorrorUi_29: -527199615
+      FreeHorrorUi_3: -1137470275
+      FreeHorrorUi_30: 83532532
+      FreeHorrorUi_31: -1721296199
+      FreeHorrorUi_32: 132519004
+      FreeHorrorUi_33: -303265683
+      FreeHorrorUi_34: -705598944
+      FreeHorrorUi_35: 1858129522
+      FreeHorrorUi_36: -680438096
+      FreeHorrorUi_37: 1569016734
+      FreeHorrorUi_38: -558421388
+      FreeHorrorUi_39: -1478801717
+      FreeHorrorUi_4: -883089291
+      FreeHorrorUi_40: 1090601708
+      FreeHorrorUi_41: -1764879995
+      FreeHorrorUi_42: 32891035
+      FreeHorrorUi_43: 1198229732
+      FreeHorrorUi_44: 99342957
+      FreeHorrorUi_45: -1725322817
+      FreeHorrorUi_46: -1264396248
+      FreeHorrorUi_47: -308269366
+      FreeHorrorUi_48: 875122875
+      FreeHorrorUi_49: -1246177838
+      FreeHorrorUi_5: 796467326
+      FreeHorrorUi_50: 2079869006
+      FreeHorrorUi_51: -105495040
+      FreeHorrorUi_52: -239593352
+      FreeHorrorUi_53: -161071315
+      FreeHorrorUi_54: -1307396118
+      FreeHorrorUi_55: -1813361916
+      FreeHorrorUi_56: 1404694722
+      FreeHorrorUi_57: -1882459364
+      FreeHorrorUi_58: -1733768100
+      FreeHorrorUi_59: -32141822
+      FreeHorrorUi_6: -1160980789
+      FreeHorrorUi_60: 2031921771
+      FreeHorrorUi_61: -1074196198
+      FreeHorrorUi_62: 1721579077
+      FreeHorrorUi_63: -1517487921
+      FreeHorrorUi_64: 1775917145
+      FreeHorrorUi_65: 664909462
+      FreeHorrorUi_66: -1585821026
+      FreeHorrorUi_67: -1625907041
+      FreeHorrorUi_68: 41913919
+      FreeHorrorUi_69: -1354437893
+      FreeHorrorUi_7: 1750278936
+      FreeHorrorUi_70: -1358798476
+      FreeHorrorUi_71: -196697856
+      FreeHorrorUi_72: 149602844
+      FreeHorrorUi_73: 1348764907
+      FreeHorrorUi_74: 1184264001
+      FreeHorrorUi_75: 427611362
+      FreeHorrorUi_76: 1640821098
+      FreeHorrorUi_77: -382323493
+      FreeHorrorUi_78: 1075990252
+      FreeHorrorUi_79: -45683772
+      FreeHorrorUi_8: -1421928960
+      FreeHorrorUi_80: 1820624656
+      FreeHorrorUi_81: -1797788799
+      FreeHorrorUi_82: 1405276806
+      FreeHorrorUi_83: 1240830165
+      FreeHorrorUi_84: 241068262
+      FreeHorrorUi_85: 1369129346
+      FreeHorrorUi_86: 26279492
+      FreeHorrorUi_87: -1039430117
+      FreeHorrorUi_88: -75055717
+      FreeHorrorUi_89: -1222322281
+      FreeHorrorUi_9: -388515825
+      FreeHorrorUi_90: 1999053552
+      FreeHorrorUi_91: -902221242
+      FreeHorrorUi_92: 1360857091
+      FreeHorrorUi_93: -1939281650
+      FreeHorrorUi_94: -289912901
+      FreeHorrorUi_95: -877878346
+      FreeHorrorUi_96: 1596658630
+      FreeHorrorUi_97: 1969435296
+      FreeHorrorUi_98: 851638389
+      FreeHorrorUi_99: -1862128894
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
