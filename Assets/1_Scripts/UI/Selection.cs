@@ -12,9 +12,6 @@ public class Selection : MonoBehaviour
     [Header("Settings")]
     [Tooltip("Enable wrapping - when reaching the end, wrap to beginning and vice versa")]
     public bool wrapAround = true;
-    
-    [Tooltip("Allow selecting nothing (selection index = -1)")]
-    public bool allowNoSelection = false;
 
     [Header("Simple Selection Marker")]
     [Tooltip("UI Image prefab to instantiate as a selection marker (should be a square UI Image)")]
@@ -22,6 +19,13 @@ public class Selection : MonoBehaviour
     
     [Tooltip("Canvas to parent the selection markers to (if null, will try to find one automatically)")]
     public Canvas markerCanvas;
+    
+    [Tooltip("Color of the selection marker")]
+    public Color markerColor = Color.white;
+    
+    [Tooltip("Alpha (transparency) value of the selection marker (0-1)")]
+    [Range(0f, 1f)]
+    public float markerAlpha = 1f;
 
     [Header("Mouse Hover Settings")]
     [Tooltip("Maximum distance for mouse hover detection (in world units)")]
@@ -51,6 +55,9 @@ public class Selection : MonoBehaviour
     
     // Dictionary to track instantiated selection markers for each selectable item
     private Dictionary<object, GameObject> selectionMarkers = new Dictionary<object, GameObject>();
+    
+    // Track whether markers should render in front (default) or behind UI
+    private bool markersRenderInFront = true;
 
     // Events
     public event Action<object> OnSelectionChanged; // Called when selection changes (passes selected item)
@@ -480,18 +487,7 @@ public class Selection : MonoBehaviour
         currentSelectionType = type;
 
         // Reset selection index
-        if (selectableItems.Count > 0)
-        {
-            currentIndex = 0;
-        }
-        else if (allowNoSelection)
-        {
-            currentIndex = -1;
-        }
-        else
-        {
-            currentIndex = 0;
-        }
+        currentIndex = 0;
 
         NotifySelectionChanged();
     }
@@ -526,13 +522,6 @@ public class Selection : MonoBehaviour
         if (selectableItems.Count == 0)
             return;
 
-        if (currentIndex < 0 && allowNoSelection)
-        {
-            currentIndex = 0;
-            NotifySelectionChanged();
-            return;
-        }
-
         if (currentIndex >= selectableItems.Count - 1)
         {
             if (wrapAround)
@@ -557,13 +546,6 @@ public class Selection : MonoBehaviour
         if (selectableItems.Count == 0)
             return;
 
-        if (currentIndex < 0 && allowNoSelection)
-        {
-            currentIndex = selectableItems.Count - 1;
-            NotifySelectionChanged();
-            return;
-        }
-
         if (currentIndex <= 0)
         {
             if (wrapAround)
@@ -587,21 +569,11 @@ public class Selection : MonoBehaviour
     {
         if (selectableItems.Count == 0)
         {
-            if (allowNoSelection && index == -1)
-            {
-                currentIndex = -1;
-                NotifySelectionChanged();
-            }
             return;
         }
 
         if (index < 0)
         {
-            if (allowNoSelection)
-            {
-                currentIndex = -1;
-                NotifySelectionChanged();
-            }
             return;
         }
 
@@ -706,7 +678,7 @@ public class Selection : MonoBehaviour
             }
             else if (selectableItems.Count == 0)
             {
-                currentIndex = allowNoSelection ? -1 : 0;
+                currentIndex = 0;
             }
 
             NotifySelectionChanged();
@@ -1046,14 +1018,20 @@ public class Selection : MonoBehaviour
         // Instantiate marker
         GameObject marker = Instantiate(SimpleSelectionMarker, canvas.transform);
         marker.SetActive(true);
+        
+        ApplyMarkerRenderOrder(marker.transform);
+        
         selectionMarkers[item] = marker;
         
         // Disable raycast targeting on all Graphic components (Image, Text, RawImage, etc.)
         // so the marker doesn't block button clicks underneath
+        // Also apply color and alpha to all Graphic components
         Graphic[] graphics = marker.GetComponentsInChildren<Graphic>(true);
+        Color finalColor = new Color(markerColor.r, markerColor.g, markerColor.b, markerAlpha);
         foreach (Graphic graphic in graphics)
         {
             graphic.raycastTarget = false;
+            graphic.color = finalColor;
         }
         
         // Ensure it has a RectTransform
@@ -1438,6 +1416,40 @@ public class Selection : MonoBehaviour
             }
         }
         selectionMarkers.Clear();
+    }
+    
+    /// <summary>
+    /// Sets whether markers should render in front of other UI (true) or behind (false)
+    /// </summary>
+    public void SetMarkersRenderInFront(bool inFront)
+    {
+        markersRenderInFront = inFront;
+        
+        foreach (var kvp in selectionMarkers)
+        {
+            if (kvp.Value != null)
+            {
+                ApplyMarkerRenderOrder(kvp.Value.transform);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Applies the current render order preference to a specific marker
+    /// </summary>
+    private void ApplyMarkerRenderOrder(Transform markerTransform)
+    {
+        if (markerTransform == null || markerTransform.parent == null)
+            return;
+        
+        if (markersRenderInFront)
+        {
+            markerTransform.SetAsLastSibling();
+        }
+        else
+        {
+            markerTransform.SetAsFirstSibling();
+        }
     }
     
     #endregion
