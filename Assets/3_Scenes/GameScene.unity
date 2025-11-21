@@ -3465,8 +3465,9 @@ RectTransform:
   - {fileID: 852144411}
   - {fileID: 109220679}
   - {fileID: 1113369693}
-  - {fileID: 510207232}
   - {fileID: 790993337}
+  - {fileID: 884725276}
+  - {fileID: 510207232}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4056,6 +4057,7 @@ MonoBehaviour:
   wrapAround: 1
   SimpleSelectionMarker: {fileID: 3731351964867615319, guid: 05cd933c6831da04092c29ba8a8770ee, type: 3}
   markerCanvas: {fileID: 387247031}
+  markerParent: {fileID: 884725275}
   markerColor: {r: 1, g: 0, b: 0, a: 1}
   markerAlpha: 0.3
   hoverDetectionDistance: 2
@@ -4639,7 +4641,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &510207232
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7168,6 +7170,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 873628020}
   m_CullTransparentMesh: 1
+--- !u!1 &884725275
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 884725276}
+  m_Layer: 5
+  m_Name: SelectionMarker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &884725276
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 884725275}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 387247032}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &905550434
 GameObject:
   m_ObjectHideFlags: 0

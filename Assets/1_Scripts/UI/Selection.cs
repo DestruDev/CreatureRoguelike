@@ -20,6 +20,9 @@ public class Selection : MonoBehaviour
     [Tooltip("Canvas to parent the selection markers to (if null, will try to find one automatically)")]
     public Canvas markerCanvas;
     
+    [Tooltip("GameObject that the selection marker will spawn under when SetMarkerParent is called (null to use default canvas)")]
+    public GameObject markerParent;
+    
     [Tooltip("Color of the selection marker")]
     public Color markerColor = Color.white;
     
@@ -58,6 +61,9 @@ public class Selection : MonoBehaviour
     
     // Track whether markers should render in front (default) or behind UI
     private bool markersRenderInFront = true;
+    
+    // Optional custom parent for markers (overrides markerCanvas when set)
+    private Transform customMarkerParent = null;
 
     // Events
     public event Action<object> OnSelectionChanged; // Called when selection changes (passes selected item)
@@ -1003,20 +1009,30 @@ public class Selection : MonoBehaviour
         if (SimpleSelectionMarker == null || item == null)
             return;
         
-        // Find or get canvas
-        Canvas canvas = markerCanvas;
-        if (canvas == null)
+        // Determine parent: use custom parent if set, otherwise use canvas
+        Transform parentTransform = null;
+        
+        if (customMarkerParent != null)
         {
-            canvas = FindFirstObjectByType<Canvas>();
+            parentTransform = customMarkerParent;
+        }
+        else
+        {
+            Canvas canvas = markerCanvas;
             if (canvas == null)
             {
-                Debug.LogWarning("Selection: No Canvas found for SimpleSelectionMarker. Cannot create marker.");
-                return;
+                canvas = FindFirstObjectByType<Canvas>();
+                if (canvas == null)
+                {
+                    Debug.LogWarning("Selection: No Canvas found for SimpleSelectionMarker. Cannot create marker.");
+                    return;
+                }
             }
+            parentTransform = canvas.transform;
         }
         
         // Instantiate marker
-        GameObject marker = Instantiate(SimpleSelectionMarker, canvas.transform);
+        GameObject marker = Instantiate(SimpleSelectionMarker, parentTransform);
         marker.SetActive(true);
         
         ApplyMarkerRenderOrder(marker.transform);
@@ -1430,6 +1446,44 @@ public class Selection : MonoBehaviour
             if (kvp.Value != null)
             {
                 ApplyMarkerRenderOrder(kvp.Value.transform);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Sets a custom parent GameObject for selection markers (null to use default canvas)
+    /// If markerParent is set in inspector, uses that; otherwise uses the provided parent parameter
+    /// </summary>
+    public void SetMarkerParent(Transform parent)
+    {
+        // Use markerParent from inspector if set, otherwise use the provided parent parameter
+        Transform targetParent = null;
+        if (markerParent != null)
+        {
+            targetParent = markerParent.transform;
+        }
+        else if (parent != null)
+        {
+            targetParent = parent;
+        }
+        
+        customMarkerParent = targetParent;
+        
+        // Reparent existing markers if any
+        foreach (var kvp in selectionMarkers)
+        {
+            if (kvp.Value != null)
+            {
+                Transform finalParent = targetParent;
+                if (finalParent == null && markerCanvas != null)
+                {
+                    finalParent = markerCanvas.transform;
+                }
+                if (finalParent != null)
+                {
+                    kvp.Value.transform.SetParent(finalParent);
+                    ApplyMarkerRenderOrder(kvp.Value.transform);
+                }
             }
         }
     }

@@ -165,6 +165,35 @@ public class ItemPanelManager : MonoBehaviour
             inventory = FindFirstObjectByType<Inventory>();
         }
         
+        // Store the currently selected button to preserve selection if possible
+        Button previouslySelectedButton = null;
+        
+        // First, try to use lastSelectedButtonIndex (set before entering selection mode)
+        // This is the most reliable source when CancelSelectionMode is called
+        if (lastSelectedButtonIndex >= 0 && 
+            lastSelectedButtonIndex < itemButtons.Length && 
+            itemButtons[lastSelectedButtonIndex] != null)
+        {
+            previouslySelectedButton = itemButtons[lastSelectedButtonIndex];
+        }
+        // Fallback: check current selection if we're in button selection mode
+        else if (isButtonSelectionMode && selection != null && selection.IsValidSelection())
+        {
+            object currentSelection = selection.CurrentSelection;
+            if (currentSelection is Button currentButton)
+            {
+                // Only preserve if this button is one of our item buttons
+                for (int i = 0; i < itemButtons.Length; i++)
+                {
+                    if (itemButtons[i] == currentButton)
+                    {
+                        previouslySelectedButton = currentButton;
+                        break;
+                    }
+                }
+            }
+        }
+        
         // Clear any existing selection first to ensure we start fresh
         selection.ClearSelection();
         
@@ -187,6 +216,8 @@ public class ItemPanelManager : MonoBehaviour
             {
                 if (inventory.Items[i] != null && inventory.Items[i].item != null && itemButtons[i] != null && itemButtons[i].gameObject.activeInHierarchy)
                 {
+                    // Include all buttons with items (even if unusable) - same as SkillPanelManager
+                    // This prevents selection from jumping when items become unusable
                     availableButtons.Add(itemButtons[i]);
                 }
             }
@@ -196,6 +227,18 @@ public class ItemPanelManager : MonoBehaviour
         if (availableButtons.Count > 0)
         {
             selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
+            
+            // Try to restore the previously selected button if it's still in the list
+            if (previouslySelectedButton != null && availableButtons.Contains(previouslySelectedButton))
+            {
+                int targetIndex = availableButtons.IndexOf(previouslySelectedButton);
+                if (targetIndex >= 0 && targetIndex < availableButtons.Count)
+                {
+                    // Set the index directly to preserve selection
+                    selection.SetIndex(targetIndex);
+                }
+            }
+            
             // Ignore input for this frame to prevent accidental activation
             ignoreInputThisFrame = true;
         }
@@ -544,9 +587,11 @@ public class ItemPanelManager : MonoBehaviour
             }
         }
         
-        // Refresh button selection if in button selection mode (in case available buttons changed)
-        // Note: Don't call EnableButtonSelectionMode here if it was just called by ShowItemsPanel
-        // to avoid double-calling. The selection should already be set up.
+        // Note: Don't call EnableButtonSelectionMode here - SkillPanelManager does this,
+        // but it causes issues with ItemPanelManager because items can become unusable
+        // and we don't want to refresh selection every time UpdateItems is called.
+        // The selection preservation in EnableButtonSelectionMode should handle cases
+        // where it IS called (like from OnEnable).
     }
     
     /// <summary>
@@ -1056,12 +1101,17 @@ public class ItemPanelManager : MonoBehaviour
             gameManager.ShowUserPanel();
         }
         
+        // Store the button index to restore before re-enabling button selection mode
+        // (lastSelectedButtonIndex should already be set from EnterSelectionMode, but ensure it's set)
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        
         // Re-enable button selection mode to return to item button navigation
+        // This will reset selection to index 0, so we need to restore it
         EnableButtonSelectionMode();
         
         // Restore selection to the previously selected button (if it's still available)
         // Use a coroutine to restore after EnableButtonSelectionMode has fully set up the selection
-        if (lastSelectedButtonIndex >= 0)
+        if (buttonIndexToRestore >= 0)
         {
             StartCoroutine(RestoreButtonSelectionAfterDelay());
         }

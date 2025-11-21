@@ -38,6 +38,8 @@ public class InGameMenu : MonoBehaviour
         if (selection != null)
         {
             selection.SetMarkersRenderInFront(true);
+            // Reset marker parent to default (null = use canvas)
+            selection.SetMarkerParent(null);
         }
     }
 
@@ -51,6 +53,11 @@ public class InGameMenu : MonoBehaviour
         if (selection != null)
         {
             selection.SetMarkersRenderInFront(false);
+            // Set marker parent - uses markerParent from Selection.cs if set, otherwise uses settings panel
+            if (settingsPanel != null)
+            {
+                selection.SetMarkerParent(settingsPanel.transform);
+            }
         }
     }
 
