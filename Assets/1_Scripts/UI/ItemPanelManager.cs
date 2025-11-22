@@ -574,10 +574,11 @@ public class ItemPanelManager : MonoBehaviour
                 // Update brightness based on item usage or unusability
                 UpdateItemBrightness(i, isUnusable);
 
-                // Enable/disable button based on item usage or unusability
+                // Keep buttons interactable even when unusable (like skills) so pressed state shows on click
+                // Visual feedback (dimmed brightness) already indicates unusability
                 if (itemButtons != null && i < itemButtons.Length && itemButtons[i] != null)
                 {
-                    itemButtons[i].interactable = !isUnusable;
+                    itemButtons[i].interactable = true;
                 }
             }
             else
