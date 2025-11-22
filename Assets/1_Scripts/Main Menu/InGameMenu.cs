@@ -40,6 +40,8 @@ public class InGameMenu : MonoBehaviour
             selection.SetMarkersRenderInFront(true);
             // Reset marker parent to default (null = use canvas)
             selection.SetMarkerParent(null);
+            // Re-enable navigation when settings panel is closed
+            selection.SetNavigationEnabled(true);
         }
     }
 
@@ -58,6 +60,8 @@ public class InGameMenu : MonoBehaviour
             {
                 selection.SetMarkerParent(settingsPanel.transform);
             }
+            // Disable navigation when settings panel is open (marker stays visible but won't move)
+            selection.SetNavigationEnabled(false);
         }
     }
 

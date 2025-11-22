@@ -64,6 +64,9 @@ public class Selection : MonoBehaviour
     
     // Optional custom parent for markers (overrides markerCanvas when set)
     private Transform customMarkerParent = null;
+    
+    // Flag to disable navigation (e.g., when settings panel is open)
+    private bool navigationDisabled = false;
 
     // Events
     public event Action<object> OnSelectionChanged; // Called when selection changes (passes selected item)
@@ -525,7 +528,7 @@ public class Selection : MonoBehaviour
     /// </summary>
     public void Next()
     {
-        if (selectableItems.Count == 0)
+        if (navigationDisabled || selectableItems.Count == 0)
             return;
 
         if (currentIndex >= selectableItems.Count - 1)
@@ -549,7 +552,7 @@ public class Selection : MonoBehaviour
     /// </summary>
     public void Previous()
     {
-        if (selectableItems.Count == 0)
+        if (navigationDisabled || selectableItems.Count == 0)
             return;
 
         if (currentIndex <= 0)
@@ -573,7 +576,7 @@ public class Selection : MonoBehaviour
     /// </summary>
     public void SetIndex(int index)
     {
-        if (selectableItems.Count == 0)
+        if (navigationDisabled || selectableItems.Count == 0)
         {
             return;
         }
@@ -1504,6 +1507,15 @@ public class Selection : MonoBehaviour
         {
             markerTransform.SetAsFirstSibling();
         }
+    }
+    
+    /// <summary>
+    /// Enables or disables navigation (prevents Next/Previous/SetIndex from changing selection)
+    /// The marker will still be visible, but won't move when navigation is disabled
+    /// </summary>
+    public void SetNavigationEnabled(bool enabled)
+    {
+        navigationDisabled = !enabled;
     }
     
     #endregion
