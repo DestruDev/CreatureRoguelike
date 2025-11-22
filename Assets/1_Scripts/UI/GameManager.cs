@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
 
@@ -37,6 +39,16 @@ public class GameManager : MonoBehaviour
 	 [Header("User Panel UI Root")]
     public GameObject userPanelRoot;
 	
+	[Header("Game Over Panels")]
+	[Tooltip("Panel that opens when all allies/player units are dead")]
+	public GameObject allAlliesDeadPanel;
+	
+	[Tooltip("Button on the game over panel that returns to main menu")]
+	public Button returnToMainMenuButton;
+	
+	[Tooltip("Name of the main menu scene to load")]
+	public string mainMenuSceneName = "MainMenu";
+	
     private TurnOrder turnOrderRef; // Reference to get spawn indices
 
     [Header("Turn Management")]
@@ -70,6 +82,18 @@ public class GameManager : MonoBehaviour
         
         // Cache ActionPanelManager reference
         actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        
+        // Set up return to main menu button listener
+        if (returnToMainMenuButton != null)
+        {
+            returnToMainMenuButton.onClick.AddListener(OnReturnToMainMenuClicked);
+        }
+        
+        // Hide game over panel at start
+        if (allAlliesDeadPanel != null)
+        {
+            allAlliesDeadPanel.SetActive(false);
+        }
 
         // Get the first unit that should go - delay slightly to ensure all units are initialized
         StartCoroutine(DelayedStart());
@@ -900,6 +924,44 @@ public class GameManager : MonoBehaviour
 		if (actionPanelManager != null)
 		{
 			actionPanelManager.ShowAllActionUI();
+		}
+	}
+	
+	/// <summary>
+	/// Called when all allies/player units are dead - opens the game over panel
+	/// </summary>
+	public void OnAllAlliesDead()
+	{
+		if (allAlliesDeadPanel != null)
+		{
+			allAlliesDeadPanel.SetActive(true);
+		}
+		else
+		{
+			Debug.LogWarning("GameManager: allAlliesDeadPanel is not assigned!");
+		}
+	}
+	
+	/// <summary>
+	/// Called when the return to main menu button is clicked
+	/// </summary>
+	public void OnReturnToMainMenuClicked()
+	{
+		LoadMainMenuScene();
+	}
+	
+	/// <summary>
+	/// Loads the main menu scene
+	/// </summary>
+	private void LoadMainMenuScene()
+	{
+		if (!string.IsNullOrEmpty(mainMenuSceneName))
+		{
+			SceneManager.LoadScene(mainMenuSceneName);
+		}
+		else
+		{
+			Debug.LogWarning("GameManager: mainMenuSceneName is not set! Cannot load main menu.");
 		}
 	}
 }

@@ -221,6 +221,17 @@ public class TurnOrder : MonoBehaviour
         {
             gameEnded = true;
             Debug.Log("Game Over: All player units are dead!");
+            
+            // Notify GameManager to open the all allies dead panel
+            if (gameManager == null)
+            {
+                gameManager = FindFirstObjectByType<GameManager>();
+            }
+            if (gameManager != null)
+            {
+                gameManager.OnAllAlliesDead();
+            }
+            
             return false;
         }
         
