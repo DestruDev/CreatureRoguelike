@@ -1,5 +1,44 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class EnemySpawnSlot
+{
+    [Tooltip("List of possible enemy unit data ScriptableObjects for this spawn slot. If random spawning is enabled, a random one will be selected. Otherwise, the first one will be used.")]
+    public CreatureUnitData[] possibleEnemies = new CreatureUnitData[0];
+    
+    /// <summary>
+    /// Gets an enemy from the possible enemies list. If useRandom is true, returns a random one; otherwise returns the first valid one.
+    /// Returns null if the list is empty.
+    /// </summary>
+    public CreatureUnitData GetEnemy(bool useRandom)
+    {
+        if (possibleEnemies == null || possibleEnemies.Length == 0)
+            return null;
+        
+        // Filter out null entries
+        List<CreatureUnitData> validEnemies = new List<CreatureUnitData>();
+        foreach (var enemy in possibleEnemies)
+        {
+            if (enemy != null)
+                validEnemies.Add(enemy);
+        }
+        
+        if (validEnemies.Count == 0)
+            return null;
+        
+        // Return random enemy or first enemy based on useRandom flag
+        if (useRandom)
+        {
+            return validEnemies[Random.Range(0, validEnemies.Count)];
+        }
+        else
+        {
+            return validEnemies[0]; // Return first valid enemy
+        }
+    }
+}
 
 public class Spawning : MonoBehaviour
 {
@@ -16,8 +55,12 @@ public class Spawning : MonoBehaviour
     public Transform[] enemySpawnAreas = new Transform[3];
     
     [Header("Enemy Unit Data (ScriptableObjects)")]
-    [Tooltip("Unit data for each enemy spawn area. Uses CreatureUnitData.")]
-    public CreatureUnitData[] enemyUnitData = new CreatureUnitData[3];
+    [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
+    public EnemySpawnSlot[] enemySpawnSlots = new EnemySpawnSlot[3];
+    
+    [Header("Enemy Spawn Settings")]
+    [Tooltip("If enabled, randomly selects from all assigned enemies for each slot. If disabled, uses the first assigned enemy for each slot.")]
+    public bool useRandomEnemySpawns = false;
     
     
     void Start()
@@ -77,20 +120,29 @@ public class Spawning : MonoBehaviour
         }
         
         // Spawn enemies
-        for (int i = 0; i < enemyUnitData.Length && i < enemySpawnAreas.Length; i++)
+        for (int i = 0; i < enemySpawnSlots.Length && i < enemySpawnAreas.Length; i++)
         {
-			if (enemyUnitData[i] != null && enemySpawnAreas[i] != null)
+			if (enemySpawnAreas[i] != null && enemySpawnSlots[i] != null)
             {
+                // Get an enemy from the possible enemies for this slot (random or first based on setting)
+                CreatureUnitData selectedEnemy = enemySpawnSlots[i].GetEnemy(useRandomEnemySpawns);
+                
+                if (selectedEnemy == null)
+                {
+                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {i + 1}. Skipping spawn.");
+                    continue;
+                }
+                
 				// Destroy existing children under this spawn area
 				for (int c = enemySpawnAreas[i].childCount - 1; c >= 0; c--)
 				{
 					DestroyImmediate(enemySpawnAreas[i].GetChild(c).gameObject);
 				}
                 
-				string unitName = GetUnitName(enemyUnitData[i], i);
+				string unitName = GetUnitName(selectedEnemy, i);
 				
 				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(enemyUnitData[i], enemySpawnAreas[i], unitName);
+				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[i], unitName);
     
 				// Ensure unit is set as enemy unit (spawn area determines team, not ScriptableObject)
 				Unit unit = unitObj.GetComponent<Unit>();
@@ -166,20 +218,29 @@ public class Spawning : MonoBehaviour
 	/// </summary>
 	public void RespawnEnemy(int index)
     {
-		if (index >= 0 && index < enemyUnitData.Length && index < enemySpawnAreas.Length)
+		if (index >= 0 && index < enemySpawnSlots.Length && index < enemySpawnAreas.Length)
         {
-			if (enemyUnitData[index] != null && enemySpawnAreas[index] != null)
+			if (enemySpawnAreas[index] != null && enemySpawnSlots[index] != null)
             {
+                // Get an enemy from the possible enemies for this slot (random or first based on setting)
+                CreatureUnitData selectedEnemy = enemySpawnSlots[index].GetEnemy(useRandomEnemySpawns);
+                
+                if (selectedEnemy == null)
+                {
+                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {index + 1}. Cannot respawn.");
+                    return;
+                }
+                
 				// Destroy existing children under this spawn area
 				for (int c = enemySpawnAreas[index].childCount - 1; c >= 0; c--)
 				{
 					DestroyImmediate(enemySpawnAreas[index].GetChild(c).gameObject);
 				}
                 
-				string unitName = GetUnitName(enemyUnitData[index], index);
+				string unitName = GetUnitName(selectedEnemy, index);
 				
 				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(enemyUnitData[index], enemySpawnAreas[index], unitName);
+				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[index], unitName);
     
 				// Ensure unit is set as enemy unit (spawn area determines team)
 				Unit unit = unitObj.GetComponent<Unit>();
