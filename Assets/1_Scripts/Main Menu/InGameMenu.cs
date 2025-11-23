@@ -16,9 +16,15 @@ public class InGameMenu : MonoBehaviour
     private ActionPanelManager actionPanelManager;
     private Selection selection;
     private bool panelsWereActiveThisFrame = false; // Track if panels were active at start of frame
+    
+    // Static reference to check if settings panel is active from other scripts
+    private static InGameMenu instance;
 
     void Start()
     {
+        // Set static instance
+        instance = this;
+        
         // Find ActionPanelManager
         actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
         
@@ -27,6 +33,23 @@ public class InGameMenu : MonoBehaviour
         
         SetupButtonListeners();
         HideSettingsPanel();
+    }
+    
+    void OnDestroy()
+    {
+        // Clear static instance when destroyed
+        if (instance == this)
+        {
+            instance = null;
+        }
+    }
+    
+    /// <summary>
+    /// Static method to check if settings panel is active (called from ActionPanelManager)
+    /// </summary>
+    public static bool IsSettingsPanelActiveStatic()
+    {
+        return instance != null && instance.IsSettingsPanelActive();
     }
     
     void LateUpdate()
@@ -107,6 +130,13 @@ public class InGameMenu : MonoBehaviour
         // Check for ESC key
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            // Priority 1: If settings panel is open, close it (highest priority)
+            if (IsSettingsPanelActive())
+            {
+                HideSettingsPanel();
+                return; // Settings panel closed, don't process further
+            }
+            
             // Don't handle ESC if ActionPanelManager already handled it (e.g., when panels are active)
             if (ActionPanelManager.EscHandledThisFrame)
             {

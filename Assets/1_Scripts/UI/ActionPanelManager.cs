@@ -134,9 +134,15 @@ public class ActionPanelManager : MonoBehaviour
             }
             
             // For ESC key: only handle if SkillsPanel or ItemsPanel are active
-            // Otherwise, let InGameMenu handle it to open settings panel
+            // But don't handle if settings panel is open (let InGameMenu close it first)
             if (isEscapeKey)
             {
+                // If settings panel is open, let InGameMenu handle ESC to close it
+                if (InGameMenu.IsSettingsPanelActiveStatic())
+                {
+                    return; // Let InGameMenu handle ESC to close settings panel
+                }
+                
                 bool skillsPanelActive = SkillsPanel != null && SkillsPanel.activeSelf;
                 bool itemsPanelActive = ItemsPanel != null && ItemsPanel.activeSelf;
                 
