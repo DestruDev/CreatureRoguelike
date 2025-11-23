@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 public class ActionPanelManager : MonoBehaviour
 {
+    // Static flag to indicate ESC was handled by ActionPanelManager (prevents InGameMenu from also handling it)
+    public static bool EscHandledThisFrame = false;
+    
     [Header("Panels")]
     public GameObject ActionPanel;
     public GameObject SkillsPanel;
@@ -101,6 +104,9 @@ public class ActionPanelManager : MonoBehaviour
 
     private void Update()
     {
+        // Reset the static flag at the start of each frame
+        EscHandledThisFrame = false;
+        
         // Don't process if in inspect mode
         if (IsInInspectMode())
         {
@@ -108,14 +114,44 @@ public class ActionPanelManager : MonoBehaviour
         }
         
         // Check for ESC key press or right-click to return to ActionPanel or cancel selection
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.X))
+        // ESC key: only handle if SkillsPanel or ItemsPanel are active (otherwise let InGameMenu handle it for settings)
+        // Right-click and X key: always handle
+        bool isEscapeKey = Input.GetKeyDown(KeyCode.Escape);
+        bool isRightClick = Input.GetMouseButtonDown(1);
+        bool isXKey = Input.GetKeyDown(KeyCode.X);
+        
+        if (isEscapeKey || isRightClick || isXKey)
         {
             // If in NormalAttack selection mode, cancel it first
             if (isNormalAttackSelectionMode)
             {
                 CancelNormalAttackSelectionMode();
+                if (isEscapeKey)
+                {
+                    EscHandledThisFrame = true; // Mark that we handled ESC
+                }
                 return; // Don't go back to ActionPanel, just cancel selection
             }
+            
+            // For ESC key: only handle if SkillsPanel or ItemsPanel are active
+            // Otherwise, let InGameMenu handle it to open settings panel
+            if (isEscapeKey)
+            {
+                bool skillsPanelActive = SkillsPanel != null && SkillsPanel.activeSelf;
+                bool itemsPanelActive = ItemsPanel != null && ItemsPanel.activeSelf;
+                
+                // Only handle ESC if one of the panels is active
+                if (!skillsPanelActive && !itemsPanelActive)
+                {
+                    // Let InGameMenu handle ESC to open settings panel
+                    return;
+                }
+                
+                // Mark that we're handling ESC
+                EscHandledThisFrame = true;
+            }
+            
+            // Handle right-click, X key, or ESC when panels are active
             GoBackToActionPanel();
         }
         

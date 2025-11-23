@@ -15,6 +15,7 @@ public class InGameMenu : MonoBehaviour
 
     private ActionPanelManager actionPanelManager;
     private Selection selection;
+    private bool panelsWereActiveThisFrame = false; // Track if panels were active at start of frame
 
     void Start()
     {
@@ -26,6 +27,12 @@ public class InGameMenu : MonoBehaviour
         
         SetupButtonListeners();
         HideSettingsPanel();
+    }
+    
+    void LateUpdate()
+    {
+        // Reset the flag at the end of the frame
+        panelsWereActiveThisFrame = false;
     }
 
     private void HideSettingsPanel()
@@ -80,9 +87,47 @@ public class InGameMenu : MonoBehaviour
 
     void Update()
     {
+        // Ensure we have a reference to ActionPanelManager
+        if (actionPanelManager == null)
+        {
+            actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        }
+        
+        // Check panel state at the START of the frame (before ActionPanelManager might close them)
+        bool skillsPanelActive = actionPanelManager != null && 
+                                actionPanelManager.SkillsPanel != null && 
+                                actionPanelManager.SkillsPanel.activeSelf;
+        bool itemsPanelActive = actionPanelManager != null && 
+                               actionPanelManager.ItemsPanel != null && 
+                               actionPanelManager.ItemsPanel.activeSelf;
+        
+        // Track if panels were active this frame
+        panelsWereActiveThisFrame = skillsPanelActive || itemsPanelActive;
+        
         // Check for ESC key
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            // Don't handle ESC if ActionPanelManager already handled it (e.g., when panels are active)
+            if (ActionPanelManager.EscHandledThisFrame)
+            {
+                return; // ActionPanelManager already handled ESC
+            }
+            
+            // Re-check panel state when ESC is pressed (in case it changed)
+            // Use the variables already declared at the start of Update()
+            bool panelsActive = (actionPanelManager != null && 
+                                actionPanelManager.SkillsPanel != null && 
+                                actionPanelManager.SkillsPanel.activeSelf) ||
+                               (actionPanelManager != null && 
+                                actionPanelManager.ItemsPanel != null && 
+                                actionPanelManager.ItemsPanel.activeSelf);
+            
+            // Don't handle ESC if SkillsPanel or ItemsPanel are active - let ActionPanelManager handle it
+            if (panelsActive)
+            {
+                return; // Let ActionPanelManager handle ESC to go back to ActionPanel
+            }
+            
             HandleEscapeKey();
         }
         
