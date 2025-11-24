@@ -49,8 +49,19 @@ public class InfoPanel : MonoBehaviour
         Item currentItem = null;
         int currentSkillIndex = -1;
         
+        // Check if we're in selection mode (after selecting a skill, before selecting target)
+        if (enableSkillInfo && skillPanelManager != null && skillPanelManager.IsInSelectionMode())
+        {
+            // Use the skill stored in SkillPanelManager during selection mode
+            currentSkill = skillPanelManager.GetCurrentSkill();
+            currentSkillIndex = skillPanelManager.GetSelectedSkillIndex();
+            if (currentSkill != null)
+            {
+                shouldShow = true;
+            }
+        }
         // Check if skills panel is active
-        if (enableSkillInfo && actionPanelManager != null && actionPanelManager.SkillsPanel != null && actionPanelManager.SkillsPanel.activeSelf)
+        else if (enableSkillInfo && actionPanelManager != null && actionPanelManager.SkillsPanel != null && actionPanelManager.SkillsPanel.activeSelf)
         {
             var skillData = GetSelectedSkill();
             currentSkill = skillData.skill;

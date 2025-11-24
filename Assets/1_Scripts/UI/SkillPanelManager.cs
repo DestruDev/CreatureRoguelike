@@ -969,6 +969,22 @@ public class SkillPanelManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Gets the current skill being cast during selection mode
+    /// </summary>
+    public Skill GetCurrentSkill()
+    {
+        return currentSkill;
+    }
+    
+    /// <summary>
+    /// Gets the current skill index being cast during selection mode
+    /// </summary>
+    public int GetSelectedSkillIndex()
+    {
+        return selectedSkillIndex;
+    }
+    
+    /// <summary>
     /// Cancels selection mode (public method for external cancellation)
     /// </summary>
     public void CancelSelectionModePublic()
@@ -991,9 +1007,8 @@ public class SkillPanelManager : MonoBehaviour
         }
 
         isSelectionMode = false;
-        selectedSkillIndex = -1;
-        currentCastingUnit = null;
-        currentSkill = null;
+        // Don't clear selectedSkillIndex and currentSkill yet - keep them until button selection is restored
+        // This prevents InfoPanel from flickering to the first skill during the transition
 
         if (selection != null)
         {
@@ -1010,14 +1025,67 @@ public class SkillPanelManager : MonoBehaviour
             gameManager.ShowUserPanel();
         }
 
+        // Store the button index to restore before re-enabling button selection mode
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        
         // Re-enable button selection mode to return to skill button navigation
         EnableButtonSelectionMode();
         
-        // Restore selection to the previously selected button (if it's still available)
-        // Use a coroutine to restore after EnableButtonSelectionMode has fully set up the selection
-        if (lastSelectedButtonIndex >= 0)
+        // Try to restore selection immediately to prevent flickering
+        bool restoredImmediately = false;
+        if (buttonIndexToRestore >= 0 && buttonIndexToRestore < skillButtons.Length && skillButtons[buttonIndexToRestore] != null)
         {
+            // Check if the button has a skill (is available)
+            if (gameManager != null)
+            {
+                Unit currentUnit = gameManager.GetCurrentUnit();
+                if (currentUnit != null && currentUnit.Skills != null && 
+                    buttonIndexToRestore < currentUnit.Skills.Length && 
+                    currentUnit.Skills[buttonIndexToRestore] != null)
+                {
+                    // Button is available, restore selection to it immediately
+                    if (selection != null && selection.IsValidSelection())
+                    {
+                        object[] allItems = selection.GetAllItems();
+                        if (allItems != null)
+                        {
+                            for (int i = 0; i < allItems.Length; i++)
+                            {
+                                if (allItems[i] is Button button && button == skillButtons[buttonIndexToRestore])
+                                {
+                                    selection.SetIndex(i);
+                                    restoredImmediately = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Now clear the skill info after button selection is restored
+        // This allows InfoPanel to use the stored skill during the transition
+        if (restoredImmediately)
+        {
+            // Button selection restored immediately, safe to clear now
+            selectedSkillIndex = -1;
+            currentSkill = null;
+            currentCastingUnit = null;
+            lastSelectedButtonIndex = -1;
+        }
+        else if (buttonIndexToRestore >= 0)
+        {
+            // Will be restored by coroutine, clear after it completes
             StartCoroutine(RestoreButtonSelectionAfterDelay());
+        }
+        else
+        {
+            // No button to restore, safe to clear immediately
+            selectedSkillIndex = -1;
+            currentSkill = null;
+            currentCastingUnit = null;
+            lastSelectedButtonIndex = -1;
         }
 
         Debug.Log("Selection mode cancelled");
@@ -1034,6 +1102,10 @@ public class SkillPanelManager : MonoBehaviour
         // Only restore if we're still in button selection mode (not if something else changed)
         if (!isButtonSelectionMode || selection == null)
         {
+            // Clear skill info and reset index even if we can't restore
+            selectedSkillIndex = -1;
+            currentSkill = null;
+            currentCastingUnit = null;
             lastSelectedButtonIndex = -1;
             yield break;
         }
@@ -1071,6 +1143,11 @@ public class SkillPanelManager : MonoBehaviour
                 }
             }
         }
+        
+        // Clear skill info after button selection is restored
+        selectedSkillIndex = -1;
+        currentSkill = null;
+        currentCastingUnit = null;
     }
 
     /// <summary>
