@@ -49,6 +49,29 @@ public class InfoPanel : MonoBehaviour
         Item currentItem = null;
         int currentSkillIndex = -1;
         
+        // Hide panel during skill execution (for both allies and enemies)
+        if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
+        {
+            if (infoPanelUI != null && infoPanelUI.activeSelf)
+            {
+                infoPanelUI.SetActive(false);
+            }
+            return;
+        }
+        
+        // Check if current unit is an enemy - if so, hide the panel
+        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
+        if (currentUnit != null && currentUnit.IsEnemyUnit)
+        {
+            // Hide panel during enemy turns
+            if (infoPanelUI != null && infoPanelUI.activeSelf)
+            {
+                infoPanelUI.SetActive(false);
+            }
+            return;
+        }
+        
+        // Only show info when actually hovering/selecting a skill (not just when panel is open)
         // Check if we're in selection mode (after selecting a skill, before selecting target)
         if (enableSkillInfo && skillPanelManager != null && skillPanelManager.IsInSelectionMode())
         {
@@ -60,21 +83,23 @@ public class InfoPanel : MonoBehaviour
                 shouldShow = true;
             }
         }
-        // Check if skills panel is active
+        // Check if skills panel is active AND a skill is actually selected/hovered
         else if (enableSkillInfo && actionPanelManager != null && actionPanelManager.SkillsPanel != null && actionPanelManager.SkillsPanel.activeSelf)
         {
             var skillData = GetSelectedSkill();
             currentSkill = skillData.skill;
             currentSkillIndex = skillData.index;
-            if (currentSkill != null)
+            // Only show if we actually have a valid selection (not just panel open)
+            if (currentSkill != null && skillData.index >= 0)
             {
                 shouldShow = true;
             }
         }
-        // Check if items panel is active
+        // Check if items panel is active AND an item is actually selected/hovered
         else if (enableItemInfo && actionPanelManager != null && actionPanelManager.ItemsPanel != null && actionPanelManager.ItemsPanel.activeSelf)
         {
             currentItem = GetSelectedItem();
+            // Only show if we actually have a valid selection (not just panel open)
             if (currentItem != null)
             {
                 shouldShow = true;
@@ -115,6 +140,7 @@ public class InfoPanel : MonoBehaviour
     }
     
     // Get the currently selected skill from the selection system (returns skill and index)
+    // Only returns a skill if one is actually selected/hovered (no fallback)
     (Skill skill, int index) GetSelectedSkill()
     {
         if (skillPanelManager == null || gameManager == null || selection == null) return (null, -1);
@@ -122,7 +148,7 @@ public class InfoPanel : MonoBehaviour
         Unit currentUnit = gameManager.GetCurrentUnit();
         if (currentUnit == null || currentUnit.Skills == null) return (null, -1);
         
-        // Check if there's a selected button
+        // Only return a skill if there's an actual valid selection
         if (selection.IsValidSelection())
         {
             object selectedItem = selection.CurrentSelection;
@@ -140,19 +166,12 @@ public class InfoPanel : MonoBehaviour
             }
         }
         
-        // If no selection, return first available skill
-        for (int i = 0; i < currentUnit.Skills.Length && i < 4; i++)
-        {
-            if (currentUnit.Skills[i] != null)
-            {
-                return (currentUnit.Skills[i], i);
-            }
-        }
-        
+        // No valid selection - return null (don't show info panel)
         return (null, -1);
     }
     
     // Get the currently selected item from the selection system
+    // Only returns an item if one is actually selected/hovered (no fallback)
     Item GetSelectedItem()
     {
         if (itemPanelManager == null || inventory == null || selection == null) return null;
@@ -160,7 +179,7 @@ public class InfoPanel : MonoBehaviour
         List<ItemEntry> items = inventory.Items;
         if (items == null || items.Count == 0) return null;
         
-        // Check if there's a selected button
+        // Only return an item if there's an actual valid selection
         if (selection.IsValidSelection())
         {
             object selectedItem = selection.CurrentSelection;
@@ -178,12 +197,7 @@ public class InfoPanel : MonoBehaviour
             }
         }
         
-        // If no selection, return first available item
-        if (items.Count > 0 && items[0] != null && items[0].item != null)
-        {
-            return items[0].item;
-        }
-        
+        // No valid selection - return null (don't show info panel)
         return null;
     }
     
