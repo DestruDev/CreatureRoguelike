@@ -62,6 +62,13 @@ public class Spawning : MonoBehaviour
     [Tooltip("If enabled, randomly selects from all assigned enemies for each slot. If disabled, uses the first assigned enemy for each slot.")]
     public bool useRandomEnemySpawns = false;
     
+    [Header("Unit Scale Settings")]
+    [Tooltip("Scale multiplier for spawned allies/creatures. Set to 1.0 for normal size, higher values make sprites bigger.")]
+    public float allyScale = 1.0f;
+    
+    [Tooltip("Scale multiplier for spawned enemies. Set to 1.0 for normal size, higher values make sprites bigger.")]
+    public float enemyScale = 1.0f;
+    
     
     void Start()
     {
@@ -106,7 +113,7 @@ public class Spawning : MonoBehaviour
 				string unitName = GetUnitName(creatureUnitData[i], i);
 				
 				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName);
+				var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName, allyScale);
     
 				// Ensure unit is set as player unit (spawn area determines team)
 				Unit unit = unitObj.GetComponent<Unit>();
@@ -142,7 +149,7 @@ public class Spawning : MonoBehaviour
 				string unitName = GetUnitName(selectedEnemy, i);
 				
 				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[i], unitName);
+				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[i], unitName, enemyScale);
     
 				// Ensure unit is set as enemy unit (spawn area determines team, not ScriptableObject)
 				Unit unit = unitObj.GetComponent<Unit>();
@@ -199,7 +206,7 @@ public class Spawning : MonoBehaviour
 				string unitName = GetUnitName(creatureUnitData[index], index);
 				
 				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(creatureUnitData[index], creatureSpawnAreas[index], unitName);
+				var unitObj = CreateUnitFromData(creatureUnitData[index], creatureSpawnAreas[index], unitName, allyScale);
     
 				// Ensure unit is set as player unit (spawn area determines team)
 				Unit unit = unitObj.GetComponent<Unit>();
@@ -240,7 +247,7 @@ public class Spawning : MonoBehaviour
 				string unitName = GetUnitName(selectedEnemy, index);
 				
 				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[index], unitName);
+				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[index], unitName, enemyScale);
     
 				// Ensure unit is set as enemy unit (spawn area determines team)
 				Unit unit = unitObj.GetComponent<Unit>();
@@ -257,14 +264,14 @@ public class Spawning : MonoBehaviour
     /// <summary>
     /// Creates a unit GameObject from ScriptableObject data
     /// </summary>
-    private GameObject CreateUnitFromData(CreatureUnitData unitData, Transform parent, string unitName)
+    private GameObject CreateUnitFromData(CreatureUnitData unitData, Transform parent, string unitName, float scale = 1.0f)
     {
         // Create the main GameObject
         GameObject unitObj = new GameObject(unitName);
         unitObj.transform.SetParent(parent);
         unitObj.transform.localPosition = Vector3.zero;
         unitObj.transform.localRotation = Quaternion.identity;
-        unitObj.transform.localScale = Vector3.one;
+        unitObj.transform.localScale = Vector3.one * scale;
         
         // Add SpriteRenderer component
         SpriteRenderer spriteRenderer = unitObj.AddComponent<SpriteRenderer>();
