@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class InspectPanelManager : MonoBehaviour
 {
@@ -67,7 +68,7 @@ public class InspectPanelManager : MonoBehaviour
         }
         
         // Toggle inspect mode with Q key
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Keyboard.current != null && Keyboard.current[Key.Q].wasPressedThisFrame)
         {
             if (inspectMode)
             {
@@ -255,7 +256,9 @@ public class InspectPanelManager : MonoBehaviour
     private void HandleInspectNavigation()
     {
         // Exit with ESC, right-click, or X key
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.X))
+        if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
+            (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame) || 
+            (Keyboard.current != null && Keyboard.current[Key.X].wasPressedThisFrame))
         {
             ExitInspectMode();
             return;
@@ -264,11 +267,11 @@ public class InspectPanelManager : MonoBehaviour
         // Navigate with arrow keys or WASD
         if (selection != null)
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+            if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
             {
                 selection.Previous();
             }
-            else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+            else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
             {
                 selection.Next();
             }

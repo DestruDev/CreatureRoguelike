@@ -16,6 +16,7 @@ public class CreatureUnitData : ScriptableObject
     [Header("Visual")]
     public Sprite sprite;
     public Color spriteColor = Color.white;
+    public Material spriteMaterial;
     
     [Header("Stats")]
     public int maxHP = 100;

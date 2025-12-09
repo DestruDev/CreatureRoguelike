@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class MainMenu : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class MainMenu : MonoBehaviour
     void Update()
     {
         // Check for ESC key to go back from panels
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
         {
             if (IsAnyPanelActive())
             {

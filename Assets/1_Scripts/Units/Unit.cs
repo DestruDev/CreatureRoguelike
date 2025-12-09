@@ -127,6 +127,10 @@ public class Unit : MonoBehaviour
         {
             spriteRenderer.sprite = creatureUnitData.sprite;
             spriteRenderer.color = creatureUnitData.spriteColor;
+            if (creatureUnitData.spriteMaterial != null)
+            {
+                spriteRenderer.material = creatureUnitData.spriteMaterial;
+            }
         }
         
         // Initialize HP

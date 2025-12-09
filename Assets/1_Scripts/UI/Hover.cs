@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.InputSystem;
 
 [System.Serializable]
 public class HoverTriggerObject
@@ -112,7 +113,7 @@ public class Hover : MonoBehaviour
         {
             PointerEventData pointerData = new PointerEventData(EventSystem.current)
             {
-                position = Input.mousePosition
+                position = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero
             };
             
             List<RaycastResult> results = new List<RaycastResult>();
@@ -168,7 +169,8 @@ public class Hover : MonoBehaviour
         // Check 3D objects with raycasting
         if (!currentlyHovering && mainCamera != null)
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            Vector2 mousePos = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
+            Ray ray = mainCamera.ScreenPointToRay(mousePos);
             RaycastHit hit;
             
             if (Physics.Raycast(ray, out hit))
@@ -346,7 +348,7 @@ public class Hover : MonoBehaviour
     {
         if (hoverUIRectTransform == null || canvas == null) return;
         
-        Vector2 mousePosition = Input.mousePosition;
+        Vector2 mousePosition = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
         Vector2 localPoint;
         
         // Convert screen position to local canvas position

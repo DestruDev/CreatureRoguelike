@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
@@ -193,7 +194,7 @@ public class GameManager : MonoBehaviour
     void Update()
     {
 		// Debug: Print action gauge status when pressing G
-		if (Input.GetKeyDown(KeyCode.G))
+		if (Keyboard.current != null && Keyboard.current[Key.G].wasPressedThisFrame)
 		{
 			PrintActionGaugeStatus();
 		}

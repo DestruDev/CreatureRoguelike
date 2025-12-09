@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class ItemPanelManager : MonoBehaviour
 {
@@ -244,7 +245,7 @@ public class ItemPanelManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"ItemPanelManager: No available item buttons to select! inventory={inventory != null}, items={inventory?.Items != null}, itemsCount={inventory?.Items?.Count ?? 0}");
+            //Debug.LogWarning($"ItemPanelManager: No available item buttons to select! inventory={inventory != null}, items={inventory?.Items != null}, itemsCount={inventory?.Items?.Count ?? 0}");
             // Still set isButtonSelectionMode to false if we can't set up selection
             isButtonSelectionMode = false;
         }
@@ -283,17 +284,17 @@ public class ItemPanelManager : MonoBehaviour
         }
         
         // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
-        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+        if (Keyboard.current != null && (Keyboard.current[Key.UpArrow].wasPressedThisFrame || Keyboard.current[Key.W].wasPressedThisFrame))
         {
             selection.Previous();
         }
-        else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+        else if (Keyboard.current != null && (Keyboard.current[Key.DownArrow].wasPressedThisFrame || Keyboard.current[Key.S].wasPressedThisFrame))
         {
             selection.Next();
         }
         
         // Activate selected button with Enter or Space
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
             ActivateSelectedButton();
         }
@@ -381,20 +382,21 @@ public class ItemPanelManager : MonoBehaviour
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+                if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
+                    (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame))
                 {
                     CancelSelectionMode();
                 }
                 // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
                 // Navigate through targets with arrow keys or WASD
-                else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+                else if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
                 {
                     if (selection != null)
                     {
                         selection.Previous();
                     }
                 }
-                else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+                else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
                 {
                     if (selection != null)
                     {
@@ -402,7 +404,7 @@ public class ItemPanelManager : MonoBehaviour
                     }
                 }
                 // Confirm selection with Enter or Space
-                else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
                 {
                     ConfirmSelection();
                 }
@@ -414,7 +416,7 @@ public class ItemPanelManager : MonoBehaviour
     {
         // Check for mouse click confirmation after Selection class has processed clicks
         // This ensures we check after Selection's Update has run
-        if (isSelectionMode && Input.GetMouseButtonDown(0))
+        if (isSelectionMode && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             // Don't process if clicking on UI elements
             if (UnityEngine.EventSystems.EventSystem.current != null && 

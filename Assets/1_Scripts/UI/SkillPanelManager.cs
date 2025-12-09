@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class SkillPanelManager : MonoBehaviour
 {
@@ -186,17 +187,17 @@ public class SkillPanelManager : MonoBehaviour
             return;
         
         // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
-        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+        if (Keyboard.current != null && (Keyboard.current[Key.UpArrow].wasPressedThisFrame || Keyboard.current[Key.W].wasPressedThisFrame))
         {
             selection.Previous();
         }
-        else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+        else if (Keyboard.current != null && (Keyboard.current[Key.DownArrow].wasPressedThisFrame || Keyboard.current[Key.S].wasPressedThisFrame))
         {
             selection.Next();
         }
         
         // Activate selected button with Enter or Space
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
             ActivateSelectedButton();
         }
@@ -283,20 +284,21 @@ public class SkillPanelManager : MonoBehaviour
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+                if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
+                    (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame))
                 {
                     CancelSelectionMode();
                 }
                 // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
                 // Navigate through targets with arrow keys or WASD
-                else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+                else if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
                 {
                     if (selection != null)
                     {
                         selection.Previous();
                     }
                 }
-                else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+                else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
                 {
                     if (selection != null)
                     {
@@ -304,7 +306,7 @@ public class SkillPanelManager : MonoBehaviour
                     }
                 }
                 // Confirm selection with Enter or Space (keyboard navigation confirmation)
-                else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
                 {
                     ConfirmSelection();
                 }
@@ -316,7 +318,7 @@ public class SkillPanelManager : MonoBehaviour
     {
         // Check for mouse click confirmation after Selection class has processed clicks
         // This ensures we check after Selection's Update has run
-        if (isSelectionMode && Input.GetMouseButtonDown(0))
+        if (isSelectionMode && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             // Don't process if clicking on UI elements
             if (UnityEngine.EventSystems.EventSystem.current != null && 
@@ -832,7 +834,8 @@ public class SkillPanelManager : MonoBehaviour
             return null;
 
         // Raycast from camera through mouse position
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        Vector2 mousePos = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
+        Ray ray = cam.ScreenPointToRay(mousePos);
         RaycastHit hit;
 
         // Try physics raycast first (if units have colliders)

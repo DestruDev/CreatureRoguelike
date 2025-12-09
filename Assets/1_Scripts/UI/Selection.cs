@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Handles selection of units, skills, items, and other menu elements.
@@ -120,7 +121,7 @@ public class Selection : MonoBehaviour
             UpdateMouseHoverHighlight();
             
             // Handle mouse click selection for units
-            if (Input.GetMouseButtonDown(0))
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
                 HandleMouseClickSelection();
             }
@@ -806,12 +807,12 @@ public class Selection : MonoBehaviour
             return null;
         
         // Convert mouse position to world position
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = raycastCamera.nearClipPlane + 1f; // Set appropriate distance
+        Vector2 mousePos2D = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
+        Vector3 mousePos = new Vector3(mousePos2D.x, mousePos2D.y, raycastCamera.nearClipPlane + 1f); // Set appropriate distance
         Vector3 worldPos = raycastCamera.ScreenToWorldPoint(mousePos);
         
         // Try 2D physics raycast first (for sprites with 2D colliders)
-        Vector3 mouseWorldPos2D = raycastCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, raycastCamera.nearClipPlane));
+        Vector3 mouseWorldPos2D = raycastCamera.ScreenToWorldPoint(new Vector3(mousePos2D.x, mousePos2D.y, raycastCamera.nearClipPlane));
         Collider2D hit2D = Physics2D.OverlapPoint(new Vector2(mouseWorldPos2D.x, mouseWorldPos2D.y));
         if (hit2D != null)
         {
@@ -823,7 +824,7 @@ public class Selection : MonoBehaviour
         }
         
         // Try 3D physics raycast (if units have 3D colliders)
-        Ray ray = raycastCamera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = raycastCamera.ScreenPointToRay(mousePos2D);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
@@ -840,7 +841,7 @@ public class Selection : MonoBehaviour
         float closestDistance = hoverDetectionDistance;
         
         // Project mouse to ground plane (assuming units are at y=0 or similar)
-        Vector3 mouseWorldPos = raycastCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, raycastCamera.nearClipPlane));
+        Vector3 mouseWorldPos = raycastCamera.ScreenToWorldPoint(new Vector3(mousePos2D.x, mousePos2D.y, raycastCamera.nearClipPlane));
         Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
         float distance;
         if (groundPlane.Raycast(ray, out distance))

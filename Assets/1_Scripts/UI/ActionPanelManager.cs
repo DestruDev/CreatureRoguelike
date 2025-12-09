@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class ActionPanelManager : MonoBehaviour
 {
@@ -116,9 +117,9 @@ public class ActionPanelManager : MonoBehaviour
         // Check for ESC key press or right-click to return to ActionPanel or cancel selection
         // ESC key: only handle if SkillsPanel or ItemsPanel are active (otherwise let InGameMenu handle it for settings)
         // Right-click and X key: always handle
-        bool isEscapeKey = Input.GetKeyDown(KeyCode.Escape);
-        bool isRightClick = Input.GetMouseButtonDown(1);
-        bool isXKey = Input.GetKeyDown(KeyCode.X);
+        bool isEscapeKey = Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame;
+        bool isRightClick = Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
+        bool isXKey = Keyboard.current != null && Keyboard.current[Key.X].wasPressedThisFrame;
         
         if (isEscapeKey || isRightClick || isXKey)
         {
@@ -162,7 +163,7 @@ public class ActionPanelManager : MonoBehaviour
         }
         
         // Check for E key to end turn (only when ActionPanel is active)
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Keyboard.current != null && Keyboard.current[Key.E].wasPressedThisFrame)
         {
             if (ActionPanel != null && ActionPanel.activeSelf)
             {
@@ -193,7 +194,7 @@ public class ActionPanelManager : MonoBehaviour
     {
         // Check for mouse click confirmation after Selection class has processed clicks
         // This ensures we check after Selection's Update has run
-        if (isNormalAttackSelectionMode && Input.GetMouseButtonDown(0))
+        if (isNormalAttackSelectionMode && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             // Don't process if clicking on UI elements
             if (UnityEngine.EventSystems.EventSystem.current != null && 
@@ -973,14 +974,14 @@ public class ActionPanelManager : MonoBehaviour
         // Cancel with ESC or right-click (handled in Update)
         
         // Navigate through targets with arrow keys or WASD
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
         {
             if (selection != null)
             {
                 selection.Previous();
             }
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
         {
             if (selection != null)
             {
@@ -988,7 +989,7 @@ public class ActionPanelManager : MonoBehaviour
             }
         }
         // Confirm selection with Enter or Space
-        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
             // Ignore confirm if we just entered selection mode (prevents button activation from auto-confirming)
             if (ignoreNextKeyboardConfirm)
@@ -1083,17 +1084,17 @@ public class ActionPanelManager : MonoBehaviour
         
         // Cycle with Left/Right arrow keys or A/D (A = previous, D = next)
         // Up/Down and W/S are disabled for horizontal button navigation
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
         {
             selection.Previous();
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
         {
             selection.Next();
         }
         
         // Activate selected button with Enter or Space
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
             ActivateSelectedButton();
         }

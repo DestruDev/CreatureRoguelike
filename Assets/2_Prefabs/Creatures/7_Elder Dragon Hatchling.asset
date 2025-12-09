@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e1ad48e95045d14c8dcfec638325f0d, type: 3}
+  m_Name: 7_Elder Dragon Hatchling
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureUnitData
+  unitName: Elder Dragon Hatchling
+  unitID: 7
+  sprite: {fileID: 28676175, guid: 7aa09189971c825419c0167243ab8389, type: 3}
+  spriteColor: {r: 1, g: 1, b: 1, a: 1}
+  spriteMaterial: {fileID: 2100000, guid: 6b01bbb4b1ad7df4ab3ce6a14f831b61, type: 2}
+  maxHP: 150
+  currentHP: 150
+  defense: 20
+  speed: 8
+  skills:
+  - {fileID: 11400000, guid: 9e42b0421481466469229d2dbea5fca3, type: 2}

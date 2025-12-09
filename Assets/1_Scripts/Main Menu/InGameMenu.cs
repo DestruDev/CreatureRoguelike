@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class InGameMenu : MonoBehaviour
 {
@@ -128,7 +129,7 @@ public class InGameMenu : MonoBehaviour
         panelsWereActiveThisFrame = skillsPanelActive || itemsPanelActive;
         
         // Check for ESC key
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
         {
             // Priority 1: If settings panel is open, close it (highest priority)
             if (IsSettingsPanelActive())
@@ -162,7 +163,7 @@ public class InGameMenu : MonoBehaviour
         }
         
         // Check for X key to close settings panel
-        if (Input.GetKeyDown(KeyCode.X))
+        if (Keyboard.current != null && Keyboard.current[Key.X].wasPressedThisFrame)
         {
             if (IsSettingsPanelActive())
             {

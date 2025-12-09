@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class AdminConsole : MonoBehaviour
 {
@@ -16,13 +17,13 @@ public class AdminConsole : MonoBehaviour
     void Update()
     {
         // Press 1 to damage all enemies
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Keyboard.current != null && Keyboard.current[Key.Digit1].wasPressedThisFrame)
         {
             DamageAllEnemies();
         }
         
         // Press 2 to damage all allies
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Keyboard.current != null && Keyboard.current[Key.Digit2].wasPressedThisFrame)
         {
             DamageAllAllies();
         }
