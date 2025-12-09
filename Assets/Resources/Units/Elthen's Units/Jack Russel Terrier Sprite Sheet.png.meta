@@ -341,7 +341,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_0
+      name: Jack Russel Terrier Idle Sit 0
       rect:
         serializedVersion: 2
         x: 0
@@ -363,7 +363,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_1
+      name: Jack Russel Terrier Idle Sit 1
       rect:
         serializedVersion: 2
         x: 32
@@ -385,7 +385,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_2
+      name: Jack Russel Terrier Idle Sit 2
       rect:
         serializedVersion: 2
         x: 64
@@ -407,7 +407,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_3
+      name: Jack Russel Terrier Idle Sit 3
       rect:
         serializedVersion: 2
         x: 96
@@ -429,7 +429,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_4
+      name: Jack Russel Terrier Idle Sit 4
       rect:
         serializedVersion: 2
         x: 128
@@ -451,7 +451,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_5
+      name: Jack Russel Terrier Idle Sit 5
       rect:
         serializedVersion: 2
         x: 160
@@ -473,7 +473,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_6
+      name: Jack Russel Terrier Idle Sit 6
       rect:
         serializedVersion: 2
         x: 192
@@ -495,7 +495,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_7
+      name: Jack Russel Terrier Idle Sit 7
       rect:
         serializedVersion: 2
         x: 224
@@ -517,7 +517,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_8
+      name: Jack Russel Terrier Idle 0
       rect:
         serializedVersion: 2
         x: 0
@@ -539,7 +539,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_9
+      name: Jack Russel Terrier Idle 1
       rect:
         serializedVersion: 2
         x: 32
@@ -561,7 +561,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_10
+      name: Jack Russel Terrier Idle 2
       rect:
         serializedVersion: 2
         x: 64
@@ -583,7 +583,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_11
+      name: Jack Russel Terrier Idle 3
       rect:
         serializedVersion: 2
         x: 96
@@ -605,7 +605,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_12
+      name: Jack Russel Terrier Idle 4
       rect:
         serializedVersion: 2
         x: 128
@@ -627,7 +627,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_13
+      name: Jack Russel Terrier Idle 5
       rect:
         serializedVersion: 2
         x: 160
@@ -649,7 +649,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_14
+      name: Jack Russel Terrier Idle 6
       rect:
         serializedVersion: 2
         x: 192
@@ -671,7 +671,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_15
+      name: Jack Russel Terrier Idle 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1507,7 +1507,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_53
+      name: Jack Russel Terrier Attack 0
       rect:
         serializedVersion: 2
         x: 0
@@ -1529,7 +1529,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_54
+      name: Jack Russel Terrier Attack 1
       rect:
         serializedVersion: 2
         x: 32
@@ -1551,7 +1551,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_55
+      name: Jack Russel Terrier Attack 2
       rect:
         serializedVersion: 2
         x: 64
@@ -1573,7 +1573,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_56
+      name: Jack Russel Terrier Attack 3
       rect:
         serializedVersion: 2
         x: 96
@@ -1595,7 +1595,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_57
+      name: Jack Russel Terrier Attack 4
       rect:
         serializedVersion: 2
         x: 128
@@ -1617,7 +1617,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_58
+      name: Jack Russel Terrier Attack 5
       rect:
         serializedVersion: 2
         x: 160
@@ -1639,7 +1639,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_59
+      name: Jack Russel Terrier Attack 6
       rect:
         serializedVersion: 2
         x: 192
@@ -1661,7 +1661,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_60
+      name: Jack Russel Terrier Attack 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1859,7 +1859,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Jack Russel Terrier Sprite Sheet_69
+      name: Jack Russel Terrier Dead 0
       rect:
         serializedVersion: 2
         x: 0
@@ -2050,19 +2050,35 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Jack Russel Terrier Sprite Sheet_0: 1216685243
-      Jack Russel Terrier Sprite Sheet_1: -1393292139
-      Jack Russel Terrier Sprite Sheet_10: 1705300263
-      Jack Russel Terrier Sprite Sheet_11: 615890262
-      Jack Russel Terrier Sprite Sheet_12: -129248647
-      Jack Russel Terrier Sprite Sheet_13: -1391286650
-      Jack Russel Terrier Sprite Sheet_14: 975921677
-      Jack Russel Terrier Sprite Sheet_15: 1644272703
+      Jack Russel Terrier Attack 0: -1948058063
+      Jack Russel Terrier Attack 1: -1565679236
+      Jack Russel Terrier Attack 2: 472459437
+      Jack Russel Terrier Attack 3: 864975180
+      Jack Russel Terrier Attack 4: -250176731
+      Jack Russel Terrier Attack 5: 1818882403
+      Jack Russel Terrier Attack 6: 1299075814
+      Jack Russel Terrier Attack 7: -142128971
+      Jack Russel Terrier Dead 0: -921319437
+      Jack Russel Terrier Idle 0: -900997354
+      Jack Russel Terrier Idle 1: 718996336
+      Jack Russel Terrier Idle 2: 1705300263
+      Jack Russel Terrier Idle 3: 615890262
+      Jack Russel Terrier Idle 4: -129248647
+      Jack Russel Terrier Idle 5: -1391286650
+      Jack Russel Terrier Idle 6: 975921677
+      Jack Russel Terrier Idle 7: 1644272703
+      Jack Russel Terrier Idle Sit 0: 1216685243
+      Jack Russel Terrier Idle Sit 1: -1393292139
+      Jack Russel Terrier Idle Sit 2: 904745851
+      Jack Russel Terrier Idle Sit 3: 1336389342
+      Jack Russel Terrier Idle Sit 4: 642612436
+      Jack Russel Terrier Idle Sit 5: -1294851402
+      Jack Russel Terrier Idle Sit 6: 1233302506
+      Jack Russel Terrier Idle Sit 7: -409000950
       Jack Russel Terrier Sprite Sheet_16: 645058152
       Jack Russel Terrier Sprite Sheet_17: 1215198573
       Jack Russel Terrier Sprite Sheet_18: -126901230
       Jack Russel Terrier Sprite Sheet_19: 1334386505
-      Jack Russel Terrier Sprite Sheet_2: 904745851
       Jack Russel Terrier Sprite Sheet_20: -27549294
       Jack Russel Terrier Sprite Sheet_21: 1286904620
       Jack Russel Terrier Sprite Sheet_22: 676357677
@@ -2073,7 +2089,6 @@ TextureImporter:
       Jack Russel Terrier Sprite Sheet_27: 1485613488
       Jack Russel Terrier Sprite Sheet_28: -968008495
       Jack Russel Terrier Sprite Sheet_29: -338792345
-      Jack Russel Terrier Sprite Sheet_3: 1336389342
       Jack Russel Terrier Sprite Sheet_30: -1976729254
       Jack Russel Terrier Sprite Sheet_31: -2000091387
       Jack Russel Terrier Sprite Sheet_32: 2140651359
@@ -2084,7 +2099,6 @@ TextureImporter:
       Jack Russel Terrier Sprite Sheet_37: 1203439792
       Jack Russel Terrier Sprite Sheet_38: 1008772004
       Jack Russel Terrier Sprite Sheet_39: -657090825
-      Jack Russel Terrier Sprite Sheet_4: 642612436
       Jack Russel Terrier Sprite Sheet_40: 1382438227
       Jack Russel Terrier Sprite Sheet_41: 465881391
       Jack Russel Terrier Sprite Sheet_42: -1049808491
@@ -2095,19 +2109,9 @@ TextureImporter:
       Jack Russel Terrier Sprite Sheet_47: 550440497
       Jack Russel Terrier Sprite Sheet_48: -887657353
       Jack Russel Terrier Sprite Sheet_49: -1388855256
-      Jack Russel Terrier Sprite Sheet_5: -1294851402
       Jack Russel Terrier Sprite Sheet_50: 909985205
       Jack Russel Terrier Sprite Sheet_51: 233595198
       Jack Russel Terrier Sprite Sheet_52: 1427168180
-      Jack Russel Terrier Sprite Sheet_53: -1948058063
-      Jack Russel Terrier Sprite Sheet_54: -1565679236
-      Jack Russel Terrier Sprite Sheet_55: 472459437
-      Jack Russel Terrier Sprite Sheet_56: 864975180
-      Jack Russel Terrier Sprite Sheet_57: -250176731
-      Jack Russel Terrier Sprite Sheet_58: 1818882403
-      Jack Russel Terrier Sprite Sheet_59: 1299075814
-      Jack Russel Terrier Sprite Sheet_6: 1233302506
-      Jack Russel Terrier Sprite Sheet_60: -142128971
       Jack Russel Terrier Sprite Sheet_61: -1822834766
       Jack Russel Terrier Sprite Sheet_62: 1914528357
       Jack Russel Terrier Sprite Sheet_63: -926137766
@@ -2116,8 +2120,6 @@ TextureImporter:
       Jack Russel Terrier Sprite Sheet_66: 1775590501
       Jack Russel Terrier Sprite Sheet_67: -1648852567
       Jack Russel Terrier Sprite Sheet_68: 1133544293
-      Jack Russel Terrier Sprite Sheet_69: -921319437
-      Jack Russel Terrier Sprite Sheet_7: -409000950
       Jack Russel Terrier Sprite Sheet_70: 57909043
       Jack Russel Terrier Sprite Sheet_71: -1100372972
       Jack Russel Terrier Sprite Sheet_72: -1249716495
@@ -2125,8 +2127,6 @@ TextureImporter:
       Jack Russel Terrier Sprite Sheet_74: 2111061763
       Jack Russel Terrier Sprite Sheet_75: 1863441952
       Jack Russel Terrier Sprite Sheet_76: -764744893
-      Jack Russel Terrier Sprite Sheet_8: -900997354
-      Jack Russel Terrier Sprite Sheet_9: 718996336
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

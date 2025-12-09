@@ -239,7 +239,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_0
+      name: Undead Hand Idle 0
       rect:
         serializedVersion: 2
         x: 0
@@ -261,7 +261,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_1
+      name: Undead Hand Idle 1
       rect:
         serializedVersion: 2
         x: 32
@@ -283,7 +283,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_2
+      name: Undead Hand Idle 2
       rect:
         serializedVersion: 2
         x: 64
@@ -305,7 +305,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_3
+      name: Undead Hand Idle 3
       rect:
         serializedVersion: 2
         x: 96
@@ -459,7 +459,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_10
+      name: Undead Hand Attack 0
       rect:
         serializedVersion: 2
         x: 0
@@ -481,7 +481,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_11
+      name: Undead Hand Attack 1
       rect:
         serializedVersion: 2
         x: 32
@@ -503,7 +503,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_12
+      name: Undead Hand Attack 2
       rect:
         serializedVersion: 2
         x: 64
@@ -525,7 +525,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_13
+      name: Undead Hand Attack 3
       rect:
         serializedVersion: 2
         x: 96
@@ -547,10 +547,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_14
+      name: Undead Hand Attack 4
       rect:
         serializedVersion: 2
-        x: 128
+        x: 130
         y: 96
         width: 32
         height: 32
@@ -569,10 +569,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_15
+      name: Undead Hand Attack 5
       rect:
         serializedVersion: 2
-        x: 160
+        x: 161
         y: 96
         width: 32
         height: 32
@@ -591,10 +591,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_16
+      name: Undead Hand Attack 6
       rect:
         serializedVersion: 2
-        x: 192
+        x: 194
         y: 96
         width: 32
         height: 32
@@ -613,7 +613,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_17
+      name: Undead Hand Attack 7
       rect:
         serializedVersion: 2
         x: 224
@@ -635,7 +635,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_18
+      name: Undead Hand Hurt 0
       rect:
         serializedVersion: 2
         x: 0
@@ -657,11 +657,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_19
+      name: Undead Hand Hurt 1
       rect:
         serializedVersion: 2
         x: 32
-        y: 64
+        y: 63
         width: 32
         height: 32
       alignment: 9
@@ -679,7 +679,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_20
+      name: Undead Hand Hurt 2
       rect:
         serializedVersion: 2
         x: 64
@@ -701,7 +701,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_21
+      name: Undead Hand Hurt 3
       rect:
         serializedVersion: 2
         x: 96
@@ -723,7 +723,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_22
+      name: Undead Hand Hurt 4
       rect:
         serializedVersion: 2
         x: 128
@@ -745,11 +745,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_23
+      name: Undead Hand Dead 0
       rect:
         serializedVersion: 2
         x: 0
-        y: 32
+        y: 31
         width: 32
         height: 32
       alignment: 9
@@ -767,10 +767,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_24
+      name: Undead Hand Dead 1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 33
         y: 32
         width: 32
         height: 32
@@ -789,7 +789,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_25
+      name: Undead Hand Dead 2
       rect:
         serializedVersion: 2
         x: 64
@@ -811,7 +811,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Undead Hand Sprite Sheet_26
+      name: Undead Hand Dead 3
       rect:
         serializedVersion: 2
         x: 96
@@ -1200,30 +1200,30 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.75},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Undead Hand Sprite Sheet_0: -279515519
-      Undead Hand Sprite Sheet_1: -1291133039
-      Undead Hand Sprite Sheet_10: 576569407
-      Undead Hand Sprite Sheet_11: 1548918529
-      Undead Hand Sprite Sheet_12: -882055883
-      Undead Hand Sprite Sheet_13: 1135363228
-      Undead Hand Sprite Sheet_14: 1051502748
-      Undead Hand Sprite Sheet_15: -1026482469
-      Undead Hand Sprite Sheet_16: -1112903450
-      Undead Hand Sprite Sheet_17: -371138789
-      Undead Hand Sprite Sheet_18: -869062766
-      Undead Hand Sprite Sheet_19: 516926393
-      Undead Hand Sprite Sheet_2: -1145897250
-      Undead Hand Sprite Sheet_20: 437326006
-      Undead Hand Sprite Sheet_21: -602810379
-      Undead Hand Sprite Sheet_22: -438996973
-      Undead Hand Sprite Sheet_23: -662366559
-      Undead Hand Sprite Sheet_24: -205299272
-      Undead Hand Sprite Sheet_25: 349945620
-      Undead Hand Sprite Sheet_26: -1309716932
+      Undead Hand Attack 0: 576569407
+      Undead Hand Attack 1: 1548918529
+      Undead Hand Attack 2: -882055883
+      Undead Hand Attack 3: 1135363228
+      Undead Hand Attack 4: 1051502748
+      Undead Hand Attack 5: -1026482469
+      Undead Hand Attack 6: -1112903450
+      Undead Hand Attack 7: -371138789
+      Undead Hand Dead 0: -662366559
+      Undead Hand Dead 1: -205299272
+      Undead Hand Dead 2: 349945620
+      Undead Hand Dead 3: -1309716932
+      Undead Hand Hurt 0: -869062766
+      Undead Hand Hurt 1: 516926393
+      Undead Hand Hurt 2: 437326006
+      Undead Hand Hurt 3: -602810379
+      Undead Hand Hurt 4: -438996973
+      Undead Hand Idle 0: -279515519
+      Undead Hand Idle 1: -1291133039
+      Undead Hand Idle 2: -1145897250
+      Undead Hand Idle 3: 424780672
       Undead Hand Sprite Sheet_27: -2042737762
       Undead Hand Sprite Sheet_28: -268544143
       Undead Hand Sprite Sheet_29: -1101220531
-      Undead Hand Sprite Sheet_3: 424780672
       Undead Hand Sprite Sheet_30: -906017271
       Undead Hand Sprite Sheet_31: 978357115
       Undead Hand Sprite Sheet_32: 21691806

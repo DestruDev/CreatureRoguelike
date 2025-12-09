@@ -248,7 +248,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_0
+      name: Beast Cub Idle 0
       rect:
         serializedVersion: 2
         x: 0
@@ -270,7 +270,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_1
+      name: Beast Cub Idle 1
       rect:
         serializedVersion: 2
         x: 32
@@ -292,7 +292,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_2
+      name: Beast Cub Idle 2
       rect:
         serializedVersion: 2
         x: 64
@@ -314,7 +314,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_3
+      name: Beast Cub Idle 3
       rect:
         serializedVersion: 2
         x: 96
@@ -336,7 +336,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_4
+      name: Beast Cub Idle 4
       rect:
         serializedVersion: 2
         x: 128
@@ -358,7 +358,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_5
+      name: Beast Cub Idle 5
       rect:
         serializedVersion: 2
         x: 160
@@ -380,7 +380,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_6
+      name: Beast Cub Idle 6
       rect:
         serializedVersion: 2
         x: 192
@@ -402,7 +402,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_7
+      name: Beast Cub Idle 7
       rect:
         serializedVersion: 2
         x: 224
@@ -424,7 +424,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_8
+      name: Beast Cub Idle Sit 0
       rect:
         serializedVersion: 2
         x: 0
@@ -446,7 +446,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_9
+      name: Beast Cub Idle Sit 1
       rect:
         serializedVersion: 2
         x: 32
@@ -468,7 +468,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_10
+      name: Beast Cub Idle Sit 2
       rect:
         serializedVersion: 2
         x: 64
@@ -490,7 +490,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_11
+      name: Beast Cub Idle Sit 3
       rect:
         serializedVersion: 2
         x: 96
@@ -512,7 +512,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_12
+      name: Beast Cub Idle Sit 4
       rect:
         serializedVersion: 2
         x: 128
@@ -534,7 +534,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_13
+      name: Beast Cub Idle Sit 5
       rect:
         serializedVersion: 2
         x: 160
@@ -556,7 +556,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_14
+      name: Beast Cub Idle Sit 6
       rect:
         serializedVersion: 2
         x: 192
@@ -578,7 +578,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_15
+      name: Beast Cub Idle Sit 7
       rect:
         serializedVersion: 2
         x: 224
@@ -600,7 +600,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_16
+      name: Beast Cub Move 0
       rect:
         serializedVersion: 2
         x: 0
@@ -622,7 +622,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_17
+      name: Beast Cub Move 1
       rect:
         serializedVersion: 2
         x: 32
@@ -644,7 +644,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_18
+      name: Beast Cub Move 2
       rect:
         serializedVersion: 2
         x: 64
@@ -666,7 +666,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_19
+      name: Beast Cub Move 3
       rect:
         serializedVersion: 2
         x: 96
@@ -688,7 +688,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_20
+      name: Beast Cub Move 4
       rect:
         serializedVersion: 2
         x: 128
@@ -710,7 +710,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_21
+      name: Beast Cub Move 5
       rect:
         serializedVersion: 2
         x: 160
@@ -732,7 +732,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_22
+      name: Beast Cub Sleep 0
       rect:
         serializedVersion: 2
         x: 0
@@ -754,7 +754,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_23
+      name: Beast Cub Sleep 1
       rect:
         serializedVersion: 2
         x: 32
@@ -776,7 +776,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_24
+      name: Beast Cub Sleep 2
       rect:
         serializedVersion: 2
         x: 64
@@ -798,7 +798,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_25
+      name: Beast Cub Sleep 3
       rect:
         serializedVersion: 2
         x: 96
@@ -820,7 +820,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_26
+      name: Beast Cub Sleep 4
       rect:
         serializedVersion: 2
         x: 128
@@ -842,7 +842,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_27
+      name: Beast Cub Sleep 5
       rect:
         serializedVersion: 2
         x: 160
@@ -864,7 +864,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_28
+      name: Beast Cub Sleep 6
       rect:
         serializedVersion: 2
         x: 192
@@ -886,7 +886,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_29
+      name: Beast Cub Sleep 7
       rect:
         serializedVersion: 2
         x: 224
@@ -908,7 +908,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_30
+      name: Beast Cub Attack 0
       rect:
         serializedVersion: 2
         x: 0
@@ -930,7 +930,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_31
+      name: Beast Cub Attack 1
       rect:
         serializedVersion: 2
         x: 32
@@ -952,7 +952,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_32
+      name: Beast Cub Attack 2
       rect:
         serializedVersion: 2
         x: 64
@@ -974,7 +974,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_33
+      name: Beast Cub Attack 3
       rect:
         serializedVersion: 2
         x: 96
@@ -996,7 +996,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_34
+      name: Beast Cub Attack 4
       rect:
         serializedVersion: 2
         x: 128
@@ -1018,7 +1018,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_35
+      name: Beast Cub Attack 5
       rect:
         serializedVersion: 2
         x: 160
@@ -1040,7 +1040,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_36
+      name: Beast Cub Attack 6
       rect:
         serializedVersion: 2
         x: 192
@@ -1062,7 +1062,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_37
+      name: Beast Cub Attack 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1084,7 +1084,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_38
+      name: Beast Cub Hurt 0
       rect:
         serializedVersion: 2
         x: 0
@@ -1106,7 +1106,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_39
+      name: Beast Cub Hurt 1
       rect:
         serializedVersion: 2
         x: 32
@@ -1128,7 +1128,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_40
+      name: Beast Cub Hurt 2
       rect:
         serializedVersion: 2
         x: 64
@@ -1150,7 +1150,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_41
+      name: Beast Cub Hurt 3
       rect:
         serializedVersion: 2
         x: 96
@@ -1172,7 +1172,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_42
+      name: Beast Cub Hurt 4
       rect:
         serializedVersion: 2
         x: 128
@@ -1194,7 +1194,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_43
+      name: Beast Cub Hurt 5
       rect:
         serializedVersion: 2
         x: 160
@@ -1216,7 +1216,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_44
+      name: Beast Cub Hurt 6
       rect:
         serializedVersion: 2
         x: 192
@@ -1238,7 +1238,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beast Cub Sprite Sheet_45
+      name: Beast Cub Hurt 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1275,52 +1275,52 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Beast Cub Sprite Sheet_0: 1792365840
-      Beast Cub Sprite Sheet_1: -1246105315
-      Beast Cub Sprite Sheet_10: 547696590
-      Beast Cub Sprite Sheet_11: 1080251045
-      Beast Cub Sprite Sheet_12: 972711865
-      Beast Cub Sprite Sheet_13: 802024544
-      Beast Cub Sprite Sheet_14: -334057558
-      Beast Cub Sprite Sheet_15: -1949261179
-      Beast Cub Sprite Sheet_16: -302567254
-      Beast Cub Sprite Sheet_17: -1337664090
-      Beast Cub Sprite Sheet_18: -42753884
-      Beast Cub Sprite Sheet_19: 1199179016
-      Beast Cub Sprite Sheet_2: -220789970
-      Beast Cub Sprite Sheet_20: -516416968
-      Beast Cub Sprite Sheet_21: 37188995
-      Beast Cub Sprite Sheet_22: 325259810
-      Beast Cub Sprite Sheet_23: -1946911445
-      Beast Cub Sprite Sheet_24: 418028817
-      Beast Cub Sprite Sheet_25: 31907305
-      Beast Cub Sprite Sheet_26: -1349272065
-      Beast Cub Sprite Sheet_27: 1448207517
-      Beast Cub Sprite Sheet_28: 1547135016
-      Beast Cub Sprite Sheet_29: -2041339713
-      Beast Cub Sprite Sheet_3: 1534469685
-      Beast Cub Sprite Sheet_30: 2054002111
-      Beast Cub Sprite Sheet_31: 604438176
-      Beast Cub Sprite Sheet_32: -685913027
-      Beast Cub Sprite Sheet_33: 1602039925
-      Beast Cub Sprite Sheet_34: 1901941274
-      Beast Cub Sprite Sheet_35: 1381973316
-      Beast Cub Sprite Sheet_36: -1553283847
-      Beast Cub Sprite Sheet_37: 1617031401
-      Beast Cub Sprite Sheet_38: 1495234425
-      Beast Cub Sprite Sheet_39: -1668871353
-      Beast Cub Sprite Sheet_4: -252927833
-      Beast Cub Sprite Sheet_40: -2072676744
-      Beast Cub Sprite Sheet_41: 1652072730
-      Beast Cub Sprite Sheet_42: -1571360060
-      Beast Cub Sprite Sheet_43: -1722562022
-      Beast Cub Sprite Sheet_44: 1478931177
-      Beast Cub Sprite Sheet_45: 1883830127
-      Beast Cub Sprite Sheet_5: -490884326
-      Beast Cub Sprite Sheet_6: 527061780
-      Beast Cub Sprite Sheet_7: 86448392
-      Beast Cub Sprite Sheet_8: -2058512496
-      Beast Cub Sprite Sheet_9: -1106320730
+      Beast Cub Attack 0: 2054002111
+      Beast Cub Attack 1: 604438176
+      Beast Cub Attack 2: -685913027
+      Beast Cub Attack 3: 1602039925
+      Beast Cub Attack 4: 1901941274
+      Beast Cub Attack 5: 1381973316
+      Beast Cub Attack 6: -1553283847
+      Beast Cub Attack 7: 1617031401
+      Beast Cub Hurt 0: 1495234425
+      Beast Cub Hurt 1: -1668871353
+      Beast Cub Hurt 2: -2072676744
+      Beast Cub Hurt 3: 1652072730
+      Beast Cub Hurt 4: -1571360060
+      Beast Cub Hurt 5: -1722562022
+      Beast Cub Hurt 6: 1478931177
+      Beast Cub Hurt 7: 1883830127
+      Beast Cub Idle 0: 1792365840
+      Beast Cub Idle 1: -1246105315
+      Beast Cub Idle 2: -220789970
+      Beast Cub Idle 3: 1534469685
+      Beast Cub Idle 4: -252927833
+      Beast Cub Idle 5: -490884326
+      Beast Cub Idle 6: 527061780
+      Beast Cub Idle 7: 86448392
+      Beast Cub Idle Sit 0: -2058512496
+      Beast Cub Idle Sit 1: -1106320730
+      Beast Cub Idle Sit 2: 547696590
+      Beast Cub Idle Sit 3: 1080251045
+      Beast Cub Idle Sit 4: 972711865
+      Beast Cub Idle Sit 5: 802024544
+      Beast Cub Idle Sit 6: -334057558
+      Beast Cub Idle Sit 7: -1949261179
+      Beast Cub Move 0: -302567254
+      Beast Cub Move 1: -1337664090
+      Beast Cub Move 2: -42753884
+      Beast Cub Move 3: 1199179016
+      Beast Cub Move 4: -516416968
+      Beast Cub Move 5: 37188995
+      Beast Cub Sleep 0: 325259810
+      Beast Cub Sleep 1: -1946911445
+      Beast Cub Sleep 2: 418028817
+      Beast Cub Sleep 3: 31907305
+      Beast Cub Sleep 4: -1349272065
+      Beast Cub Sleep 5: 1448207517
+      Beast Cub Sleep 6: 1547135016
+      Beast Cub Sleep 7: -2041339713
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

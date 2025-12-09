@@ -236,7 +236,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_0
+      name: Beaver Idle 0
       rect:
         serializedVersion: 2
         x: 0
@@ -258,7 +258,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_1
+      name: Beaver Idle 1
       rect:
         serializedVersion: 2
         x: 32
@@ -280,7 +280,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_2
+      name: Beaver Idle 2
       rect:
         serializedVersion: 2
         x: 64
@@ -302,7 +302,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_3
+      name: Beaver Idle 3
       rect:
         serializedVersion: 2
         x: 96
@@ -324,7 +324,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_4
+      name: Beaver Move 0
       rect:
         serializedVersion: 2
         x: 0
@@ -346,7 +346,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_5
+      name: Beaver Move 1
       rect:
         serializedVersion: 2
         x: 32
@@ -368,7 +368,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_6
+      name: Beaver Move 2
       rect:
         serializedVersion: 2
         x: 64
@@ -390,7 +390,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_7
+      name: Beaver Move 3
       rect:
         serializedVersion: 2
         x: 96
@@ -412,7 +412,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_8
+      name: Beaver MoveStick 0
       rect:
         serializedVersion: 2
         x: 0
@@ -434,10 +434,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_9
+      name: Beaver MoveStick 1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 33
         y: 256
         width: 32
         height: 32
@@ -456,7 +456,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_10
+      name: Beaver MoveStick 2
       rect:
         serializedVersion: 2
         x: 64
@@ -478,7 +478,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_11
+      name: Beaver MoveStick 3
       rect:
         serializedVersion: 2
         x: 96
@@ -500,7 +500,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_12
+      name: Beaver Attack 0
       rect:
         serializedVersion: 2
         x: 0
@@ -522,7 +522,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_13
+      name: Beaver Attack 1
       rect:
         serializedVersion: 2
         x: 32
@@ -544,7 +544,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_14
+      name: Beaver Attack 2
       rect:
         serializedVersion: 2
         x: 64
@@ -566,7 +566,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_15
+      name: Beaver Attack 3
       rect:
         serializedVersion: 2
         x: 96
@@ -588,7 +588,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_16
+      name: Beaver Hurt 0
       rect:
         serializedVersion: 2
         x: 0
@@ -610,7 +610,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_17
+      name: Beaver Hurt 1
       rect:
         serializedVersion: 2
         x: 32
@@ -632,7 +632,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_18
+      name: Beaver Hurt 2
       rect:
         serializedVersion: 2
         x: 64
@@ -654,7 +654,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_19
+      name: Beaver Hurt 3
       rect:
         serializedVersion: 2
         x: 96
@@ -676,7 +676,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_20
+      name: Beaver Dead 0
       rect:
         serializedVersion: 2
         x: 0
@@ -698,7 +698,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Beaver Sprite Sheet_21
+      name: Beaver Burrow 0
       rect:
         serializedVersion: 2
         x: 32
@@ -1175,21 +1175,28 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.8349999785423279},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Beaver Sprite Sheet_0: 2084169196
-      Beaver Sprite Sheet_1: 41565481
-      Beaver Sprite Sheet_10: 706875551
-      Beaver Sprite Sheet_11: 1330812443
-      Beaver Sprite Sheet_12: -1056788355
-      Beaver Sprite Sheet_13: -1438681293
-      Beaver Sprite Sheet_14: 478145086
-      Beaver Sprite Sheet_15: -1011422209
-      Beaver Sprite Sheet_16: -1004529008
-      Beaver Sprite Sheet_17: -1090619089
-      Beaver Sprite Sheet_18: -1854552085
-      Beaver Sprite Sheet_19: -1138136193
-      Beaver Sprite Sheet_2: -1798404869
-      Beaver Sprite Sheet_20: 1639008932
-      Beaver Sprite Sheet_21: -816032982
+      Beaver Attack 0: -1056788355
+      Beaver Attack 1: -1438681293
+      Beaver Attack 2: 478145086
+      Beaver Attack 3: -1011422209
+      Beaver Burrow 0: -816032982
+      Beaver Dead 0: 1639008932
+      Beaver Hurt 0: -1004529008
+      Beaver Hurt 1: -1090619089
+      Beaver Hurt 2: -1854552085
+      Beaver Hurt 3: -1138136193
+      Beaver Idle 0: 2084169196
+      Beaver Idle 1: 41565481
+      Beaver Idle 2: -1798404869
+      Beaver Idle 3: 232221531
+      Beaver Move 0: 1310719728
+      Beaver Move 1: 833415781
+      Beaver Move 2: -1154152387
+      Beaver Move 3: 250002997
+      Beaver MoveStick 0: 1327499887
+      Beaver MoveStick 1: -1596424879
+      Beaver MoveStick 2: 706875551
+      Beaver MoveStick 3: 1330812443
       Beaver Sprite Sheet_22: -972991132
       Beaver Sprite Sheet_23: -631678074
       Beaver Sprite Sheet_24: -626931479
@@ -1198,7 +1205,6 @@ TextureImporter:
       Beaver Sprite Sheet_27: -1859061601
       Beaver Sprite Sheet_28: 1030149693
       Beaver Sprite Sheet_29: 1327709758
-      Beaver Sprite Sheet_3: 232221531
       Beaver Sprite Sheet_30: 52527893
       Beaver Sprite Sheet_31: 1200018064
       Beaver Sprite Sheet_32: 758085363
@@ -1209,14 +1215,8 @@ TextureImporter:
       Beaver Sprite Sheet_37: 1729677357
       Beaver Sprite Sheet_38: -1580386813
       Beaver Sprite Sheet_39: 262493902
-      Beaver Sprite Sheet_4: 1310719728
       Beaver Sprite Sheet_40: 1969340266
       Beaver Sprite Sheet_41: -1574530994
-      Beaver Sprite Sheet_5: 833415781
-      Beaver Sprite Sheet_6: -1154152387
-      Beaver Sprite Sheet_7: 250002997
-      Beaver Sprite Sheet_8: 1327499887
-      Beaver Sprite Sheet_9: -1596424879
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -284,7 +284,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_0
+      name: Rooster Idle 0
       rect:
         serializedVersion: 2
         x: 0
@@ -306,7 +306,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_1
+      name: Rooster Idle 1
       rect:
         serializedVersion: 2
         x: 32
@@ -328,7 +328,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_2
+      name: Rooster Idle 2
       rect:
         serializedVersion: 2
         x: 64
@@ -350,7 +350,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_3
+      name: Rooster Idle 3
       rect:
         serializedVersion: 2
         x: 96
@@ -372,7 +372,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_4
+      name: Rooster Idle 4
       rect:
         serializedVersion: 2
         x: 128
@@ -394,7 +394,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_5
+      name: Rooster Idle 5
       rect:
         serializedVersion: 2
         x: 160
@@ -416,7 +416,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_6
+      name: Rooster Idle 6
       rect:
         serializedVersion: 2
         x: 192
@@ -438,7 +438,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_7
+      name: Rooster Idle 7
       rect:
         serializedVersion: 2
         x: 224
@@ -464,7 +464,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 192
+        y: 193
         width: 32
         height: 32
       alignment: 0
@@ -768,7 +768,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_22
+      name: Rooster Hurt 0
       rect:
         serializedVersion: 2
         x: 0
@@ -790,7 +790,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_23
+      name: Rooster Hurt 1
       rect:
         serializedVersion: 2
         x: 32
@@ -812,7 +812,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_24
+      name: Rooster Hurt 2
       rect:
         serializedVersion: 2
         x: 64
@@ -834,7 +834,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_25
+      name: Rooster Hurt 3
       rect:
         serializedVersion: 2
         x: 96
@@ -856,7 +856,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_26
+      name: Rooster Hurt 4
       rect:
         serializedVersion: 2
         x: 128
@@ -878,7 +878,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_27
+      name: Rooster Hurt 5
       rect:
         serializedVersion: 2
         x: 160
@@ -1208,7 +1208,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_42
+      name: Rooster Dead 0
       rect:
         serializedVersion: 2
         x: 0
@@ -1230,7 +1230,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_43
+      name: Rooster Dead 1
       rect:
         serializedVersion: 2
         x: 32
@@ -1252,7 +1252,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_44
+      name: Rooster Dead 2
       rect:
         serializedVersion: 2
         x: 64
@@ -1274,7 +1274,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_45
+      name: Rooster Dead 3
       rect:
         serializedVersion: 2
         x: 96
@@ -1296,7 +1296,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_46
+      name: Rooster Dead 4
       rect:
         serializedVersion: 2
         x: 128
@@ -1318,7 +1318,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_47
+      name: Rooster Dead 5
       rect:
         serializedVersion: 2
         x: 160
@@ -1340,7 +1340,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_48
+      name: Rooster Dead 6
       rect:
         serializedVersion: 2
         x: 192
@@ -1362,7 +1362,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_49
+      name: Rooster Dead 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1384,7 +1384,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_50
+      name: Rooster Attack
       rect:
         serializedVersion: 2
         x: 0
@@ -1406,7 +1406,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_51
+      name: Rooster Attack 1
       rect:
         serializedVersion: 2
         x: 32
@@ -1428,7 +1428,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_52
+      name: Rooster Attack 2
       rect:
         serializedVersion: 2
         x: 64
@@ -1450,7 +1450,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_53
+      name: Rooster Attack 3
       rect:
         serializedVersion: 2
         x: 96
@@ -1472,7 +1472,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_54
+      name: Rooster Attack 4
       rect:
         serializedVersion: 2
         x: 128
@@ -1494,7 +1494,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_55
+      name: Rooster Attack 5
       rect:
         serializedVersion: 2
         x: 160
@@ -1516,7 +1516,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_56
+      name: Rooster Attack 6
       rect:
         serializedVersion: 2
         x: 192
@@ -1538,7 +1538,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Rooster Sprite Sheet_57
+      name: Rooster Attack 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1575,8 +1575,36 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Rooster Sprite Sheet_0: -1308289138
-      Rooster Sprite Sheet_1: -649181255
+      Rooster Attack: -1147173874
+      Rooster Attack 1: -515171989
+      Rooster Attack 2: -1590854469
+      Rooster Attack 3: -1139019454
+      Rooster Attack 4: -103431245
+      Rooster Attack 5: 811169821
+      Rooster Attack 6: -1365103249
+      Rooster Attack 7: 48622833
+      Rooster Dead 0: 525674893
+      Rooster Dead 1: 1410152837
+      Rooster Dead 2: -699407745
+      Rooster Dead 3: -804684517
+      Rooster Dead 4: -1556931362
+      Rooster Dead 5: 1162448290
+      Rooster Dead 6: -514755998
+      Rooster Dead 7: 811755176
+      Rooster Hurt 0: 92277632
+      Rooster Hurt 1: -1508817405
+      Rooster Hurt 2: -929636509
+      Rooster Hurt 3: -631979515
+      Rooster Hurt 4: 748809227
+      Rooster Hurt 5: 1364234580
+      Rooster Idle 0: -1308289138
+      Rooster Idle 1: -649181255
+      Rooster Idle 2: -150161459
+      Rooster Idle 3: 1217136006
+      Rooster Idle 4: -222083637
+      Rooster Idle 5: -385180130
+      Rooster Idle 6: -357705181
+      Rooster Idle 7: 1362184103
       Rooster Sprite Sheet_10: -267094750
       Rooster Sprite Sheet_11: 28755133
       Rooster Sprite Sheet_12: 722429185
@@ -1587,18 +1615,10 @@ TextureImporter:
       Rooster Sprite Sheet_17: -116467347
       Rooster Sprite Sheet_18: 863283172
       Rooster Sprite Sheet_19: -1575258723
-      Rooster Sprite Sheet_2: -150161459
       Rooster Sprite Sheet_20: -744560549
       Rooster Sprite Sheet_21: 1743035776
-      Rooster Sprite Sheet_22: 92277632
-      Rooster Sprite Sheet_23: -1508817405
-      Rooster Sprite Sheet_24: -929636509
-      Rooster Sprite Sheet_25: -631979515
-      Rooster Sprite Sheet_26: 748809227
-      Rooster Sprite Sheet_27: 1364234580
       Rooster Sprite Sheet_28: -2124798929
       Rooster Sprite Sheet_29: 1819704938
-      Rooster Sprite Sheet_3: 1217136006
       Rooster Sprite Sheet_30: -1459940909
       Rooster Sprite Sheet_31: -197017841
       Rooster Sprite Sheet_32: -2019836458
@@ -1609,28 +1629,8 @@ TextureImporter:
       Rooster Sprite Sheet_37: -1006292650
       Rooster Sprite Sheet_38: -768402782
       Rooster Sprite Sheet_39: 1803504170
-      Rooster Sprite Sheet_4: -222083637
       Rooster Sprite Sheet_40: 1496694637
       Rooster Sprite Sheet_41: -464461051
-      Rooster Sprite Sheet_42: 525674893
-      Rooster Sprite Sheet_43: 1410152837
-      Rooster Sprite Sheet_44: -699407745
-      Rooster Sprite Sheet_45: -804684517
-      Rooster Sprite Sheet_46: -1556931362
-      Rooster Sprite Sheet_47: 1162448290
-      Rooster Sprite Sheet_48: -514755998
-      Rooster Sprite Sheet_49: 811755176
-      Rooster Sprite Sheet_5: -385180130
-      Rooster Sprite Sheet_50: -1147173874
-      Rooster Sprite Sheet_51: -515171989
-      Rooster Sprite Sheet_52: -1590854469
-      Rooster Sprite Sheet_53: -1139019454
-      Rooster Sprite Sheet_54: -103431245
-      Rooster Sprite Sheet_55: 811169821
-      Rooster Sprite Sheet_56: -1365103249
-      Rooster Sprite Sheet_57: 48622833
-      Rooster Sprite Sheet_6: -357705181
-      Rooster Sprite Sheet_7: 1362184103
       Rooster Sprite Sheet_8: -1878014054
       Rooster Sprite Sheet_9: -375938297
   mipmapLimitGroupName: 

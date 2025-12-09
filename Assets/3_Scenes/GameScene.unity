@@ -4854,7 +4854,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: c0fa41087b17c5341a9b636b50c013c9, type: 2}
     - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
     - {fileID: 11400000, guid: 84f3062d67a54bf4ebe1496234e66a23, type: 2}
-  useRandomEnemySpawns: 1
+  useRandomEnemySpawns: 0
   allyScale: 2
   enemyScale: 2
 --- !u!4 &427498649

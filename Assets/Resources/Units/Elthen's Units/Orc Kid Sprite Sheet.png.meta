@@ -254,7 +254,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_0
+      name: Orc Kid Idle 0
       rect:
         serializedVersion: 2
         x: 0
@@ -276,7 +276,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_1
+      name: Orc Kid Idle 1
       rect:
         serializedVersion: 2
         x: 32
@@ -298,7 +298,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_2
+      name: Orc Kid Idle 2
       rect:
         serializedVersion: 2
         x: 64
@@ -320,10 +320,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_3
+      name: Orc Kid Idle 3
       rect:
         serializedVersion: 2
-        x: 96
+        x: 97
         y: 128
         width: 32
         height: 32
@@ -342,7 +342,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_4
+      name: Orc Kid Idle 4
       rect:
         serializedVersion: 2
         x: 128
@@ -364,7 +364,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_5
+      name: Orc Kid Idle 5
       rect:
         serializedVersion: 2
         x: 160
@@ -386,7 +386,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_6
+      name: Orc Kid Idle 6
       rect:
         serializedVersion: 2
         x: 192
@@ -408,7 +408,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_7
+      name: Orc Kid Idle 7
       rect:
         serializedVersion: 2
         x: 224
@@ -606,7 +606,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_16
+      name: Orc Kid Attack 0
       rect:
         serializedVersion: 2
         x: 0
@@ -628,7 +628,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_17
+      name: Orc Kid Attack 1
       rect:
         serializedVersion: 2
         x: 32
@@ -650,7 +650,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_18
+      name: Orc Kid Attack 2
       rect:
         serializedVersion: 2
         x: 64
@@ -672,7 +672,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_19
+      name: Orc Kid Attack 3
       rect:
         serializedVersion: 2
         x: 96
@@ -694,7 +694,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_20
+      name: Orc Kid Attack 4
       rect:
         serializedVersion: 2
         x: 128
@@ -716,7 +716,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_21
+      name: Orc Kid Attack 5
       rect:
         serializedVersion: 2
         x: 160
@@ -738,7 +738,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_22
+      name: Orc Kid Attack 6
       rect:
         serializedVersion: 2
         x: 192
@@ -760,7 +760,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_23
+      name: Orc Kid Attack 7
       rect:
         serializedVersion: 2
         x: 224
@@ -782,7 +782,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_24
+      name: Orc Kid Hurt 0
       rect:
         serializedVersion: 2
         x: 0
@@ -804,7 +804,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_25
+      name: Orc Kid Hurt 1
       rect:
         serializedVersion: 2
         x: 32
@@ -826,7 +826,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_26
+      name: Orc Kid Hurt 2
       rect:
         serializedVersion: 2
         x: 64
@@ -848,7 +848,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_27
+      name: Orc Kid Hurt 3
       rect:
         serializedVersion: 2
         x: 96
@@ -870,7 +870,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_28
+      name: Orc Kid Hurt 4
       rect:
         serializedVersion: 2
         x: 128
@@ -892,7 +892,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_29
+      name: Orc Kid Hurt 5
       rect:
         serializedVersion: 2
         x: 160
@@ -914,7 +914,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_30
+      name: Orc Kid Hurt 6
       rect:
         serializedVersion: 2
         x: 192
@@ -936,7 +936,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Orc Kid Sprite Sheet_31
+      name: Orc Kid Hurt 7
       rect:
         serializedVersion: 2
         x: 224
@@ -1325,32 +1325,37 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Orc Kid Sprite Sheet_0: -1456498292
-      Orc Kid Sprite Sheet_1: 1097497248
+      Hurt: 1262131181
+      Orc Kid Attack 0: -915732040
+      Orc Kid Attack 1: 1655221956
+      Orc Kid Attack 2: 1783932816
+      Orc Kid Attack 3: -935062977
+      Orc Kid Attack 4: 1773838643
+      Orc Kid Attack 5: -1824475142
+      Orc Kid Attack 6: -1412860796
+      Orc Kid Attack 7: 777805075
+      Orc Kid Hurt 0: 1262131181
+      Orc Kid Hurt 1: 771437777
+      Orc Kid Hurt 2: 1269452577
+      Orc Kid Hurt 3: -447190570
+      Orc Kid Hurt 4: 344636616
+      Orc Kid Hurt 5: 1959886698
+      Orc Kid Hurt 6: -84710337
+      Orc Kid Hurt 7: 124312970
+      Orc Kid Idle 0: -1456498292
+      Orc Kid Idle 1: 1097497248
+      Orc Kid Idle 2: -240356855
+      Orc Kid Idle 3: 1808989361
+      Orc Kid Idle 4: -1407595316
+      Orc Kid Idle 5: -1114690203
+      Orc Kid Idle 6: -1780815889
+      Orc Kid Idle 7: -1568110434
       Orc Kid Sprite Sheet_10: -1127700416
       Orc Kid Sprite Sheet_11: -1443094420
       Orc Kid Sprite Sheet_12: 1356283105
       Orc Kid Sprite Sheet_13: -1424287375
       Orc Kid Sprite Sheet_14: -2071902049
       Orc Kid Sprite Sheet_15: -804621753
-      Orc Kid Sprite Sheet_16: -915732040
-      Orc Kid Sprite Sheet_17: 1655221956
-      Orc Kid Sprite Sheet_18: 1783932816
-      Orc Kid Sprite Sheet_19: -935062977
-      Orc Kid Sprite Sheet_2: -240356855
-      Orc Kid Sprite Sheet_20: 1773838643
-      Orc Kid Sprite Sheet_21: -1824475142
-      Orc Kid Sprite Sheet_22: -1412860796
-      Orc Kid Sprite Sheet_23: 777805075
-      Orc Kid Sprite Sheet_24: 1262131181
-      Orc Kid Sprite Sheet_25: 771437777
-      Orc Kid Sprite Sheet_26: 1269452577
-      Orc Kid Sprite Sheet_27: -447190570
-      Orc Kid Sprite Sheet_28: 344636616
-      Orc Kid Sprite Sheet_29: 1959886698
-      Orc Kid Sprite Sheet_3: 1808989361
-      Orc Kid Sprite Sheet_30: -84710337
-      Orc Kid Sprite Sheet_31: 124312970
       Orc Kid Sprite Sheet_32: 1226295087
       Orc Kid Sprite Sheet_33: -2019223734
       Orc Kid Sprite Sheet_34: -276560483
@@ -1359,7 +1364,6 @@ TextureImporter:
       Orc Kid Sprite Sheet_37: -879749695
       Orc Kid Sprite Sheet_38: -1550107454
       Orc Kid Sprite Sheet_39: 397245101
-      Orc Kid Sprite Sheet_4: -1407595316
       Orc Kid Sprite Sheet_40: 1773003662
       Orc Kid Sprite Sheet_41: -316712175
       Orc Kid Sprite Sheet_42: -2032198899
@@ -1368,9 +1372,6 @@ TextureImporter:
       Orc Kid Sprite Sheet_45: -550655275
       Orc Kid Sprite Sheet_46: -1258579254
       Orc Kid Sprite Sheet_47: 795545220
-      Orc Kid Sprite Sheet_5: -1114690203
-      Orc Kid Sprite Sheet_6: -1780815889
-      Orc Kid Sprite Sheet_7: -1568110434
       Orc Kid Sprite Sheet_8: 442933228
       Orc Kid Sprite Sheet_9: 1904276148
   mipmapLimitGroupName: 
