@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
   m_Name: 5_Headbutt
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: Vee Headbutt
+  skillName: Headbutt
   skillID: 5
   description: A headbutt.
   icon: {fileID: 5390129371266227295, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 38
+  damage: 100
   healAmount: 0
   cooldownTurns: 0
   targetType: 2

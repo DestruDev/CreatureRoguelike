@@ -40,11 +40,14 @@ public class GameManager : MonoBehaviour
 	 [Header("User Panel UI Root")]
     public GameObject userPanelRoot;
 	
-	[Header("Game Over Panels")]
-	[Tooltip("Panel that opens when all allies/player units are dead")]
-	public GameObject allAlliesDeadPanel;
+	[Header("Round End Panel")]
+	[Tooltip("Panel that opens when the round ends (either all allies dead or all enemies dead)")]
+	public GameObject roundEndPanel;
 	
-	[Tooltip("Button on the game over panel that returns to main menu")]
+	[Tooltip("Text that displays either 'Game Over!' or 'Round Won!'")]
+	public TextMeshProUGUI roundEndMessageText;
+	
+	[Tooltip("Button on the round end panel that returns to main menu")]
 	public Button returnToMainMenuButton;
 	
 	[Tooltip("Name of the main menu scene to load")]
@@ -90,10 +93,10 @@ public class GameManager : MonoBehaviour
             returnToMainMenuButton.onClick.AddListener(OnReturnToMainMenuClicked);
         }
         
-        // Hide game over panel at start
-        if (allAlliesDeadPanel != null)
+        // Hide round end panel at start
+        if (roundEndPanel != null)
         {
-            allAlliesDeadPanel.SetActive(false);
+            roundEndPanel.SetActive(false);
         }
 
         // Get the first unit that should go - delay slightly to ensure all units are initialized
@@ -929,17 +932,44 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Called when all allies/player units are dead - opens the game over panel
+	/// Called when all allies/player units are dead - opens the round end panel with "Game Over!" message
 	/// </summary>
 	public void OnAllAlliesDead()
 	{
-		if (allAlliesDeadPanel != null)
+		ShowRoundEndPanel("Game Over!");
+	}
+	
+	/// <summary>
+	/// Called when all enemies are dead - opens the round end panel with "Round Won!" message
+	/// </summary>
+	public void OnAllEnemiesDead()
+	{
+		ShowRoundEndPanel("Round Won!");
+	}
+	
+	/// <summary>
+	/// Shows the round end panel with the specified message
+	/// </summary>
+	private void ShowRoundEndPanel(string message)
+	{
+		if (roundEndPanel != null)
 		{
-			allAlliesDeadPanel.SetActive(true);
+			// Update the message text
+			if (roundEndMessageText != null)
+			{
+				roundEndMessageText.text = message;
+			}
+			else
+			{
+				Debug.LogWarning("GameManager: roundEndMessageText is not assigned!");
+			}
+			
+			// Show the panel
+			roundEndPanel.SetActive(true);
 		}
 		else
 		{
-			Debug.LogWarning("GameManager: allAlliesDeadPanel is not assigned!");
+			Debug.LogWarning("GameManager: roundEndPanel is not assigned!");
 		}
 	}
 	

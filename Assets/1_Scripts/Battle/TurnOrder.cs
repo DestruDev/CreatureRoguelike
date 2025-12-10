@@ -238,7 +238,18 @@ public class TurnOrder : MonoBehaviour
         if (!hasAliveEnemyUnits)
         {
             gameEnded = true;
-            Debug.Log("Game Over: All enemy units are dead!");
+            Debug.Log("Round Won: All enemy units are dead!");
+            
+            // Notify GameManager to open the round end panel with "Round Won!" message
+            if (gameManager == null)
+            {
+                gameManager = FindFirstObjectByType<GameManager>();
+            }
+            if (gameManager != null)
+            {
+                gameManager.OnAllEnemiesDead();
+            }
+            
             return false;
         }
         

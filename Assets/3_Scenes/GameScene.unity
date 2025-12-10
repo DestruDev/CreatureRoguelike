@@ -4843,18 +4843,15 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
     - {fileID: 11400000, guid: c0fa41087b17c5341a9b636b50c013c9, type: 2}
     - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
-    - {fileID: 11400000, guid: 84f3062d67a54bf4ebe1496234e66a23, type: 2}
   - possibleEnemies:
     - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
     - {fileID: 11400000, guid: c0fa41087b17c5341a9b636b50c013c9, type: 2}
     - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
-    - {fileID: 11400000, guid: 84f3062d67a54bf4ebe1496234e66a23, type: 2}
   - possibleEnemies:
     - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
     - {fileID: 11400000, guid: c0fa41087b17c5341a9b636b50c013c9, type: 2}
     - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
-    - {fileID: 11400000, guid: 84f3062d67a54bf4ebe1496234e66a23, type: 2}
-  useRandomEnemySpawns: 0
+  useRandomEnemySpawns: 1
   allyScale: 2
   enemyScale: 2
 --- !u!4 &427498649
@@ -4921,7 +4918,8 @@ MonoBehaviour:
   - {fileID: 609809813}
   - {fileID: 581798702}
   userPanelRoot: {fileID: 1483408881}
-  allAlliesDeadPanel: {fileID: 1014705037}
+  roundEndPanel: {fileID: 1014705037}
+  roundEndMessageText: {fileID: 1851431382}
   returnToMainMenuButton: {fileID: 763189587}
   mainMenuSceneName: MainMenu
   enemyTurnDelay: 1

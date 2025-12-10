@@ -16,6 +16,8 @@ MonoBehaviour:
   unitID: 2
   sprite: {fileID: 2084169196, guid: 46c7baff7d2d75848a84bb09c756a01c, type: 3}
   spriteColor: {r: 1, g: 1, b: 1, a: 1}
+  spriteMaterial: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: 3614c1ff03e1b18408e4ac4e0ca6ab61, type: 2}
   maxHP: 120
   currentHP: 120
   defense: 7

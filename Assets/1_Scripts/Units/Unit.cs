@@ -153,6 +153,13 @@ public class Unit : MonoBehaviour
         currentHP = Mathf.Max(0, currentHP - actualDamage);
         UpdateHealthUI();
         
+        // Trigger hurt animation
+        UnitAnimations unitAnimations = GetComponent<UnitAnimations>();
+        if (unitAnimations != null)
+        {
+            unitAnimations.PlayHurtAnimation();
+        }
+        
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage! HP: " + currentHP + "/" + MaxHP);
         
         // Log to event panel
@@ -173,6 +180,13 @@ public class Unit : MonoBehaviour
         int actualDamage = Mathf.Max(0, damage);
         currentHP = Mathf.Max(0, currentHP - actualDamage);
         UpdateHealthUI();
+        
+        // Trigger hurt animation
+        UnitAnimations unitAnimations = GetComponent<UnitAnimations>();
+        if (unitAnimations != null)
+        {
+            unitAnimations.PlayHurtAnimation();
+        }
         
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage (ignoring defense)! HP: " + currentHP + "/" + MaxHP);
         
@@ -199,6 +213,13 @@ public class Unit : MonoBehaviour
         {
             Debug.Log("Cannot attack - target is null or dead");
             return;
+        }
+        
+        // Trigger attack animation
+        UnitAnimations unitAnimations = GetComponent<UnitAnimations>();
+        if (unitAnimations != null)
+        {
+            unitAnimations.PlayAttackAnimation();
         }
         
         // Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
@@ -253,6 +274,13 @@ public class Unit : MonoBehaviour
         switch (skill.effectType)
         {
             case SkillEffectType.Damage:
+                // Trigger attack animation for damage skills
+                UnitAnimations unitAnimations = GetComponent<UnitAnimations>();
+                if (unitAnimations != null)
+                {
+                    unitAnimations.PlayAttackAnimation();
+                }
+                
                 Debug.Log($"[ApplySkillEffects] Damage case: target={target}, isAlive={target?.IsAlive()}, damage={skill.damage}");
                 if (target != null && target.IsAlive() && skill.damage > 0)
                 {
@@ -462,6 +490,13 @@ public class Unit : MonoBehaviour
     {
         Debug.Log(gameObject.name + " has died!");
         
+        // Trigger dead animation
+        UnitAnimations unitAnimations = GetComponent<UnitAnimations>();
+        if (unitAnimations != null)
+        {
+            unitAnimations.PlayDeadAnimation();
+        }
+        
         // Give rewards if this is an enemy unit
         if (IsEnemyUnit)
         {
@@ -469,8 +504,7 @@ public class Unit : MonoBehaviour
             Debug.Log("Rewards system disabled for now");
         }
         
-        // Hide the unit
-        gameObject.SetActive(false);
+        // Unit stays visible on the last frame of Dead animation (no longer deactivating)
     }
     
     // Turn-based methods

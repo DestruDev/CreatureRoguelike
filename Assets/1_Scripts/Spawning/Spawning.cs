@@ -297,6 +297,16 @@ public class Spawning : MonoBehaviour
             collider.size = Vector2.one;
         }
         
+        // Add Animator component if animator controller is assigned
+        if (unitData.animatorController != null)
+        {
+            Animator animator = unitObj.AddComponent<Animator>();
+            animator.runtimeAnimatorController = unitData.animatorController;
+            
+            // Add UnitAnimations component to handle animations
+            unitObj.AddComponent<UnitAnimations>();
+        }
+        
         return unitObj;
     }
     
