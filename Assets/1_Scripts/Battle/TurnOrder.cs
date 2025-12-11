@@ -300,8 +300,15 @@ public class TurnOrder : MonoBehaviour
 
         Unit currentUnit = gameManager.GetCurrentUnit();
         
-        // Only select a new unit if no unit is currently acting
-        if (isUnitActing && currentUnit != null)
+        // If current unit is dead, clear the acting flag and allow selection of a new unit
+        if (currentUnit != null && !currentUnit.IsAlive())
+        {
+            Debug.LogWarning($"Current unit {currentUnit.gameObject.name} is dead! Clearing acting flag.");
+            isUnitActing = false;
+            // Continue to select a new unit
+        }
+        // Only select a new unit if no unit is currently acting (and current unit is alive)
+        else if (isUnitActing && currentUnit != null && currentUnit.IsAlive())
         {
             isSelectingNextUnit = false;
             return;

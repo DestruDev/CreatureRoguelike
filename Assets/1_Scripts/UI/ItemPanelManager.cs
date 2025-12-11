@@ -296,6 +296,13 @@ public class ItemPanelManager : MonoBehaviour
         // Activate selected button with Enter or Space
         if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
+            // Block input during skill execution
+            ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+            if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
+            {
+                return;
+            }
+            
             ActivateSelectedButton();
         }
     }
@@ -406,6 +413,13 @@ public class ItemPanelManager : MonoBehaviour
                 // Confirm selection with Enter or Space
                 else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
                 {
+                    // Block input during skill execution
+                    ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+                    if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
+                    {
+                        return;
+                    }
+                    
                     ConfirmSelection();
                 }
             }

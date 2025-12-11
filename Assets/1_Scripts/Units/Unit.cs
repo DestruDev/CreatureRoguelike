@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class Unit : MonoBehaviour
 {
@@ -284,8 +285,8 @@ public class Unit : MonoBehaviour
                 Debug.Log($"[ApplySkillEffects] Damage case: target={target}, isAlive={target?.IsAlive()}, damage={skill.damage}");
                 if (target != null && target.IsAlive() && skill.damage > 0)
                 {
-                    Debug.Log($"[ApplySkillEffects] Calling TakeDamage({skill.damage}) on {target.gameObject.name}");
-                    target.TakeDamage(skill.damage);
+                    // Delay damage application to let attack animation play first
+                    StartCoroutine(DelayedDamageApplication(target, skill.damage));
                 }
                 else if (target != null && !target.IsAlive())
                 {
@@ -318,6 +319,62 @@ public class Unit : MonoBehaviour
                 Debug.Log(gameObject.name + " applies debuff to " + (target != null ? target.gameObject.name : "self") + "!");
                 // Debuff could be implemented here
                 break;
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to delay damage application so attack animation plays before hurt animation
+    /// </summary>
+    private IEnumerator DelayedDamageApplication(Unit target, int damage)
+    {
+        // Get delay settings from GameManager
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager == null)
+        {
+            // Fallback to fixed delay if GameManager not found
+            yield return new WaitForSeconds(0.5f);
+            if (target != null && target.IsAlive())
+            {
+                target.TakeDamage(damage);
+            }
+            yield break;
+        }
+        
+        UnitAnimations unitAnimations = GetComponent<UnitAnimations>();
+        
+        // Use animation-based delay: wait for attack animation to finish, then apply additional delay
+        if (unitAnimations != null)
+        {
+            yield return StartCoroutine(unitAnimations.WaitForAttackAnimationToFinish());
+            
+            // Check if caster is still alive after animation
+            if (!IsAlive())
+            {
+                Debug.LogWarning($"[DelayedDamageApplication] Caster {gameObject.name} died during attack animation! Skipping damage application.");
+                yield break;
+            }
+            
+            // Apply additional post-animation delay
+            yield return new WaitForSeconds(gameManager.postAttackAnimationDelay);
+        }
+        else
+        {
+            // Fallback if no UnitAnimations component: use fixed delay
+            yield return new WaitForSeconds(0.5f);
+        }
+        
+        // Check if caster (this unit) is still alive - if not, don't apply damage
+        if (!IsAlive())
+        {
+            Debug.LogWarning($"[DelayedDamageApplication] Caster {gameObject.name} died during delay! Skipping damage application.");
+            yield break;
+        }
+        
+        // Check if target is still alive before applying damage
+        if (target != null && target.IsAlive())
+        {
+            Debug.Log($"[ApplySkillEffects] Calling TakeDamage({damage}) on {target.gameObject.name}");
+            target.TakeDamage(damage);
         }
     }
     

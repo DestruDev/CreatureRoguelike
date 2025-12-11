@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
-  m_Name: 5_Headbutt
+  m_Name: 4_Claw Slash
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: Headbutt
-  skillID: 5
-  description: A headbutt.
-  icon: {fileID: 5390129371266227295, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
+  skillName: Claw Slash
+  skillID: 4
+  description: 2-Handed claw slash.
+  icon: {fileID: 1269540525142108225, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
   damage: 100
   healAmount: 0
   cooldownTurns: 0

@@ -199,6 +199,13 @@ public class SkillPanelManager : MonoBehaviour
         // Activate selected button with Enter or Space
         if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
+            // Block input during skill execution
+            ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+            if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
+            {
+                return;
+            }
+            
             ActivateSelectedButton();
         }
     }
@@ -308,6 +315,12 @@ public class SkillPanelManager : MonoBehaviour
                 // Confirm selection with Enter or Space (keyboard navigation confirmation)
                 else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
                 {
+                    // Block input during skill execution
+                    if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
+                    {
+                        return;
+                    }
+                    
                     ConfirmSelection();
                 }
             }
@@ -955,8 +968,11 @@ public class SkillPanelManager : MonoBehaviour
         if (gameManager == null)
             yield break;
             
-        // Wait for skill animation + hit animation delays
-        float totalDelay = gameManager.skillAnimationDelay + gameManager.hitAnimationDelay;
+        // Wait for skill animation + attack-to-hurt delay + hit animation delays
+        // Get the actual delay (accounts for animation-based delay if enabled)
+        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
+        float attackDelay = GetAttackToHurtDelay(currentUnit, gameManager);
+        float totalDelay = gameManager.skillAnimationDelay + attackDelay + gameManager.hitAnimationDelay;
         yield return new WaitForSeconds(totalDelay);
         
         // Advance turn
@@ -1153,6 +1169,33 @@ public class SkillPanelManager : MonoBehaviour
         currentCastingUnit = null;
     }
 
+    /// <summary>
+    /// Gets the appropriate attack-to-hurt delay based on caster's animation length
+    /// </summary>
+    private float GetAttackToHurtDelay(Unit caster, GameManager gameManager)
+    {
+        if (gameManager == null)
+        {
+            return 0.5f; // Fallback
+        }
+        
+        if (caster != null)
+        {
+            UnitAnimations unitAnimations = caster.GetComponent<UnitAnimations>();
+            if (unitAnimations != null)
+            {
+                float animationLength = unitAnimations.GetAttackAnimationLength();
+                if (animationLength > 0f)
+                {
+                    // Return animation length + post-animation delay
+                    return animationLength + gameManager.postAttackAnimationDelay;
+                }
+            }
+        }
+        // Fallback if animation length can't be determined
+        return 0.5f;
+    }
+    
     /// <summary>
     /// Advances to the next turn
     /// </summary>

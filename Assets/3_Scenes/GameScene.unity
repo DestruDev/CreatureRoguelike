@@ -4792,13 +4792,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 427498649}
+  - component: {fileID: 427498650}
   - component: {fileID: 427498658}
   - component: {fileID: 427498661}
   - component: {fileID: 427498656}
   - component: {fileID: 427498652}
   - component: {fileID: 427498648}
   - component: {fileID: 427498654}
-  - component: {fileID: 427498650}
   - component: {fileID: 427498651}
   - component: {fileID: 427498653}
   - component: {fileID: 427498655}
@@ -4924,6 +4924,7 @@ MonoBehaviour:
   mainMenuSceneName: MainMenu
   enemyTurnDelay: 1
   skillAnimationDelay: 1
+  postAttackAnimationDelay: 0.5
   hitAnimationDelay: 1
 --- !u!114 &427498651
 MonoBehaviour:

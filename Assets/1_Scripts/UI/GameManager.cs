@@ -71,6 +71,10 @@ public class GameManager : MonoBehaviour
     [Range(0f, 5f)]
     public float skillAnimationDelay = 2f;
     
+    [Tooltip("Additional delay in seconds after attack animation ends")]
+    [Range(0f, 2f)]
+    public float postAttackAnimationDelay = 0.2f;
+    
     [Tooltip("Delay in seconds for hit animation to play (between damage message and turn advancement)")]
     [Range(0f, 5f)]
     public float hitAnimationDelay = 2f;
@@ -215,6 +219,19 @@ public class GameManager : MonoBehaviour
 		// Prevent duplicate calls for the same unit
 		if (currentUnit == unit)
 		{
+			return;
+		}
+		
+		// Safety check: don't set a dead unit as current
+		if (unit != null && !unit.IsAlive())
+		{
+			Debug.LogWarning($"Attempted to set dead unit {unit.gameObject.name} as current unit! Skipping.");
+			// Clear current unit and let TurnOrder select a new one
+			currentUnit = null;
+			if (turnOrder != null)
+			{
+				turnOrder.SetUnitActing(false);
+			}
 			return;
 		}
 		
@@ -367,8 +384,22 @@ public class GameManager : MonoBehaviour
 		// Wait for skill animation
 		yield return new WaitForSeconds(skillAnimationDelay);
 		
-		// Apply skill effects (which will log damage)
+		// Check if caster is still alive before applying skill effects
+		if (caster == null || !caster.IsAlive())
+		{
+			Debug.LogWarning($"Caster {caster?.gameObject.name} died during skill animation delay! Advancing turn.");
+			ShowActionUI();
+			AdvanceToNextTurn();
+			yield break;
+		}
+		
+		// Apply skill effects (which will log damage and start attack animation)
 		caster.ApplySkillEffects(skill, target);
+		
+		// Wait for attack-to-hurt delay (damage is applied during this time)
+		// If using animation-based delay, wait for animation + post delay
+		float delayToWait = GetAttackToHurtDelay(caster);
+		yield return new WaitForSeconds(delayToWait);
 		
 		// Wait for hit animation
 		yield return new WaitForSeconds(hitAnimationDelay);
@@ -446,8 +477,25 @@ public class GameManager : MonoBehaviour
 		// Wait for skill animation
 		yield return new WaitForSeconds(skillAnimationDelay);
 		
-		// Apply skill effects (which will log damage)
+		// Check if caster is still alive before applying skill effects
+		if (caster == null || !caster.IsAlive())
+		{
+			Debug.LogWarning($"Caster {caster?.gameObject.name} died during skill animation delay! Advancing turn.");
+			ShowActionUI();
+			if (autoAdvanceTurn)
+			{
+				AdvanceToNextTurn();
+			}
+			yield break;
+		}
+		
+		// Apply skill effects (which will log damage and start attack animation)
 		caster.ApplySkillEffects(skill, target);
+		
+		// Wait for attack-to-hurt delay (damage is applied during this time)
+		// If using animation-based delay, wait for animation + post delay
+		float delayToWait = GetAttackToHurtDelay(caster);
+		yield return new WaitForSeconds(delayToWait);
 		
 		// Wait for hit animation
 		yield return new WaitForSeconds(hitAnimationDelay);
@@ -469,6 +517,28 @@ public class GameManager : MonoBehaviour
 	{
 		yield return new WaitForSeconds(enemyTurnDelay);
 		AdvanceToNextTurn();
+	}
+	
+	/// <summary>
+	/// Gets the appropriate attack-to-hurt delay based on caster's animation length
+	/// </summary>
+	private float GetAttackToHurtDelay(Unit caster)
+	{
+		if (caster != null)
+		{
+			UnitAnimations unitAnimations = caster.GetComponent<UnitAnimations>();
+			if (unitAnimations != null)
+			{
+				float animationLength = unitAnimations.GetAttackAnimationLength();
+				if (animationLength > 0f)
+				{
+					// Return animation length + post-animation delay
+					return animationLength + postAttackAnimationDelay;
+				}
+			}
+		}
+		// Fallback if animation length can't be determined
+		return 0.5f;
 	}
 	
 	/// <summary>

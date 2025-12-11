@@ -706,6 +706,33 @@ public class ActionPanelManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Gets the appropriate attack-to-hurt delay based on caster's animation length
+    /// </summary>
+    private float GetAttackToHurtDelay(Unit caster, GameManager gameManager)
+    {
+        if (gameManager == null)
+        {
+            return 0.5f; // Fallback
+        }
+        
+        if (caster != null)
+        {
+            UnitAnimations unitAnimations = caster.GetComponent<UnitAnimations>();
+            if (unitAnimations != null)
+            {
+                float animationLength = unitAnimations.GetAttackAnimationLength();
+                if (animationLength > 0f)
+                {
+                    // Return animation length + post-animation delay
+                    return animationLength + gameManager.postAttackAnimationDelay;
+                }
+            }
+        }
+        // Fallback if animation length can't be determined
+        return 0.5f;
+    }
+    
+    /// <summary>
     /// Updates the UnitNameText UI with the current unit's name
     /// </summary>
     private void UpdateUnitNameText(Unit currentUnit)
@@ -947,8 +974,11 @@ public class ActionPanelManager : MonoBehaviour
         if (gameManager == null)
             yield break;
             
-        // Wait for skill animation + hit animation delays
-        float totalDelay = gameManager.skillAnimationDelay + gameManager.hitAnimationDelay;
+        // Wait for skill animation + attack-to-hurt delay + hit animation delays
+        // Get the actual delay (accounts for animation-based delay if enabled)
+        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
+        float attackDelay = GetAttackToHurtDelay(currentUnit, gameManager);
+        float totalDelay = gameManager.skillAnimationDelay + attackDelay + gameManager.hitAnimationDelay;
         yield return new WaitForSeconds(totalDelay);
         
         // Advance turn
@@ -991,6 +1021,12 @@ public class ActionPanelManager : MonoBehaviour
         // Confirm selection with Enter or Space
         else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
+            // Block input during skill execution
+            if (IsSkillExecuting())
+            {
+                return;
+            }
+            
             // Ignore confirm if we just entered selection mode (prevents button activation from auto-confirming)
             if (ignoreNextKeyboardConfirm)
             {
@@ -1096,6 +1132,12 @@ public class ActionPanelManager : MonoBehaviour
         // Activate selected button with Enter or Space
         if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
+            // Block input during skill execution
+            if (IsSkillExecuting())
+            {
+                return;
+            }
+            
             ActivateSelectedButton();
         }
     }
