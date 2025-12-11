@@ -50,6 +50,9 @@ public class GameManager : MonoBehaviour
 	[Tooltip("Button on the round end panel that returns to main menu")]
 	public Button returnToMainMenuButton;
 	
+	[Tooltip("Button on the round end panel that restarts the round (reloads scene)")]
+	public Button restartRoundButton;
+	
 	[Tooltip("Name of the main menu scene to load")]
 	public string mainMenuSceneName = "MainMenu";
 	
@@ -96,6 +99,12 @@ public class GameManager : MonoBehaviour
         {
             returnToMainMenuButton.onClick.AddListener(OnReturnToMainMenuClicked);
         }
+		
+		// Set up restart round button listener
+		if (restartRoundButton != null)
+		{
+			restartRoundButton.onClick.AddListener(OnRestartRoundClicked);
+		}
         
         // Hide round end panel at start
         if (roundEndPanel != null)
@@ -1049,6 +1058,15 @@ public class GameManager : MonoBehaviour
 	public void OnReturnToMainMenuClicked()
 	{
 		LoadMainMenuScene();
+	}
+	
+	/// <summary>
+	/// Called when the restart round button is clicked - reloads the active scene
+	/// </summary>
+	public void OnRestartRoundClicked()
+	{
+		Scene current = SceneManager.GetActiveScene();
+		SceneManager.LoadScene(current.buildIndex);
 	}
 	
 	/// <summary>
