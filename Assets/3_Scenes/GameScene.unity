@@ -4567,8 +4567,6 @@ MonoBehaviour:
   - {fileID: 528276959}
   creatureUnitData:
   - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
-  - {fileID: 11400000, guid: f93c0078148acd74c80921a5b6f8581d, type: 2}
-  - {fileID: 11400000, guid: ae0179b0bb2103b47b5ef1807ca12630, type: 2}
   enemySpawnAreas:
   - {fileID: 1593076177}
   - {fileID: 37810065}
@@ -4576,8 +4574,7 @@ MonoBehaviour:
   enemySpawnSlotsB1:
   - possibleEnemies:
     - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
-  - possibleEnemies:
-    - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
+  - possibleEnemies: []
   - possibleEnemies: []
   enemySpawnSlotsB2:
   - possibleEnemies: []
