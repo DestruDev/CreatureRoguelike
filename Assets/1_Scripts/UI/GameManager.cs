@@ -605,6 +605,9 @@ public class GameManager : MonoBehaviour
 		ClearEnemyUI();
 		
         // Connect each unit to its UI based on which spawn area array it belongs to
+		int aliveAlliesCount = 0;
+		int aliveEnemiesCount = 0;
+		
 		foreach (var unit in allUnits)
 		{
 			if (unit == null || !unit.IsAlive()) continue;
@@ -613,6 +616,8 @@ public class GameManager : MonoBehaviour
 			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
 			if (creatureIndex >= 0)
 			{
+				aliveAlliesCount++;
+				
 				// Creature UI (indices 0-2)
 				if (creatureNameTexts[creatureIndex] != null)
 				{
@@ -644,6 +649,8 @@ public class GameManager : MonoBehaviour
 			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
 			if (enemyIndex >= 0)
 			{
+				aliveEnemiesCount++;
+				
 				// Enemy UI (indices 0-2)
 				if (enemyNameTexts[enemyIndex] != null)
 				{
@@ -670,6 +677,29 @@ public class GameManager : MonoBehaviour
                     enemyUIRoots[enemyIndex].SetActive(true);
                 }
 			}
+		}
+		
+		// Hide the 3rd UI root (index 2) if there are fewer than 3 units on the field
+		if (aliveAlliesCount < 3 && creatureUIRoots != null && creatureUIRoots.Length > 2 && creatureUIRoots[2] != null)
+		{
+			creatureUIRoots[2].SetActive(false);
+		}
+		
+		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
+		if (aliveAlliesCount < 2 && creatureUIRoots != null && creatureUIRoots.Length > 1 && creatureUIRoots[1] != null)
+		{
+			creatureUIRoots[1].SetActive(false);
+		}
+		
+		if (aliveEnemiesCount < 3 && enemyUIRoots != null && enemyUIRoots.Length > 2 && enemyUIRoots[2] != null)
+		{
+			enemyUIRoots[2].SetActive(false);
+		}
+		
+		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
+		if (aliveEnemiesCount < 2 && enemyUIRoots != null && enemyUIRoots.Length > 1 && enemyUIRoots[1] != null)
+		{
+			enemyUIRoots[1].SetActive(false);
 		}
 	}
 	
