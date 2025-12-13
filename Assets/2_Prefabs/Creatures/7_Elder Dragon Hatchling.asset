@@ -17,9 +17,10 @@ MonoBehaviour:
   sprite: {fileID: 28676175, guid: 7aa09189971c825419c0167243ab8389, type: 3}
   spriteColor: {r: 1, g: 1, b: 1, a: 1}
   spriteMaterial: {fileID: 2100000, guid: 6b01bbb4b1ad7df4ab3ce6a14f831b61, type: 2}
+  animatorController: {fileID: 0}
   maxHP: 150
   currentHP: 150
   defense: 20
-  speed: 8
+  speed: 25
   skills:
   - {fileID: 11400000, guid: 9e42b0421481466469229d2dbea5fca3, type: 2}
