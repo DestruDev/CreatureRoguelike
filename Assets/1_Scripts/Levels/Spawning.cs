@@ -54,17 +54,17 @@ public class Spawning : MonoBehaviour
     [Tooltip("Spawn areas for enemy units")]
     public Transform[] enemySpawnAreas = new Transform[3];
     
-    [Header("Enemy Unit Data (ScriptableObjects) - B1")]
+    [Header("Enemy Unit Data (ScriptableObjects) - B1-1")]
     [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
-    public EnemySpawnSlot[] enemySpawnSlotsB1 = new EnemySpawnSlot[3];
+    public EnemySpawnSlot[] enemySpawnSlotsB1_1 = new EnemySpawnSlot[3];
     
-    [Header("Enemy Unit Data (ScriptableObjects) - B2")]
+    [Header("Enemy Unit Data (ScriptableObjects) - B1-2")]
     [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
-    public EnemySpawnSlot[] enemySpawnSlotsB2 = new EnemySpawnSlot[3];
+    public EnemySpawnSlot[] enemySpawnSlotsB1_2 = new EnemySpawnSlot[3];
     
-    [Header("Enemy Unit Data (ScriptableObjects) - B3")]
+    [Header("Enemy Unit Data (ScriptableObjects) - B1-3")]
     [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
-    public EnemySpawnSlot[] enemySpawnSlotsB3 = new EnemySpawnSlot[3];
+    public EnemySpawnSlot[] enemySpawnSlotsB1_3 = new EnemySpawnSlot[3];
     
     [Header("Enemy Spawn Settings")]
     [Tooltip("If enabled, randomly selects from all assigned enemies for each slot. If disabled, uses the first assigned enemy for each slot.")]
@@ -135,12 +135,12 @@ public class Spawning : MonoBehaviour
         }
         
         // Spawn enemies
-        for (int i = 0; i < enemySpawnSlotsB1.Length && i < enemySpawnAreas.Length; i++)
+        for (int i = 0; i < enemySpawnSlotsB1_1.Length && i < enemySpawnAreas.Length; i++)
         {
-			if (enemySpawnAreas[i] != null && enemySpawnSlotsB1[i] != null)
+			if (enemySpawnAreas[i] != null && enemySpawnSlotsB1_1[i] != null)
             {
                 // Get an enemy from the possible enemies for this slot (random or first based on setting)
-                CreatureUnitData selectedEnemy = enemySpawnSlotsB1[i].GetEnemy(useRandomEnemySpawns);
+                CreatureUnitData selectedEnemy = enemySpawnSlotsB1_1[i].GetEnemy(useRandomEnemySpawns);
                 
                 if (selectedEnemy == null)
                 {
@@ -233,12 +233,12 @@ public class Spawning : MonoBehaviour
 	/// </summary>
 	public void RespawnEnemy(int index)
     {
-		if (index >= 0 && index < enemySpawnSlotsB1.Length && index < enemySpawnAreas.Length)
+		if (index >= 0 && index < enemySpawnSlotsB1_1.Length && index < enemySpawnAreas.Length)
         {
-			if (enemySpawnAreas[index] != null && enemySpawnSlotsB1[index] != null)
+			if (enemySpawnAreas[index] != null && enemySpawnSlotsB1_1[index] != null)
             {
                 // Get an enemy from the possible enemies for this slot (random or first based on setting)
-                CreatureUnitData selectedEnemy = enemySpawnSlotsB1[index].GetEnemy(useRandomEnemySpawns);
+                CreatureUnitData selectedEnemy = enemySpawnSlotsB1_1[index].GetEnemy(useRandomEnemySpawns);
                 
                 if (selectedEnemy == null)
                 {
