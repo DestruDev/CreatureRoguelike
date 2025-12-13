@@ -5,22 +5,6 @@ using System.Linq;
 
 public class TurnOrder : MonoBehaviour
 {
-    [Header("Unit SpriteRenderers")]
-    public SpriteRenderer unit1Renderer;
-    public SpriteRenderer unit2Renderer;
-    public SpriteRenderer unit3Renderer;
-    public SpriteRenderer unit4Renderer;
-    public SpriteRenderer unit5Renderer;
-    public SpriteRenderer unit6Renderer;
-
-    [Header("Highlight Settings")]
-    public Color highlightColor = Color.yellow;
-    [Range(0f, 100f)]
-    public float transparencyPercentage = 50f;
-    
-
-    private SpriteRenderer[] unitRenderers;
-    private Dictionary<SpriteRenderer, Color> originalColors = new Dictionary<SpriteRenderer, Color>();
     private GameManager gameManager;
     private List<Unit> cachedTurnOrder = null; // Cached turn order to ensure deterministic sequence
     private bool isUnitActing = false; // Prevents multiple units from acting simultaneously
@@ -29,30 +13,12 @@ public class TurnOrder : MonoBehaviour
 
     private void Start()
     {
-        // Initialize arrays
-        unitRenderers = new SpriteRenderer[] 
-        { 
-            unit1Renderer, unit2Renderer, unit3Renderer, 
-            unit4Renderer, unit5Renderer, unit6Renderer 
-        };
-
-        // Store original colors
-        foreach (var renderer in unitRenderers)
-        {
-            if (renderer != null)
-            {
-                originalColors[renderer] = renderer.color;
-            }
-        }
-
         // Find GameManager
         gameManager = FindFirstObjectByType<GameManager>();
     }
 
     private void Update()
     {
-        UpdateHighlight();
-        
         // Only continue selecting units if game hasn't ended
         if (!gameEnded)
         {
@@ -61,131 +27,70 @@ public class TurnOrder : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the highlight color/transparency on the current unit's spawn location capsule renderer (unit1-6)
-    /// </summary>
-    private void UpdateHighlight()
-    {
-        // If game has ended, reset all highlights to normal
-        if (gameEnded)
-        {
-            foreach (var renderer in unitRenderers)
-            {
-                if (renderer != null && originalColors.ContainsKey(renderer))
-                {
-                    renderer.color = originalColors[renderer];
-                }
-            }
-            return;
-        }
-        
-        if (gameManager == null)
-        {
-            gameManager = FindFirstObjectByType<GameManager>();
-            if (gameManager == null) return;
-        }
-
-        Unit currentUnit = gameManager.GetCurrentUnit();
-
-        // Reset all renderers to original colors first
-        foreach (var renderer in unitRenderers)
-        {
-            if (renderer != null)
-            {
-                // Ensure we have the original color stored
-                if (!originalColors.ContainsKey(renderer))
-                {
-                    originalColors[renderer] = renderer.color;
-                }
-                
-                // Check if this is NOT the current unit, then reset to original
-                bool isCurrentUnit = currentUnit != null && FindUnitRenderer(currentUnit) == renderer;
-                if (!isCurrentUnit)
-                {
-                    renderer.color = originalColors[renderer];
-                }
-            }
-        }
-
-        // If there's a current unit, highlight its spawn location capsule renderer
-        if (currentUnit != null)
-        {
-            SpriteRenderer currentRenderer = FindUnitRenderer(currentUnit);
-            if (currentRenderer != null)
-            {
-                // Ensure we have the original color stored
-                if (!originalColors.ContainsKey(currentRenderer))
-                {
-                    originalColors[currentRenderer] = currentRenderer.color;
-                }
-                
-                // Get original color
-                Color originalColor = originalColors[currentRenderer];
-                
-                // Apply highlight color with transparency percentage
-                float alpha = transparencyPercentage / 100f;
-                
-                // Use highlight color RGB directly with the transparency percentage as alpha
-                Color finalColor = new Color(
-                    highlightColor.r, 
-                    highlightColor.g, 
-                    highlightColor.b, 
-                    alpha
-                );
-                
-                currentRenderer.color = finalColor;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Finds the SpriteRenderer (spawn location capsule) associated with a given Unit
-    /// Units are spawned as children of the spawn area GameObjects, so we check the unit's parent hierarchy
-    /// </summary>
-    private SpriteRenderer FindUnitRenderer(Unit unit)
-    {
-        if (unit == null) return null;
-
-        // Check each of our assigned renderers (unit1-6 spawn location capsules)
-        foreach (var renderer in unitRenderers)
-        {
-            if (renderer != null)
-            {
-                // Check if the unit is a child (directly or indirectly) of the renderer's GameObject
-                // This works because units are spawned as children of the spawn areas
-                Transform unitTransform = unit.transform;
-                while (unitTransform != null)
-                {
-                    if (unitTransform.gameObject == renderer.gameObject)
-                    {
-                        // The unit is a descendant of this spawn area
-                        return renderer;
-                    }
-                    unitTransform = unitTransform.parent;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Gets the deterministic spawn position index (0-5) for a unit based on which renderer it belongs to
+    /// Gets the deterministic spawn position index (0-5) for a unit based on spawn area
     /// Returns -1 if the unit doesn't belong to any known spawn area
+    /// Indices 0-2 are for creatures, 3-5 are for enemies
     /// </summary>
     private int GetUnitSpawnIndex(Unit unit)
     {
-        SpriteRenderer renderer = FindUnitRenderer(unit);
-        if (renderer == null) return -1;
-
-        // Find which index (0-5) this renderer is in our array
-        for (int i = 0; i < unitRenderers.Length; i++)
+        if (unit == null) return -1;
+        
+        // Get reference to Spawning to access spawn areas
+        Spawning spawning = FindFirstObjectByType<Spawning>();
+        if (spawning == null) return -1;
+        
+        // Check creature spawn areas first (indices 0-2)
+        var creatureSpawnAreasField = typeof(Spawning).GetField("creatureSpawnAreas", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (creatureSpawnAreasField != null)
         {
-            if (unitRenderers[i] == renderer)
+            var creatureSpawnAreas = creatureSpawnAreasField.GetValue(spawning) as Transform[];
+            if (creatureSpawnAreas != null)
             {
-                return i;
+                for (int i = 0; i < creatureSpawnAreas.Length; i++)
+                {
+                    if (creatureSpawnAreas[i] != null)
+                    {
+                        Transform unitTransform = unit.transform;
+                        while (unitTransform != null)
+                        {
+                            if (unitTransform == creatureSpawnAreas[i])
+                            {
+                                return i; // 0-2 for creatures
+                            }
+                            unitTransform = unitTransform.parent;
+                        }
+                    }
+                }
             }
         }
-
+        
+        // Check enemy spawn areas (indices 3-5)
+        var enemySpawnAreasField = typeof(Spawning).GetField("enemySpawnAreas", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (enemySpawnAreasField != null)
+        {
+            var enemySpawnAreas = enemySpawnAreasField.GetValue(spawning) as Transform[];
+            if (enemySpawnAreas != null)
+            {
+                for (int i = 0; i < enemySpawnAreas.Length; i++)
+                {
+                    if (enemySpawnAreas[i] != null)
+                    {
+                        Transform unitTransform = unit.transform;
+                        while (unitTransform != null)
+                        {
+                            if (unitTransform == enemySpawnAreas[i])
+                            {
+                                return i + 3; // 3-5 for enemies (offset by 3)
+                            }
+                            unitTransform = unitTransform.parent;
+                        }
+                    }
+                }
+            }
+        }
+        
         return -1;
     }
     

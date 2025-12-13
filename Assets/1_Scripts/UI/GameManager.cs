@@ -61,6 +61,13 @@ public class GameManager : MonoBehaviour
     [Header("Turn Management")]
     private Unit currentUnit;
     
+    [Header("Unit Highlighting")]
+    [Tooltip("Enable/disable unit highlighting during their turn")]
+    public bool enableUnitHighlighting = true;
+    
+    [Tooltip("Shared AllIn1SpriteShader material to use for highlighting units during their turn")]
+    public Material highlightMaterial;
+    
     // Cache the ActionPanelManager reference
     private ActionPanelManager actionPanelManager;
     

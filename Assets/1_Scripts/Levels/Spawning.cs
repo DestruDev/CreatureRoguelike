@@ -291,6 +291,9 @@ public class Spawning : MonoBehaviour
         // Initialize unit with data (this will set sprite and color via InitializeUnit)
         unit.InitializeWithData(unitData);
         
+        // Add HighlightUnit component for turn-based highlighting
+        unitObj.AddComponent<HighlightUnit>();
+        
         // Add 2D collider for mouse selection (size it to match the sprite)
         BoxCollider2D collider = unitObj.AddComponent<BoxCollider2D>();
         if (spriteRenderer.sprite != null)
