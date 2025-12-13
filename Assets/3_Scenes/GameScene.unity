@@ -4667,6 +4667,7 @@ MonoBehaviour:
   skillAnimationDelay: 1
   postAttackAnimationDelay: 0.5
   hitAnimationDelay: 1
+  roundEndScreenDelay: 1
 --- !u!114 &427498651
 MonoBehaviour:
   m_ObjectHideFlags: 0

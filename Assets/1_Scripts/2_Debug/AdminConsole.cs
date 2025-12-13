@@ -19,13 +19,14 @@ public class AdminConsole : MonoBehaviour
         // Press 1 to damage all enemies
         if (Keyboard.current != null && Keyboard.current[Key.Digit1].wasPressedThisFrame)
         {
-            DamageAllEnemies();
+            DamageAllAllies();            
         }
         
         // Press 2 to damage all allies
         if (Keyboard.current != null && Keyboard.current[Key.Digit2].wasPressedThisFrame)
         {
-            DamageAllAllies();
+            
+            DamageAllEnemies();
         }
     }
     

@@ -19,6 +19,7 @@ public class InfoPanel : MonoBehaviour
     private GameManager gameManager;
     private Inventory inventory;
     private Selection selection;
+    private TurnOrder turnOrder;
     
     private void Start()
     {
@@ -29,6 +30,7 @@ public class InfoPanel : MonoBehaviour
         gameManager = FindFirstObjectByType<GameManager>();
         inventory = FindFirstObjectByType<Inventory>();
         selection = FindFirstObjectByType<Selection>();
+        turnOrder = FindFirstObjectByType<TurnOrder>();
         
         // Hide info panel by default
         if (infoPanelUI != null)
@@ -48,6 +50,16 @@ public class InfoPanel : MonoBehaviour
         Skill currentSkill = null;
         Item currentItem = null;
         int currentSkillIndex = -1;
+        
+        // Hide panel if game has ended (including during delay before round end screen)
+        if (turnOrder != null && turnOrder.IsGameEnded())
+        {
+            if (infoPanelUI != null && infoPanelUI.activeSelf)
+            {
+                infoPanelUI.SetActive(false);
+            }
+            return;
+        }
         
         // Hide panel during skill execution (for both allies and enemies)
         if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())

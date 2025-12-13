@@ -92,6 +92,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("Delay in seconds for hit animation to play (between damage message and turn advancement)")]
     [Range(0f, 5f)]
     public float hitAnimationDelay = 2f;
+    
+    [Tooltip("Additional delay in seconds before showing round won/game over screen (added on top of postAttackAnimationDelay)")]
+    [Range(0f, 5f)]
+    public float roundEndScreenDelay = 0.5f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -1056,7 +1060,8 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void OnAllAlliesDead()
 	{
-		ShowRoundEndPanel("Game Over!");
+		// Delay showing the game over screen to allow death animations to play
+		StartCoroutine(DelayedShowRoundEndPanel("Game Over!"));
 	}
 	
 	/// <summary>
@@ -1064,7 +1069,19 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void OnAllEnemiesDead()
 	{
-		ShowRoundEndPanel("Round Won!");
+		// Delay showing the round won screen to allow death animations to play
+		StartCoroutine(DelayedShowRoundEndPanel("Round Won!"));
+	}
+	
+	/// <summary>
+	/// Coroutine to delay showing the round end panel to allow death animations to play
+	/// </summary>
+	private System.Collections.IEnumerator DelayedShowRoundEndPanel(string message)
+	{
+		// Wait for post-attack animation delay + additional round end screen delay
+		float totalDelay = postAttackAnimationDelay + roundEndScreenDelay;
+		yield return new WaitForSeconds(totalDelay);
+		ShowRoundEndPanel(message);
 	}
 	
 	/// <summary>
