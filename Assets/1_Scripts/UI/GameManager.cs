@@ -53,6 +53,10 @@ public class GameManager : MonoBehaviour
 	[Tooltip("Button on the round end panel that restarts the round (reloads scene)")]
 	public Button restartRoundButton;
 	
+	[Header("Level Navigation")]
+	[Tooltip("Button to advance to the next level")]
+	public Button nextLevelButton;
+	
 	[Tooltip("Name of the main menu scene to load")]
 	public string mainMenuSceneName = "MainMenu";
 	
@@ -1078,6 +1082,13 @@ public class GameManager : MonoBehaviour
 			else
 			{
 				Debug.LogWarning("GameManager: roundEndMessageText is not assigned!");
+			}
+			
+			// Show/hide next level button based on whether it's game over or round won
+			if (nextLevelButton != null)
+			{
+				// Hide button on "Game Over!", show it on "Round Won!"
+				nextLevelButton.gameObject.SetActive(message != "Game Over!");
 			}
 			
 			// Show the panel
