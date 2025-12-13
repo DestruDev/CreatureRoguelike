@@ -605,8 +605,9 @@ public class GameManager : MonoBehaviour
 		ClearEnemyUI();
 		
         // Connect each unit to its UI based on which spawn area array it belongs to
-		int aliveAlliesCount = 0;
-		int aliveEnemiesCount = 0;
+		// Track which slots have units
+		bool[] allySlotsUsed = new bool[3];
+		bool[] enemySlotsUsed = new bool[3];
 		
 		foreach (var unit in allUnits)
 		{
@@ -614,9 +615,15 @@ public class GameManager : MonoBehaviour
 			
 			// Check if unit is in creature spawn areas or enemy spawn areas
 			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
-			if (creatureIndex >= 0)
+			if (creatureIndex >= 0 && creatureIndex < 3)
 			{
-				aliveAlliesCount++;
+				allySlotsUsed[creatureIndex] = true;
+				
+				// Activate the creature UI root FIRST before activating child elements
+				if (creatureUIRoots != null && creatureIndex >= 0 && creatureIndex < creatureUIRoots.Length && creatureUIRoots[creatureIndex] != null)
+				{
+					creatureUIRoots[creatureIndex].SetActive(true);
+				}
 				
 				// Creature UI (indices 0-2)
 				if (creatureNameTexts[creatureIndex] != null)
@@ -637,19 +644,19 @@ public class GameManager : MonoBehaviour
 					creatureActionGaugeFills[creatureIndex].gameObject.SetActive(true);
 					UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
 				}
-                
-                // Ensure the creature UI root is active for alive unit
-                if (creatureUIRoots != null && creatureIndex >= 0 && creatureIndex < creatureUIRoots.Length && creatureUIRoots[creatureIndex] != null)
-                {
-                    creatureUIRoots[creatureIndex].SetActive(true);
-                }
 				continue;
 			}
 			
 			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
-			if (enemyIndex >= 0)
+			if (enemyIndex >= 0 && enemyIndex < 3)
 			{
-				aliveEnemiesCount++;
+				enemySlotsUsed[enemyIndex] = true;
+				
+				// Activate the enemy UI root FIRST before activating child elements
+				if (enemyUIRoots != null && enemyIndex >= 0 && enemyIndex < enemyUIRoots.Length && enemyUIRoots[enemyIndex] != null)
+				{
+					enemyUIRoots[enemyIndex].SetActive(true);
+				}
 				
 				// Enemy UI (indices 0-2)
 				if (enemyNameTexts[enemyIndex] != null)
@@ -670,36 +677,21 @@ public class GameManager : MonoBehaviour
 					enemyActionGaugeFills[enemyIndex].gameObject.SetActive(true);
 					UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
 				}
-                
-                // Ensure the enemy UI root is active for alive unit
-                if (enemyUIRoots != null && enemyIndex >= 0 && enemyIndex < enemyUIRoots.Length && enemyUIRoots[enemyIndex] != null)
-                {
-                    enemyUIRoots[enemyIndex].SetActive(true);
-                }
 			}
 		}
 		
-		// Hide the 3rd UI root (index 2) if there are fewer than 3 units on the field
-		if (aliveAlliesCount < 3 && creatureUIRoots != null && creatureUIRoots.Length > 2 && creatureUIRoots[2] != null)
+		// Hide UI roots for slots that don't have units
+		for (int i = 0; i < 3; i++)
 		{
-			creatureUIRoots[2].SetActive(false);
-		}
-		
-		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
-		if (aliveAlliesCount < 2 && creatureUIRoots != null && creatureUIRoots.Length > 1 && creatureUIRoots[1] != null)
-		{
-			creatureUIRoots[1].SetActive(false);
-		}
-		
-		if (aliveEnemiesCount < 3 && enemyUIRoots != null && enemyUIRoots.Length > 2 && enemyUIRoots[2] != null)
-		{
-			enemyUIRoots[2].SetActive(false);
-		}
-		
-		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
-		if (aliveEnemiesCount < 2 && enemyUIRoots != null && enemyUIRoots.Length > 1 && enemyUIRoots[1] != null)
-		{
-			enemyUIRoots[1].SetActive(false);
+			if (!allySlotsUsed[i] && creatureUIRoots != null && i < creatureUIRoots.Length && creatureUIRoots[i] != null)
+			{
+				creatureUIRoots[i].SetActive(false);
+			}
+			
+			if (!enemySlotsUsed[i] && enemyUIRoots != null && i < enemyUIRoots.Length && enemyUIRoots[i] != null)
+			{
+				enemyUIRoots[i].SetActive(false);
+			}
 		}
 	}
 	
