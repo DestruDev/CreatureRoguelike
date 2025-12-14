@@ -120,6 +120,12 @@ public class GameManager : MonoBehaviour
 		{
 			restartRoundButton.onClick.AddListener(OnRestartRoundClicked);
 		}
+		
+		// Set up next level button listener
+		if (nextLevelButton != null)
+		{
+			nextLevelButton.onClick.AddListener(OnNextLevelClicked);
+		}
         
         // Hide round end panel at start
         if (roundEndPanel != null)
@@ -603,6 +609,14 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Clears the current unit (used when resetting for next level)
+	/// </summary>
+	public void ClearCurrentUnit()
+	{
+		currentUnit = null;
+	}
+	
+	/// <summary>
 	/// Updates all unit UI displays by connecting units to their corresponding UI elements based on spawn index
 	/// </summary>
 	public void UpdateAllUnitUI()
@@ -1065,12 +1079,30 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Called when all enemies are dead - opens the round end panel with "Round Won!" message
+	/// Called when all enemies are dead - opens the round end panel with "Round Won!" or "Game Won!" message
 	/// </summary>
 	public void OnAllEnemiesDead()
 	{
+        // Hide action UI during round end
+        if (actionPanelManager == null)
+        {
+            actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        }
+        if (actionPanelManager != null)
+        {
+            actionPanelManager.HideForRoundEnd();
+        }
+
+		// Determine the message based on current level
+		string message = "Round Won!";
+		LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+		if (levelNavigation != null && levelNavigation.GetCurrentLevel() == "B1-3")
+		{
+			message = "Game Won!";
+		}
+
 		// Delay showing the round won screen to allow death animations to play
-		StartCoroutine(DelayedShowRoundEndPanel("Round Won!"));
+		StartCoroutine(DelayedShowRoundEndPanel(message));
 	}
 	
 	/// <summary>
@@ -1101,11 +1133,11 @@ public class GameManager : MonoBehaviour
 				Debug.LogWarning("GameManager: roundEndMessageText is not assigned!");
 			}
 			
-			// Show/hide next level button based on whether it's game over or round won
+			// Show/hide next level button based on whether it's game over, round won, or game won
 			if (nextLevelButton != null)
 			{
-				// Hide button on "Game Over!", show it on "Round Won!"
-				nextLevelButton.gameObject.SetActive(message != "Game Over!");
+				// Hide button on "Game Over!" or "Game Won!", show it on "Round Won!"
+				nextLevelButton.gameObject.SetActive(message == "Round Won!");
 			}
 			
 			// Show the panel
@@ -1132,6 +1164,22 @@ public class GameManager : MonoBehaviour
 	{
 		Scene current = SceneManager.GetActiveScene();
 		SceneManager.LoadScene(current.buildIndex);
+	}
+	
+	/// <summary>
+	/// Called when the next level button is clicked - advances to the next level
+	/// </summary>
+	public void OnNextLevelClicked()
+	{
+		LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+		if (levelNavigation != null)
+		{
+			levelNavigation.AdvanceToNextLevel();
+		}
+		else
+		{
+			Debug.LogWarning("GameManager: LevelNavigation not found! Cannot advance to next level.");
+		}
 	}
 	
 	/// <summary>

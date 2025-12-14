@@ -98,6 +98,12 @@ public class InGameMenu : MonoBehaviour
 
     public void OnSettingsButtonClicked()
     {
+        // Don't open settings if round end panel is active
+        if (IsRoundEndPanelActive())
+        {
+            return;
+        }
+        
         // Toggle settings panel - if open, close it; if closed, open it
         if (IsSettingsPanelActive())
         {
@@ -174,6 +180,12 @@ public class InGameMenu : MonoBehaviour
 
     private void HandleEscapeKey()
     {
+        // Don't open settings if round end panel is active
+        if (IsRoundEndPanelActive())
+        {
+            return;
+        }
+        
         // If settings panel is open, close it
         if (IsSettingsPanelActive())
         {
@@ -184,6 +196,15 @@ public class InGameMenu : MonoBehaviour
         {
             ShowSettingsPanel();
         }
+    }
+    
+    /// <summary>
+    /// Checks if the round end panel is currently active
+    /// </summary>
+    private bool IsRoundEndPanelActive()
+    {
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        return gameManager != null && gameManager.roundEndPanel != null && gameManager.roundEndPanel.activeSelf;
     }
 
     private bool IsSettingsPanelActive()

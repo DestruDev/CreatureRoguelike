@@ -134,17 +134,53 @@ public class Spawning : MonoBehaviour
             }
         }
         
-        // Spawn enemies
-        for (int i = 0; i < enemySpawnSlotsB1_1.Length && i < enemySpawnAreas.Length; i++)
+        // Spawn enemies for current level (defaults to B1-1)
+        SpawnEnemiesForLevel("B1-1");
+    }
+    
+    /// <summary>
+    /// Spawns enemies for a specific level
+    /// </summary>
+    public void SpawnEnemiesForLevel(string level)
+    {
+        EnemySpawnSlot[] enemySpawnSlots = null;
+        
+        // Select the appropriate enemy spawn slots based on level
+        if (level == "B1-1")
         {
-			if (enemySpawnAreas[i] != null && enemySpawnSlotsB1_1[i] != null)
+            enemySpawnSlots = enemySpawnSlotsB1_1;
+        }
+        else if (level == "B1-2")
+        {
+            enemySpawnSlots = enemySpawnSlotsB1_2;
+        }
+        else if (level == "B1-3")
+        {
+            enemySpawnSlots = enemySpawnSlotsB1_3;
+        }
+        else
+        {
+            Debug.LogWarning($"Unknown level: {level}. Defaulting to B1-1.");
+            enemySpawnSlots = enemySpawnSlotsB1_1;
+        }
+        
+        if (enemySpawnSlots == null)
+        {
+            Debug.LogWarning($"No enemy spawn slots configured for level {level}.");
+            return;
+        }
+        
+        // Spawn enemies
+        for (int i = 0; i < enemySpawnSlots.Length && i < enemySpawnAreas.Length; i++)
+        {
+			if (enemySpawnAreas[i] != null && enemySpawnSlots[i] != null)
             {
                 // Get an enemy from the possible enemies for this slot (random or first based on setting)
-                CreatureUnitData selectedEnemy = enemySpawnSlotsB1_1[i].GetEnemy(useRandomEnemySpawns);
+                CreatureUnitData selectedEnemy = enemySpawnSlots[i].GetEnemy(useRandomEnemySpawns);
                 
                 if (selectedEnemy == null)
                 {
-                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {i + 1}. Skipping spawn.");
+                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {i + 1} in level {level}. Skipping spawn.");
                     continue;
                 }
                 
@@ -166,7 +202,7 @@ public class Spawning : MonoBehaviour
 					unit.SetTeamAssignment(false); // Force enemy unit based on spawn area
 				}
                 
-                // Debug.Log("Spawned enemy " + (i + 1) + " (" + unitName + ") at " + enemySpawnAreas[i].name);
+                Debug.Log($"Spawned enemy {i + 1} ({unitName}) for level {level} at {enemySpawnAreas[i].name}");
             }
         }
     }

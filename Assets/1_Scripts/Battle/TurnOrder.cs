@@ -10,6 +10,7 @@ public class TurnOrder : MonoBehaviour
     private bool isUnitActing = false; // Prevents multiple units from acting simultaneously
     private bool isSelectingNextUnit = false; // Prevents infinite recursion in SelectNextUnitToAct
     private bool gameEnded = false; // Set to true when all player units or all enemy units are dead
+    private bool selectionEnabled = true; // Allows pausing selection during level transitions
 
     private void Start()
     {
@@ -20,7 +21,7 @@ public class TurnOrder : MonoBehaviour
     private void Update()
     {
         // Only continue selecting units if game hasn't ended
-        if (!gameEnded)
+        if (!gameEnded && selectionEnabled)
         {
             SelectNextUnitToAct();
         }
@@ -702,5 +703,24 @@ public class TurnOrder : MonoBehaviour
     public bool IsGameEnded()
     {
         return gameEnded;
+    }
+    
+    /// <summary>
+    /// Resets the game state for a new level
+    /// </summary>
+    public void ResetGame()
+    {
+        gameEnded = false;
+        isUnitActing = false;
+        isSelectingNextUnit = false;
+        cachedTurnOrder = null;
+    }
+
+    /// <summary>
+    /// Enables or disables turn selection (used during level transitions)
+    /// </summary>
+    public void SetSelectionEnabled(bool enabled)
+    {
+        selectionEnabled = enabled;
     }
 }

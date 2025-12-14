@@ -433,6 +433,14 @@ public class Unit : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Hard reset of action gauge to 0 (used when starting a new level)
+    /// </summary>
+    public void ResetActionGaugeHard()
+    {
+        actionGauge = 0f;
+    }
+
     private void UpdateHealthUI()
     {
         if (healthFill != null)

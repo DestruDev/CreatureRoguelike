@@ -394,6 +394,17 @@ public class ActionPanelManager : MonoBehaviour
         {
             ActionPanel.SetActive(true);
         }
+
+        // Re-enable end turn button and unit name text when showing the action panel
+        if (EndTurnButton != null)
+        {
+            EndTurnButton.gameObject.SetActive(true);
+            EndTurnButton.interactable = true;
+        }
+        if (UnitNameText != null)
+        {
+            UnitNameText.gameObject.SetActive(true);
+        }
         
         // Enable button selection mode
         EnableButtonSelectionMode();
@@ -703,6 +714,56 @@ public class ActionPanelManager : MonoBehaviour
     public bool IsSkillExecuting()
     {
         return isSkillExecuting;
+    }
+    
+    /// <summary>
+    /// Hides action UI for round end and blocks visibility until next round starts.
+    /// </summary>
+    public void HideForRoundEnd()
+    {
+        panelsHiddenForGameOver = true;
+        HideAllPanels();
+
+        // Disable unit name and end turn button during round end
+        if (UnitNameText != null)
+        {
+            UnitNameText.gameObject.SetActive(false);
+        }
+        if (EndTurnButton != null)
+        {
+            EndTurnButton.interactable = false;
+            EndTurnButton.gameObject.SetActive(false);
+        }
+
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.HideUserPanel();
+        }
+    }
+
+    /// <summary>
+    /// Resets all ActionPanelManager state flags and hides all panels
+    /// Called when advancing to next level
+    /// </summary>
+    public void Reset()
+    {
+        // Reset all state flags
+        isSkillExecuting = false;
+        lastUnit = null;
+        panelsHiddenForGameOver = false;
+        isButtonSelectionMode = false;
+        isNormalAttackSelectionMode = false;
+        normalAttackCastingUnit = null;
+        normalAttackCurrentSkill = null;
+        ignoreNextMouseClick = false;
+        ignoreNextKeyboardConfirm = false;
+        
+        // Hide all panels and clear selection
+        HideAllPanels();
     }
     
     /// <summary>

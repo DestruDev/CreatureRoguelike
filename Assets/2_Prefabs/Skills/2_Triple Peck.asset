@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 744ca7a0bc03f504cba631a67c636a29, type: 3}
-  m_Name: 2_Strong Whack
+  m_Name: 2_Triple Peck
   m_EditorClassIdentifier: Assembly-CSharp::Skill
-  skillName: Strong Whack
+  skillName: Triple Peck
   skillID: 2
-  description: A stronger whack.
+  description: 3 quick pecks
   icon: {fileID: -7803645574393991823, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
   damage: 50
   healAmount: 0

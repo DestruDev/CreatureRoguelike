@@ -16,7 +16,7 @@ MonoBehaviour:
   skillID: 6
   description: Gnaws on the target.
   icon: {fileID: 4773514653529381359, guid: a600bc285bb70dc4abdf111090a46e3f, type: 3}
-  damage: 100
+  damage: 50
   healAmount: 0
   cooldownTurns: 0
   targetType: 2
