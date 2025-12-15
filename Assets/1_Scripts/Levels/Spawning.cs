@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [System.Serializable]
 public class EnemySpawnSlot
@@ -54,21 +57,15 @@ public class Spawning : MonoBehaviour
     [Tooltip("Spawn areas for enemy units")]
     public Transform[] enemySpawnAreas = new Transform[3];
     
-    [Header("Enemy Unit Data (ScriptableObjects) - B1-1")]
-    [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
-    public EnemySpawnSlot[] enemySpawnSlotsB1_1 = new EnemySpawnSlot[3];
+    [Header("Level Data (ScriptableObjects)")]
+    [Tooltip("Level data for B1-1. Assign the LevelData ScriptableObject here.")]
+    public LevelData levelDataB1_1;
     
-    [Header("Enemy Unit Data (ScriptableObjects) - B1-2")]
-    [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
-    public EnemySpawnSlot[] enemySpawnSlotsB1_2 = new EnemySpawnSlot[3];
+    [Tooltip("Level data for B1-2. Assign the LevelData ScriptableObject here.")]
+    public LevelData levelDataB1_2;
     
-    [Header("Enemy Unit Data (ScriptableObjects) - B1-3")]
-    [Tooltip("For each enemy spawn slot, assign multiple possible enemy unit data ScriptableObjects.")]
-    public EnemySpawnSlot[] enemySpawnSlotsB1_3 = new EnemySpawnSlot[3];
-    
-    [Header("Enemy Spawn Settings")]
-    [Tooltip("If enabled, randomly selects from all assigned enemies for each slot. If disabled, uses the first assigned enemy for each slot.")]
-    public bool useRandomEnemySpawns = false;
+    [Tooltip("Level data for B1-3. Assign the LevelData ScriptableObject here.")]
+    public LevelData levelDataB1_3;
     
     [Header("Unit Scale Settings")]
     [Tooltip("Scale multiplier for spawned allies/creatures. Set to 1.0 for normal size, higher values make sprites bigger.")]
@@ -135,52 +132,122 @@ public class Spawning : MonoBehaviour
         }
         
         // Spawn enemies for current level (defaults to B1-1)
-        SpawnEnemiesForLevel("B1-1");
-    }
-    
-    /// <summary>
-    /// Spawns enemies for a specific level
-    /// </summary>
-    public void SpawnEnemiesForLevel(string level)
-    {
-        EnemySpawnSlot[] enemySpawnSlots = null;
+        LevelData defaultLevelData = levelDataB1_1;
+        if (defaultLevelData == null)
+        {
+            // Fallback to lookup if reference not set
+            defaultLevelData = FindLevelDataByID("B1-1");
+        }
         
-        // Select the appropriate enemy spawn slots based on level
-        if (level == "B1-1")
+        if (defaultLevelData != null)
         {
-            enemySpawnSlots = enemySpawnSlotsB1_1;
-        }
-        else if (level == "B1-2")
-        {
-            enemySpawnSlots = enemySpawnSlotsB1_2;
-        }
-        else if (level == "B1-3")
-        {
-            enemySpawnSlots = enemySpawnSlotsB1_3;
+            SpawnEnemiesForLevel(defaultLevelData);
         }
         else
         {
-            Debug.LogWarning($"Unknown level: {level}. Defaulting to B1-1.");
-            enemySpawnSlots = enemySpawnSlotsB1_1;
+            Debug.LogWarning("Could not find LevelData for B1-1. Enemy spawning skipped.");
+        }
+    }
+    
+    /// <summary>
+    /// Finds a LevelData ScriptableObject by its levelID
+    /// </summary>
+    private LevelData FindLevelDataByID(string levelID)
+    {
+        if (string.IsNullOrEmpty(levelID))
+            return null;
+        
+#if UNITY_EDITOR
+        // In editor, use AssetDatabase for faster lookup
+        string[] guids = AssetDatabase.FindAssets("t:LevelData");
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            LevelData levelData = AssetDatabase.LoadAssetAtPath<LevelData>(path);
+            if (levelData != null && levelData.levelID == levelID)
+            {
+                return levelData;
+            }
+        }
+#else
+        // At runtime, use Resources (requires LevelData assets to be in a Resources folder)
+        LevelData[] allLevels = Resources.LoadAll<LevelData>("");
+        foreach (LevelData levelData in allLevels)
+        {
+            if (levelData != null && levelData.levelID == levelID)
+            {
+                return levelData;
+            }
+        }
+#endif
+        return null;
+    }
+    
+    /// <summary>
+    /// Spawns enemies for a specific level by level ID string
+    /// </summary>
+    public void SpawnEnemiesForLevel(string levelID)
+    {
+        LevelData levelData = null;
+        
+        // First check assigned references
+        if (levelID == "B1-1" && levelDataB1_1 != null)
+        {
+            levelData = levelDataB1_1;
+        }
+        else if (levelID == "B1-2" && levelDataB1_2 != null)
+        {
+            levelData = levelDataB1_2;
+        }
+        else if (levelID == "B1-3" && levelDataB1_3 != null)
+        {
+            levelData = levelDataB1_3;
         }
         
-        if (enemySpawnSlots == null)
+        // Fallback to lookup if reference not set
+        if (levelData == null)
         {
-            Debug.LogWarning($"No enemy spawn slots configured for level {level}.");
+            levelData = FindLevelDataByID(levelID);
+        }
+        
+        if (levelData != null)
+        {
+            SpawnEnemiesForLevel(levelData);
+        }
+        else
+        {
+            Debug.LogWarning($"Could not find LevelData for level ID: {levelID}");
+        }
+    }
+    
+    /// <summary>
+    /// Spawns enemies for a specific level using LevelData
+    /// </summary>
+    public void SpawnEnemiesForLevel(LevelData levelData)
+    {
+        if (levelData == null)
+        {
+            Debug.LogWarning("LevelData is null. Cannot spawn enemies.");
+            return;
+        }
+        
+        if (levelData.enemySpawnSlots == null || levelData.enemySpawnSlots.Length == 0)
+        {
+            Debug.LogWarning($"No enemy spawn slots configured in LevelData for level {levelData.levelID}.");
             return;
         }
         
         // Spawn enemies
-        for (int i = 0; i < enemySpawnSlots.Length && i < enemySpawnAreas.Length; i++)
+        for (int i = 0; i < levelData.enemySpawnSlots.Length && i < enemySpawnAreas.Length; i++)
         {
-			if (enemySpawnAreas[i] != null && enemySpawnSlots[i] != null)
+			if (enemySpawnAreas[i] != null && levelData.enemySpawnSlots[i] != null)
             {
-                // Get an enemy from the possible enemies for this slot (random or first based on setting)
-                CreatureUnitData selectedEnemy = enemySpawnSlots[i].GetEnemy(useRandomEnemySpawns);
+                // Get an enemy from the possible enemies for this slot (random or first based on levelData setting)
+                CreatureUnitData selectedEnemy = levelData.enemySpawnSlots[i].GetEnemy(levelData.useRandomEnemySpawns);
                 
                 if (selectedEnemy == null)
                 {
-                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {i + 1} in level {level}. Skipping spawn.");
+                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {i + 1} in level {levelData.levelID}. Skipping spawn.");
                     continue;
                 }
                 
@@ -202,7 +269,7 @@ public class Spawning : MonoBehaviour
 					unit.SetTeamAssignment(false); // Force enemy unit based on spawn area
 				}
                 
-                Debug.Log($"Spawned enemy {i + 1} ({unitName}) for level {level} at {enemySpawnAreas[i].name}");
+                Debug.Log($"Spawned enemy {i + 1} ({unitName}) for level {levelData.levelID} at {enemySpawnAreas[i].name}");
             }
         }
     }
@@ -266,15 +333,61 @@ public class Spawning : MonoBehaviour
     
 	/// <summary>
 	/// Respawns an enemy at a specific spawn area index (0-2)
+	/// Uses the current level from LevelNavigation if available
 	/// </summary>
 	public void RespawnEnemy(int index)
     {
-		if (index >= 0 && index < enemySpawnSlotsB1_1.Length && index < enemySpawnAreas.Length)
+        // Try to get current level from LevelNavigation
+        LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+        LevelData currentLevelData = null;
+        
+        if (levelNavigation != null)
         {
-			if (enemySpawnAreas[index] != null && enemySpawnSlotsB1_1[index] != null)
+            string currentLevelID = levelNavigation.GetCurrentLevel();
+            
+            // First check assigned references
+            if (currentLevelID == "B1-1" && levelDataB1_1 != null)
             {
-                // Get an enemy from the possible enemies for this slot (random or first based on setting)
-                CreatureUnitData selectedEnemy = enemySpawnSlotsB1_1[index].GetEnemy(useRandomEnemySpawns);
+                currentLevelData = levelDataB1_1;
+            }
+            else if (currentLevelID == "B1-2" && levelDataB1_2 != null)
+            {
+                currentLevelData = levelDataB1_2;
+            }
+            else if (currentLevelID == "B1-3" && levelDataB1_3 != null)
+            {
+                currentLevelData = levelDataB1_3;
+            }
+            
+            // Fallback to lookup if reference not set
+            if (currentLevelData == null)
+            {
+                currentLevelData = FindLevelDataByID(currentLevelID);
+            }
+        }
+        
+        // Fallback to B1-1 if no current level found
+        if (currentLevelData == null)
+        {
+            currentLevelData = levelDataB1_1;
+            if (currentLevelData == null)
+            {
+                currentLevelData = FindLevelDataByID("B1-1");
+            }
+        }
+        
+        if (currentLevelData == null || currentLevelData.enemySpawnSlots == null)
+        {
+            Debug.LogWarning($"No LevelData found for respawning enemy at index {index}.");
+            return;
+        }
+        
+		if (index >= 0 && index < currentLevelData.enemySpawnSlots.Length && index < enemySpawnAreas.Length)
+        {
+			if (enemySpawnAreas[index] != null && currentLevelData.enemySpawnSlots[index] != null)
+            {
+                // Get an enemy from the possible enemies for this slot (random or first based on levelData setting)
+                CreatureUnitData selectedEnemy = currentLevelData.enemySpawnSlots[index].GetEnemy(currentLevelData.useRandomEnemySpawns);
                 
                 if (selectedEnemy == null)
                 {

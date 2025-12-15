@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e29f5050b5a86048b4829a01a9528c2, type: 3}
+  m_Name: B1-3
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  levelID: 3
+  levelDescription: 3 Undead Hands
+  levelType: 0
+  enemySpawnSlots:
+  - possibleEnemies:
+    - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
+  - possibleEnemies:
+    - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
+  - possibleEnemies:
+    - {fileID: 11400000, guid: e60389f897f7c3c4cb9908044d12ddbf, type: 2}
+  useRandomEnemySpawns: 0

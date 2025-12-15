@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e29f5050b5a86048b4829a01a9528c2, type: 3}
+  m_Name: B1-1
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  levelID: 1
+  levelDescription: 3 Orc Kids
+  levelType: 0
+  enemySpawnSlots:
+  - possibleEnemies:
+    - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
+  - possibleEnemies:
+    - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
+  - possibleEnemies:
+    - {fileID: 11400000, guid: 212e651c071a5794ca3be82aec4b7f44, type: 2}
+  useRandomEnemySpawns: 0
