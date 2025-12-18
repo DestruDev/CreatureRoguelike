@@ -130,44 +130,100 @@ public class LevelNavigation : MonoBehaviour
         // Wait a short moment to ensure all previous operations have completed
         yield return new WaitForSeconds(0.2f);
         
-        // Get references to all necessary components
-        TurnOrder turnOrder = FindFirstObjectByType<TurnOrder>();
-        EventLogPanel eventLogPanel = FindFirstObjectByType<EventLogPanel>();
-        Spawning spawning = FindFirstObjectByType<Spawning>();
-        GameManager gameManager = FindFirstObjectByType<GameManager>();
-        ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-
+        // Cache component references
+        ComponentReferences refs = CacheComponentReferences();
+        
         // Pause turn selection while resetting to prevent early picks
+        PauseTurnSelection(refs.turnOrder);
+        
+        // Reset combat and UI state
+        ResetCombatAndUIState(refs);
+        
+        // Clear existing enemies and spawn next level enemies
+        ClearEnemiesAndSpawnNextLevel(refs.spawning, nextLevel);
+        
+        // Update current level and hide round end panel
+        UpdateLevelAndHideRoundEndPanel(nextLevel, refs.gameManager);
+        
+        // Reinitialize gauges and pick first unit
+        yield return StartCoroutine(ReinitializeGaugesAndPickFirstUnit(refs.gameManager, refs.turnOrder));
+
+        // Resume turn selection after reinitialization
+        ResumeTurnSelection(refs.turnOrder);
+    }
+    
+    /// <summary>
+    /// Caches references to all necessary components
+    /// </summary>
+    private ComponentReferences CacheComponentReferences()
+    {
+        return new ComponentReferences
+        {
+            turnOrder = FindFirstObjectByType<TurnOrder>(),
+            eventLogPanel = FindFirstObjectByType<EventLogPanel>(),
+            spawning = FindFirstObjectByType<Spawning>(),
+            gameManager = FindFirstObjectByType<GameManager>(),
+            actionPanelManager = FindFirstObjectByType<ActionPanelManager>()
+        };
+    }
+    
+    /// <summary>
+    /// Pauses turn selection to prevent early picks during reset
+    /// </summary>
+    private void PauseTurnSelection(TurnOrder turnOrder)
+    {
         if (turnOrder != null)
         {
             turnOrder.SetSelectionEnabled(false);
         }
-        
-        // Clear current unit in GameManager before resetting
-        if (gameManager != null)
+    }
+    
+    /// <summary>
+    /// Resumes turn selection after reinitialization
+    /// </summary>
+    private void ResumeTurnSelection(TurnOrder turnOrder)
+    {
+        if (turnOrder != null)
         {
-            gameManager.ClearCurrentUnit();
+            turnOrder.SetSelectionEnabled(true);
+        }
+    }
+    
+    /// <summary>
+    /// Resets combat and UI state (TurnOrder, GameManager, panels, logs)
+    /// </summary>
+    private void ResetCombatAndUIState(ComponentReferences refs)
+    {
+        // Clear current unit in GameManager before resetting
+        if (refs.gameManager != null)
+        {
+            refs.gameManager.ClearCurrentUnit();
         }
         
         // Reset TurnOrder
-        if (turnOrder != null)
+        if (refs.turnOrder != null)
         {
-            turnOrder.ResetGame();
+            refs.turnOrder.ResetGame();
         }
         
         // Clear EventLogPanel
-        if (eventLogPanel != null)
+        if (refs.eventLogPanel != null)
         {
-            eventLogPanel.ClearLog();
+            refs.eventLogPanel.ClearLog();
         }
         
         // Reset ActionPanelManager
-        if (actionPanelManager != null)
+        if (refs.actionPanelManager != null)
         {
-            actionPanelManager.Reset();
+            refs.actionPanelManager.Reset();
         }
-        
-        // Clear existing enemies (but keep player units)
+    }
+    
+    /// <summary>
+    /// Clears existing enemies and spawns enemies for the next level
+    /// </summary>
+    private void ClearEnemiesAndSpawnNextLevel(Spawning spawning, string nextLevel)
+    {
         if (spawning != null)
         {
             // Clear only enemy spawn areas
@@ -186,7 +242,13 @@ public class LevelNavigation : MonoBehaviour
             // Spawn enemies for the next level
             spawning.SpawnEnemiesForLevel(nextLevel);
         }
-        
+    }
+    
+    /// <summary>
+    /// Updates current level, display, and hides round end panel
+    /// </summary>
+    private void UpdateLevelAndHideRoundEndPanel(string nextLevel, GameManager gameManager)
+    {
         // Update current level
         currentLevel = nextLevel;
         UpdateLevelDisplay();
@@ -196,31 +258,22 @@ public class LevelNavigation : MonoBehaviour
         {
             gameManager.roundEndPanel.SetActive(false);
         }
-        
-        // Reinitialize the game (similar to GameManager.DelayedStart)
-        if (gameManager != null)
-        {
-            yield return StartCoroutine(ReinitializeGame(gameManager, turnOrder));
-        }
-
-        // Resume turn selection after reinitialization
-        if (turnOrder != null)
-        {
-            turnOrder.SetSelectionEnabled(true);
-        }
     }
     
     /// <summary>
-    /// Coroutine to reinitialize the game after advancing to next level
+    /// Coroutine to reinitialize gauges and pick the first unit
     /// </summary>
-    private System.Collections.IEnumerator ReinitializeGame(GameManager gameManager, TurnOrder turnOrder)
+    private System.Collections.IEnumerator ReinitializeGaugesAndPickFirstUnit(GameManager gameManager, TurnOrder turnOrder)
     {
         // Wait multiple frames to ensure all units are fully initialized and destroyed units are cleaned up
         yield return null;
         yield return null;
         
         // Update all unit UI
-        gameManager.UpdateAllUnitUI();
+        if (gameManager != null)
+        {
+            gameManager.UpdateAllUnitUI();
+        }
         
         if (turnOrder != null)
         {
@@ -289,5 +342,17 @@ public class LevelNavigation : MonoBehaviour
                 Debug.LogWarning("LevelNavigation: No first unit found after level advance! All units may have gauge < 100.");
             }
         }
+    }
+    
+    /// <summary>
+    /// Helper class to hold component references
+    /// </summary>
+    private class ComponentReferences
+    {
+        public TurnOrder turnOrder;
+        public EventLogPanel eventLogPanel;
+        public Spawning spawning;
+        public GameManager gameManager;
+        public ActionPanelManager actionPanelManager;
     }
 }
