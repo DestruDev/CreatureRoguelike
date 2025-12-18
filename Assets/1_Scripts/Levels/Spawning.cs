@@ -77,28 +77,12 @@ public class Spawning : MonoBehaviour
     /// </summary>
     public void SpawnCreaturesOnly()
     {
-        // Spawn creatures
+        // Spawn creatures at each index
         for (int i = 0; i < creatureUnitData.Length && i < creatureSpawnAreas.Length; i++)
         {
             if (creatureUnitData[i] != null && creatureSpawnAreas[i] != null)
             {
-                // Destroy existing children under this spawn area
-                for (int c = creatureSpawnAreas[i].childCount - 1; c >= 0; c--)
-                {
-                    DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
-                }
-                
-                string unitName = GetUnitName(creatureUnitData[i], i);
-                
-                // Create unit from ScriptableObject data
-                var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName, allyScale);
-    
-                // Ensure unit is set as player unit (spawn area determines team)
-                Unit unit = unitObj.GetComponent<Unit>();
-                if (unit != null)
-                {
-                    unit.SetTeamAssignment(true); // Force player unit based on spawn area
-                }
+                SpawnCreatureAtIndex(i);
             }
         }
     }
@@ -132,30 +116,12 @@ public class Spawning : MonoBehaviour
         {
 			if (creatureUnitData[i] != null && creatureSpawnAreas[i] != null)
             {
-				// Destroy existing children under this spawn area
-				for (int c = creatureSpawnAreas[i].childCount - 1; c >= 0; c--)
-				{
-					DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
-				}
-                
-				string unitName = GetUnitName(creatureUnitData[i], i);
-				
-				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName, allyScale);
-    
-				// Ensure unit is set as player unit (spawn area determines team)
-				Unit unit = unitObj.GetComponent<Unit>();
-				if (unit != null)
-				{
-					unit.SetTeamAssignment(true); // Force player unit based on spawn area
-				}
-                
-                // Debug.Log("Spawned creature " + (i + 1) + " (" + unitName + ") at " + creatureSpawnAreas[i].name);
+                SpawnCreatureAtIndex(i);
             }
         }
         
         // Spawn enemies for current level (defaults to B1-1)
-        LevelData defaultLevelData = FindLevelDataByID("B1-1");
+        LevelData defaultLevelData = GetCurrentLevelDataWithFallback();
         
         if (defaultLevelData != null)
         {
@@ -202,6 +168,30 @@ public class Spawning : MonoBehaviour
     }
     
     /// <summary>
+    /// Gets current level data from LevelNavigation, with fallback to B1-1
+    /// </summary>
+    private LevelData GetCurrentLevelDataWithFallback()
+    {
+        // Try to get current level from LevelNavigation
+        LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+        LevelData currentLevelData = null;
+        
+        if (levelNavigation != null)
+        {
+            string currentLevelID = levelNavigation.GetCurrentLevel();
+            currentLevelData = FindLevelDataByID(currentLevelID);
+        }
+        
+        // Fallback to B1-1 if no current level found
+        if (currentLevelData == null)
+        {
+            currentLevelData = FindLevelDataByID("B1-1");
+        }
+        
+        return currentLevelData;
+    }
+    
+    /// <summary>
     /// Spawns enemies for a specific level by level ID string
     /// </summary>
     public void SpawnEnemiesForLevel(string levelID)
@@ -235,39 +225,12 @@ public class Spawning : MonoBehaviour
             return;
         }
         
-        // Spawn enemies
+        // Spawn enemies at each index
         for (int i = 0; i < levelData.enemySpawnSlots.Length && i < enemySpawnAreas.Length; i++)
         {
 			if (enemySpawnAreas[i] != null && levelData.enemySpawnSlots[i] != null)
             {
-                // Get an enemy from the possible enemies for this slot (random or first based on levelData setting)
-                CreatureUnitData selectedEnemy = levelData.enemySpawnSlots[i].GetEnemy(levelData.useRandomEnemySpawns);
-                
-                if (selectedEnemy == null)
-                {
-                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {i + 1} in level {levelData.levelID}. Skipping spawn.");
-                    continue;
-                }
-                
-				// Destroy existing children under this spawn area
-				for (int c = enemySpawnAreas[i].childCount - 1; c >= 0; c--)
-				{
-					DestroyImmediate(enemySpawnAreas[i].GetChild(c).gameObject);
-				}
-                
-				string unitName = GetUnitName(selectedEnemy, i);
-				
-				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[i], unitName, enemyScale);
-    
-				// Ensure unit is set as enemy unit (spawn area determines team, not ScriptableObject)
-				Unit unit = unitObj.GetComponent<Unit>();
-				if (unit != null)
-				{
-					unit.SetTeamAssignment(false); // Force enemy unit based on spawn area
-				}
-                
-                Debug.Log($"Spawned enemy {i + 1} ({unitName}) for level {levelData.levelID} at {enemySpawnAreas[i].name}");
+                SpawnEnemyAtIndex(i, levelData);
             }
         }
     }
@@ -277,21 +240,19 @@ public class Spawning : MonoBehaviour
 		// Clear creature spawn areas
 		for (int i = 0; i < creatureSpawnAreas.Length; i++)
 		{
-			if (creatureSpawnAreas[i] == null) continue;
-			for (int c = creatureSpawnAreas[i].childCount - 1; c >= 0; c--)
-			{
-				DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
-			}
+			if (creatureSpawnAreas[i] != null)
+            {
+                ClearSpawnArea(creatureSpawnAreas[i]);
+            }
 		}
 		
 		// Clear enemy spawn areas
 		for (int i = 0; i < enemySpawnAreas.Length; i++)
 		{
-			if (enemySpawnAreas[i] == null) continue;
-			for (int c = enemySpawnAreas[i].childCount - 1; c >= 0; c--)
-			{
-				DestroyImmediate(enemySpawnAreas[i].GetChild(c).gameObject);
-			}
+			if (enemySpawnAreas[i] != null)
+            {
+                ClearSpawnArea(enemySpawnAreas[i]);
+            }
 		}
         
         Debug.Log("Cleared all spawned units");
@@ -306,25 +267,8 @@ public class Spawning : MonoBehaviour
         {
 			if (creatureUnitData[index] != null && creatureSpawnAreas[index] != null)
             {
-				// Destroy existing children under this spawn area
-				for (int c = creatureSpawnAreas[index].childCount - 1; c >= 0; c--)
-				{
-					DestroyImmediate(creatureSpawnAreas[index].GetChild(c).gameObject);
-				}
-                
-				string unitName = GetUnitName(creatureUnitData[index], index);
-				
-				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(creatureUnitData[index], creatureSpawnAreas[index], unitName, allyScale);
-    
-				// Ensure unit is set as player unit (spawn area determines team)
-				Unit unit = unitObj.GetComponent<Unit>();
-				if (unit != null)
-				{
-					unit.SetTeamAssignment(true);
-				}
-                
-                Debug.Log("Respawned creature " + (index + 1) + " (" + unitName + ")");
+                SpawnCreatureAtIndex(index);
+                Debug.Log("Respawned creature " + (index + 1));
             }
         }
     }
@@ -335,21 +279,8 @@ public class Spawning : MonoBehaviour
 	/// </summary>
 	public void RespawnEnemy(int index)
     {
-        // Try to get current level from LevelNavigation
-        LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
-        LevelData currentLevelData = null;
-        
-        if (levelNavigation != null)
-        {
-            string currentLevelID = levelNavigation.GetCurrentLevel();
-            currentLevelData = FindLevelDataByID(currentLevelID);
-        }
-        
-        // Fallback to B1-1 if no current level found
-        if (currentLevelData == null)
-        {
-            currentLevelData = FindLevelDataByID("B1-1");
-        }
+        // Get current level data with fallback to B1-1
+        LevelData currentLevelData = GetCurrentLevelDataWithFallback();
         
         if (currentLevelData == null || currentLevelData.enemySpawnSlots == null)
         {
@@ -361,36 +292,94 @@ public class Spawning : MonoBehaviour
         {
 			if (enemySpawnAreas[index] != null && currentLevelData.enemySpawnSlots[index] != null)
             {
-                // Get an enemy from the possible enemies for this slot (random or first based on levelData setting)
-                CreatureUnitData selectedEnemy = currentLevelData.enemySpawnSlots[index].GetEnemy(currentLevelData.useRandomEnemySpawns);
-                
-                if (selectedEnemy == null)
-                {
-                    Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {index + 1}. Cannot respawn.");
-                    return;
-                }
-                
-				// Destroy existing children under this spawn area
-				for (int c = enemySpawnAreas[index].childCount - 1; c >= 0; c--)
-				{
-					DestroyImmediate(enemySpawnAreas[index].GetChild(c).gameObject);
-				}
-                
-				string unitName = GetUnitName(selectedEnemy, index);
-				
-				// Create unit from ScriptableObject data
-				var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[index], unitName, enemyScale);
-    
-				// Ensure unit is set as enemy unit (spawn area determines team)
-				Unit unit = unitObj.GetComponent<Unit>();
-				if (unit != null)
-				{
-					unit.SetTeamAssignment(false);
-				}
-                
-                Debug.Log("Respawned enemy " + (index + 1) + " (" + unitName + ")");
+                SpawnEnemyAtIndex(index, currentLevelData);
+                Debug.Log("Respawned enemy " + (index + 1));
             }
         }
+    }
+    
+    /// <summary>
+    /// Clears all children under a spawn area
+    /// </summary>
+    private void ClearSpawnArea(Transform spawnArea)
+    {
+        if (spawnArea == null)
+            return;
+            
+        for (int c = spawnArea.childCount - 1; c >= 0; c--)
+        {
+            DestroyImmediate(spawnArea.GetChild(c).gameObject);
+        }
+    }
+    
+    /// <summary>
+    /// Spawns a creature at the specified index
+    /// </summary>
+    private void SpawnCreatureAtIndex(int index)
+    {
+        if (index < 0 || index >= creatureUnitData.Length || index >= creatureSpawnAreas.Length)
+            return;
+            
+        if (creatureUnitData[index] == null || creatureSpawnAreas[index] == null)
+            return;
+        
+        // Clear existing children under this spawn area
+        ClearSpawnArea(creatureSpawnAreas[index]);
+        
+        string unitName = GetUnitName(creatureUnitData[index], index);
+        
+        // Create unit from ScriptableObject data
+        var unitObj = CreateUnitFromData(creatureUnitData[index], creatureSpawnAreas[index], unitName, allyScale);
+
+        // Ensure unit is set as player unit (spawn area determines team)
+        Unit unit = unitObj.GetComponent<Unit>();
+        if (unit != null)
+        {
+            unit.SetTeamAssignment(true); // Force player unit based on spawn area
+        }
+        
+        // Debug.Log("Spawned creature " + (index + 1) + " (" + unitName + ") at " + creatureSpawnAreas[index].name);
+    }
+    
+    /// <summary>
+    /// Spawns an enemy at the specified index using the provided LevelData
+    /// </summary>
+    private void SpawnEnemyAtIndex(int index, LevelData levelData)
+    {
+        if (index < 0 || index >= enemySpawnAreas.Length)
+            return;
+            
+        if (enemySpawnAreas[index] == null || levelData == null || levelData.enemySpawnSlots == null)
+            return;
+            
+        if (index >= levelData.enemySpawnSlots.Length || levelData.enemySpawnSlots[index] == null)
+            return;
+        
+        // Get an enemy from the possible enemies for this slot (random or first based on levelData setting)
+        CreatureUnitData selectedEnemy = levelData.enemySpawnSlots[index].GetEnemy(levelData.useRandomEnemySpawns);
+        
+        if (selectedEnemy == null)
+        {
+            Debug.LogWarning($"No valid enemy unit data assigned for enemy spawn slot {index + 1} in level {levelData.levelID}. Skipping spawn.");
+            return;
+        }
+        
+        // Clear existing children under this spawn area
+        ClearSpawnArea(enemySpawnAreas[index]);
+        
+        string unitName = GetUnitName(selectedEnemy, index);
+        
+        // Create unit from ScriptableObject data
+        var unitObj = CreateUnitFromData(selectedEnemy, enemySpawnAreas[index], unitName, enemyScale);
+
+        // Ensure unit is set as enemy unit (spawn area determines team, not ScriptableObject)
+        Unit unit = unitObj.GetComponent<Unit>();
+        if (unit != null)
+        {
+            unit.SetTeamAssignment(false); // Force enemy unit based on spawn area
+        }
+        
+        Debug.Log($"Spawned enemy {index + 1} ({unitName}) for level {levelData.levelID} at {enemySpawnAreas[index].name}");
     }
     
     /// <summary>
