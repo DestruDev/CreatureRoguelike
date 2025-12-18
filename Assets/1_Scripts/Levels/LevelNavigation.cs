@@ -8,10 +8,13 @@ public class LevelNavigation : MonoBehaviour
     public TextMeshProUGUI levelText;
     
     private string currentLevel = "B1-1";
+    private int currentStage = 0; // Tracks which stage/floor we're on (0 = before B1, 1 = B1, 2 = B2, 3 = B3, etc.)
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Start is called once before the first execution of Update after the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // Start at stage 0 (before B1) - will advance to B1 when first level is selected
+        currentStage = 0;
         UpdateLevelDisplay();
     }
 
@@ -23,12 +26,22 @@ public class LevelNavigation : MonoBehaviour
     
     /// <summary>
     /// Updates the level display text
+    /// Shows the current stage as B1, B2, B3, etc.
     /// </summary>
-    private void UpdateLevelDisplay()
+    public void UpdateLevelDisplay()
     {
         if (levelText != null)
         {
-            levelText.text = currentLevel;
+            // Display current stage as B1, B2, B3, etc.
+            // If stage is 0, show empty or "B0" (before first stage)
+            if (currentStage > 0)
+            {
+                levelText.text = $"B{currentStage}";
+            }
+            else
+            {
+                levelText.text = ""; // Or "B0" if you want to show something before B1
+            }
         }
     }
     
@@ -46,7 +59,26 @@ public class LevelNavigation : MonoBehaviour
     public void SetCurrentLevel(string level)
     {
         currentLevel = level;
+        // Don't change stage here - stage is only incremented when completing a level
         UpdateLevelDisplay();
+    }
+    
+    /// <summary>
+    /// Advances to the next stage (B1 -> B2 -> B3, etc.)
+    /// Called when a level is completed
+    /// </summary>
+    public void AdvanceToNextStage()
+    {
+        currentStage++;
+        UpdateLevelDisplay();
+    }
+    
+    /// <summary>
+    /// Gets the current stage number (1 = B1, 2 = B2, 3 = B3, etc.)
+    /// </summary>
+    public int GetCurrentStage()
+    {
+        return currentStage;
     }
     
     /// <summary>

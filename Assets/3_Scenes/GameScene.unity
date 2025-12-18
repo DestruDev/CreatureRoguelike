@@ -624,8 +624,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -255, y: -186}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: -255, y: -166}
+  m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &22843122
 MonoBehaviour:
@@ -691,8 +691,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 1820624656, guid: 0eafb7a7c57e0a146b29cb7e09abf49c, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -3169,7 +3169,7 @@ GameObject:
   - component: {fileID: 296010509}
   - component: {fileID: 296010508}
   m_Layer: 5
-  m_Name: AreaSelectScreen
+  m_Name: MapPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4434,8 +4434,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 207, y: -183}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: 207, y: -163}
+  m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &416487793
 MonoBehaviour:
@@ -4501,8 +4501,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 1820624656, guid: 0eafb7a7c57e0a146b29cb7e09abf49c, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -4543,8 +4543,8 @@ GameObject:
   - component: {fileID: 427498660}
   - component: {fileID: 427498662}
   - component: {fileID: 427498663}
-  - component: {fileID: 427498664}
   - component: {fileID: 427498665}
+  - component: {fileID: 427498666}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4576,9 +4576,6 @@ MonoBehaviour:
   - {fileID: 1593076177}
   - {fileID: 37810065}
   - {fileID: 2074824471}
-  levelDataB1_1: {fileID: 11400000, guid: 0f7c48a75da02554e88458d48f204f48, type: 2}
-  levelDataB1_2: {fileID: 11400000, guid: 9e65e7b7f060ed044b69a3972d762842, type: 2}
-  levelDataB1_3: {fileID: 11400000, guid: 1bd353c99f495b2408b754462006c971, type: 2}
   allyScale: 2
   enemyScale: 2
 --- !u!4 &427498649
@@ -4645,6 +4642,14 @@ MonoBehaviour:
   - {fileID: 609809813}
   - {fileID: 581798702}
   userPanelRoot: {fileID: 1483408881}
+  statusDisplayPanel: {fileID: 1506804547}
+  creatureSpawnArea: {fileID: 584669972}
+  enemySpawnArea: {fileID: 323129263}
+  turnOrderTimeline: {fileID: 1444239942}
+  eventPanel: {fileID: 1083801141}
+  infoPanel: {fileID: 1113369692}
+  currentLevelText: {fileID: 1957144494}
+  settingsButton: {fileID: 790993336}
   roundEndPanel: {fileID: 1014705037}
   roundEndMessageText: {fileID: 1851431382}
   returnToMainMenuButton: {fileID: 763189587}
@@ -4918,18 +4923,6 @@ MonoBehaviour:
   settingsBackButton: {fileID: 228298908}
   backToMainMenuButton: {fileID: 1006764030}
   mainMenuSceneName: MainMenu
---- !u!114 &427498664
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 427498647}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5af7887641921e44296e75f85c442da9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HighlightUnit
 --- !u!114 &427498665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4943,6 +4936,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelNavigation
   levelText: {fileID: 1957144496}
+--- !u!114 &427498666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427498647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 544ef30d90d6d1348ba94ec983a102be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelMap
+  mapPanel: {fileID: 296010506}
+  mapButton1: {fileID: 22843122}
+  mapButton2: {fileID: 1836338106}
+  mapButton3: {fileID: 416487793}
+  levelDataList:
+  - {fileID: 11400000, guid: 0f7c48a75da02554e88458d48f204f48, type: 2}
+  - {fileID: 11400000, guid: 9e65e7b7f060ed044b69a3972d762842, type: 2}
 --- !u!1 &444719010
 GameObject:
   m_ObjectHideFlags: 0
@@ -15328,8 +15340,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -9, y: -183}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: -9, y: -163}
+  m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1836338106
 MonoBehaviour:
@@ -15395,8 +15407,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 1820624656, guid: 0eafb7a7c57e0a146b29cb7e09abf49c, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4

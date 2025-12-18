@@ -337,7 +337,6 @@ public class TurnOrder : MonoBehaviour
         
         if (allUnits == null || allUnits.Length == 0)
         {
-            Debug.LogWarning("No units found");
             return null;
         }
 

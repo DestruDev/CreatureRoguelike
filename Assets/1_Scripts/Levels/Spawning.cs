@@ -57,16 +57,6 @@ public class Spawning : MonoBehaviour
     [Tooltip("Spawn areas for enemy units")]
     public Transform[] enemySpawnAreas = new Transform[3];
     
-    [Header("Level Data (ScriptableObjects)")]
-    [Tooltip("Level data for B1-1. Assign the LevelData ScriptableObject here.")]
-    public LevelData levelDataB1_1;
-    
-    [Tooltip("Level data for B1-2. Assign the LevelData ScriptableObject here.")]
-    public LevelData levelDataB1_2;
-    
-    [Tooltip("Level data for B1-3. Assign the LevelData ScriptableObject here.")]
-    public LevelData levelDataB1_3;
-    
     [Header("Unit Scale Settings")]
     [Tooltip("Scale multiplier for spawned allies/creatures. Set to 1.0 for normal size, higher values make sprites bigger.")]
     public float allyScale = 1.0f;
@@ -77,7 +67,40 @@ public class Spawning : MonoBehaviour
     
     void Start()
     {
-        SpawnAllUnits();
+        // Don't spawn creatures on Start - they will be spawned when a level is selected from the map
+        // This ensures allies and enemies appear at the same time
+        // SpawnCreaturesOnly(); // Commented out - creatures now spawn with enemies when level starts
+    }
+    
+    /// <summary>
+    /// Spawns only creatures (player units), not enemies
+    /// </summary>
+    public void SpawnCreaturesOnly()
+    {
+        // Spawn creatures
+        for (int i = 0; i < creatureUnitData.Length && i < creatureSpawnAreas.Length; i++)
+        {
+            if (creatureUnitData[i] != null && creatureSpawnAreas[i] != null)
+            {
+                // Destroy existing children under this spawn area
+                for (int c = creatureSpawnAreas[i].childCount - 1; c >= 0; c--)
+                {
+                    DestroyImmediate(creatureSpawnAreas[i].GetChild(c).gameObject);
+                }
+                
+                string unitName = GetUnitName(creatureUnitData[i], i);
+                
+                // Create unit from ScriptableObject data
+                var unitObj = CreateUnitFromData(creatureUnitData[i], creatureSpawnAreas[i], unitName, allyScale);
+    
+                // Ensure unit is set as player unit (spawn area determines team)
+                Unit unit = unitObj.GetComponent<Unit>();
+                if (unit != null)
+                {
+                    unit.SetTeamAssignment(true); // Force player unit based on spawn area
+                }
+            }
+        }
     }
     
     public void SpawnAllUnits()
@@ -132,12 +155,7 @@ public class Spawning : MonoBehaviour
         }
         
         // Spawn enemies for current level (defaults to B1-1)
-        LevelData defaultLevelData = levelDataB1_1;
-        if (defaultLevelData == null)
-        {
-            // Fallback to lookup if reference not set
-            defaultLevelData = FindLevelDataByID("B1-1");
-        }
+        LevelData defaultLevelData = FindLevelDataByID("B1-1");
         
         if (defaultLevelData != null)
         {
@@ -188,27 +206,7 @@ public class Spawning : MonoBehaviour
     /// </summary>
     public void SpawnEnemiesForLevel(string levelID)
     {
-        LevelData levelData = null;
-        
-        // First check assigned references
-        if (levelID == "B1-1" && levelDataB1_1 != null)
-        {
-            levelData = levelDataB1_1;
-        }
-        else if (levelID == "B1-2" && levelDataB1_2 != null)
-        {
-            levelData = levelDataB1_2;
-        }
-        else if (levelID == "B1-3" && levelDataB1_3 != null)
-        {
-            levelData = levelDataB1_3;
-        }
-        
-        // Fallback to lookup if reference not set
-        if (levelData == null)
-        {
-            levelData = FindLevelDataByID(levelID);
-        }
+        LevelData levelData = FindLevelDataByID(levelID);
         
         if (levelData != null)
         {
@@ -344,36 +342,13 @@ public class Spawning : MonoBehaviour
         if (levelNavigation != null)
         {
             string currentLevelID = levelNavigation.GetCurrentLevel();
-            
-            // First check assigned references
-            if (currentLevelID == "B1-1" && levelDataB1_1 != null)
-            {
-                currentLevelData = levelDataB1_1;
-            }
-            else if (currentLevelID == "B1-2" && levelDataB1_2 != null)
-            {
-                currentLevelData = levelDataB1_2;
-            }
-            else if (currentLevelID == "B1-3" && levelDataB1_3 != null)
-            {
-                currentLevelData = levelDataB1_3;
-            }
-            
-            // Fallback to lookup if reference not set
-            if (currentLevelData == null)
-            {
-                currentLevelData = FindLevelDataByID(currentLevelID);
-            }
+            currentLevelData = FindLevelDataByID(currentLevelID);
         }
         
         // Fallback to B1-1 if no current level found
         if (currentLevelData == null)
         {
-            currentLevelData = levelDataB1_1;
-            if (currentLevelData == null)
-            {
-                currentLevelData = FindLevelDataByID("B1-1");
-            }
+            currentLevelData = FindLevelDataByID("B1-1");
         }
         
         if (currentLevelData == null || currentLevelData.enemySpawnSlots == null)

@@ -83,7 +83,43 @@ public class TurnOrderTimeline : MonoBehaviour
         // Get all alive units
         Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         if (allUnits == null || allUnits.Length == 0)
+        {
+            // No units found - clear all slots and return (prevents showing incorrect information during initialization)
+            for (int i = 0; i < turnOrderSlots.Length; i++)
+            {
+                if (turnOrderSlots[i] != null)
+                {
+                    turnOrderSlots[i].text = " ";
+                    turnOrderSlots[i].color = Color.white;
+                }
+            }
             return;
+        }
+        
+        // Ensure we have at least one alive unit before displaying turn order
+        bool hasAliveUnit = false;
+        foreach (var unit in allUnits)
+        {
+            if (unit != null && unit.IsAlive())
+            {
+                hasAliveUnit = true;
+                break;
+            }
+        }
+        
+        if (!hasAliveUnit)
+        {
+            // No alive units - clear all slots and return
+            for (int i = 0; i < turnOrderSlots.Length; i++)
+            {
+                if (turnOrderSlots[i] != null)
+                {
+                    turnOrderSlots[i].text = " ";
+                    turnOrderSlots[i].color = Color.white;
+                }
+            }
+            return;
+        }
         
         // Simulate future turns to see which unit acts in each upcoming turn
         // This allows showing the same unit multiple times (e.g., fast units acting repeatedly)

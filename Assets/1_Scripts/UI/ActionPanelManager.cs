@@ -67,8 +67,9 @@ public class ActionPanelManager : MonoBehaviour
         // Find Selection
         selection = FindFirstObjectByType<Selection>();
 
-        // Set initial state - only ActionPanel visible
-        ShowActionPanel();
+        // Don't show ActionPanel on start - UI should be hidden when map is open
+        // ActionPanel will be shown when a level starts and a player unit's turn begins
+        // ShowActionPanel();
 
         // Subscribe to button clicks
         if (SkillsButton != null)
@@ -334,7 +335,8 @@ public class ActionPanelManager : MonoBehaviour
         }
         else
         {
-            // No current unit, reset tracking
+            // No current unit, hide user panel and reset tracking
+            gameManager.HideUserPanel();
             lastUnit = null;
         }
     }
@@ -386,6 +388,17 @@ public class ActionPanelManager : MonoBehaviour
         bool returningFromSubPanel = (SkillsPanel != null && SkillsPanel.activeSelf) || 
                                      (ItemsPanel != null && ItemsPanel.activeSelf);
         
+        // Update unit name BEFORE showing the panel to prevent flickering
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            UpdateUnitNameText(currentUnit);
+        }
+        
         // Hide all panels first
         HideAllPanels();
 
@@ -406,14 +419,46 @@ public class ActionPanelManager : MonoBehaviour
             UnitNameText.gameObject.SetActive(true);
         }
         
-        // Enable button selection mode
+        // Update back button visibility
+        UpdateBackButtonVisibility();
+        
+        // Force canvas update to ensure UI layout is finalized before enabling button selection
+        Canvas.ForceUpdateCanvases();
+        
+        // Enable button selection mode immediately
         EnableButtonSelectionMode();
         
         // Always default to NormalAttackButton (attack) when showing action panel
         SelectNormalAttackButton();
         
-        // Update back button visibility
-        UpdateBackButtonVisibility();
+        // Update marker position after layout has fully settled (prevents marker appearing in wrong position)
+        StartCoroutine(DelayedUpdateSelectionMarkerPosition());
+    }
+    
+    /// <summary>
+    /// Coroutine to update selection marker position after UI layout has fully settled
+    /// </summary>
+    private System.Collections.IEnumerator DelayedUpdateSelectionMarkerPosition()
+    {
+        // Wait one frame to ensure all layout updates are complete
+        yield return null;
+        
+        // Check if ActionPanel is still active (might have been hidden)
+        if (ActionPanel == null || !ActionPanel.activeSelf)
+        {
+            yield break;
+        }
+        
+        // Force canvas update to ensure UI layout is finalized
+        Canvas.ForceUpdateCanvases();
+        
+        // Update the selection marker position by refreshing the selection
+        if (selection != null && selection.IsValidSelection())
+        {
+            // Trigger marker update by setting the index to itself
+            int currentIndex = selection.CurrentIndex;
+            selection.SetIndex(currentIndex);
+        }
     }
 
     public void ShowSkillsPanel()

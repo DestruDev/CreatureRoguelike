@@ -40,6 +40,34 @@ public class GameManager : MonoBehaviour
 	 [Header("User Panel UI Root")]
     public GameObject userPanelRoot;
 	
+	[Header("Status Display Panel")]
+	[Tooltip("The status display panel that contains creature and enemy UI roots")]
+	public GameObject statusDisplayPanel;
+	
+	[Header("Spawn Areas")]
+	[Tooltip("Spawn area for creature units (player units) - will be hidden at start")]
+	public Transform creatureSpawnArea;
+	
+	[Tooltip("Spawn area for enemy units - will be hidden at start")]
+	public Transform enemySpawnArea;
+	
+	[Header("UI Panels")]
+	[Tooltip("The TurnOrderTimeline GameObject")]
+	public GameObject turnOrderTimeline;
+	
+	[Tooltip("The EventPanel GameObject")]
+	public GameObject eventPanel;
+	
+	[Tooltip("The InfoPanel GameObject")]
+	public GameObject infoPanel;
+	
+	[Header("Other UI Elements")]
+	[Tooltip("The current level text GameObject - will be hidden at start")]
+	public GameObject currentLevelText;
+	
+	[Tooltip("The settings button GameObject - will be hidden at start")]
+	public GameObject settingsButton;
+	
 	[Header("Round End Panel")]
 	[Tooltip("Panel that opens when the round ends (either all allies dead or all enemies dead)")]
 	public GameObject roundEndPanel;
@@ -218,7 +246,8 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("GameManager: No first unit found! All units may have gauge < 100.");
+                // No units found - this is expected when units are hidden at start (map panel open)
+                // Units will be found once a level is selected and started
             }
         }
         else
@@ -1030,6 +1059,326 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Hides all UI elements: creature UI roots, enemy UI roots, user panel, turn order timeline, and event log
+	/// </summary>
+	public void HideAllUI()
+	{
+		// Ensure this GameManager GameObject stays active
+		if (!gameObject.activeSelf)
+		{
+			Debug.LogWarning("GameManager: GameManager GameObject was inactive! Activating it now.");
+			gameObject.SetActive(true);
+		}
+		
+		// Helper function to check if hiding a GameObject would affect GameManager
+		System.Func<GameObject, bool> canSafelyHide = (go) =>
+		{
+			if (go == null || go == gameObject)
+				return false;
+			
+			// Check if GameManager is a child of this GameObject (if so, hiding it would hide GameManager)
+			if (gameObject.transform.IsChildOf(go.transform))
+			{
+				Debug.LogWarning($"GameManager: Cannot hide {go.name} - GameManager is a child of it!");
+				return false;
+			}
+			
+			// Check if this GameObject is a child of GameManager (safe to hide children)
+			if (go.transform.IsChildOf(gameObject.transform))
+				return true;
+			
+			// If they're not related, it's safe to hide
+			return true;
+		};
+		
+		// Hide status display panel (this will hide creature and enemy UI roots as children)
+		if (statusDisplayPanel != null)
+		{
+			if (canSafelyHide(statusDisplayPanel))
+			{
+				statusDisplayPanel.SetActive(false);
+				Debug.Log($"GameManager: Hid statusDisplayPanel: {statusDisplayPanel.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide statusDisplayPanel: {statusDisplayPanel.name} - safety check failed");
+			}
+		}
+		
+		// Hide user panel (this will hide ActionPanel and other child panels)
+		if (userPanelRoot != null)
+		{
+			if (canSafelyHide(userPanelRoot))
+			{
+				userPanelRoot.SetActive(false);
+				Debug.Log($"GameManager: Hid userPanelRoot: {userPanelRoot.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide userPanelRoot: {userPanelRoot.name} - safety check failed");
+			}
+		}
+		
+		// Hide creature spawn area
+		if (creatureSpawnArea != null && creatureSpawnArea.gameObject != null)
+		{
+			if (canSafelyHide(creatureSpawnArea.gameObject))
+			{
+				creatureSpawnArea.gameObject.SetActive(false);
+				Debug.Log($"GameManager: Hid creatureSpawnArea: {creatureSpawnArea.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide creatureSpawnArea: {creatureSpawnArea.name} - safety check failed");
+			}
+		}
+		
+		// Hide enemy spawn area
+		if (enemySpawnArea != null && enemySpawnArea.gameObject != null)
+		{
+			if (canSafelyHide(enemySpawnArea.gameObject))
+			{
+				enemySpawnArea.gameObject.SetActive(false);
+				Debug.Log($"GameManager: Hid enemySpawnArea: {enemySpawnArea.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide enemySpawnArea: {enemySpawnArea.name} - safety check failed");
+			}
+		}
+		
+		// Hide turn order timeline
+		if (turnOrderTimeline != null)
+		{
+			if (canSafelyHide(turnOrderTimeline))
+			{
+				turnOrderTimeline.SetActive(false);
+				Debug.Log($"GameManager: Hid turnOrderTimeline: {turnOrderTimeline.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide turnOrderTimeline: {turnOrderTimeline.name} - safety check failed");
+			}
+		}
+		
+		// Hide event panel
+		if (eventPanel != null)
+		{
+			if (canSafelyHide(eventPanel))
+			{
+				eventPanel.SetActive(false);
+				Debug.Log($"GameManager: Hid eventPanel: {eventPanel.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide eventPanel: {eventPanel.name} - safety check failed");
+			}
+		}
+		
+		// Hide info panel
+		if (infoPanel != null)
+		{
+			if (canSafelyHide(infoPanel))
+			{
+				infoPanel.SetActive(false);
+				Debug.Log($"GameManager: Hid infoPanel: {infoPanel.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide infoPanel: {infoPanel.name} - safety check failed");
+			}
+		}
+		
+		// Hide current level text
+		if (currentLevelText != null)
+		{
+			if (canSafelyHide(currentLevelText))
+			{
+				currentLevelText.SetActive(false);
+				Debug.Log($"GameManager: Hid currentLevelText: {currentLevelText.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide currentLevelText: {currentLevelText.name} - safety check failed");
+			}
+		}
+		
+		// Hide settings button
+		if (settingsButton != null)
+		{
+			if (canSafelyHide(settingsButton))
+			{
+				settingsButton.SetActive(false);
+				Debug.Log($"GameManager: Hid settingsButton: {settingsButton.name}");
+			}
+			else
+			{
+				Debug.LogWarning($"GameManager: Cannot hide settingsButton: {settingsButton.name} - safety check failed");
+			}
+		}
+		
+		// Final check - ensure GameManager is still active after hiding UI
+		if (!gameObject.activeSelf)
+		{
+			Debug.LogError("GameManager: GameManager GameObject became inactive after HideAllUI()! This should not happen.");
+			gameObject.SetActive(true);
+		}
+	}
+	
+	/// <summary>
+	/// Shows all UI elements that were hidden at start: status display panel, user panel, turn order timeline, event panel, info panel, current level text, settings button, and spawn areas
+	/// </summary>
+	/// <param name="showTurnOrderTimeline">Whether to show the turn order timeline immediately (set to false to delay showing until after initialization)</param>
+	/// <param name="showStatusDisplayPanel">Whether to show the status display panel immediately (set to false to delay showing until after initialization)</param>
+	/// <param name="showEventPanel">Whether to show the event panel immediately (set to false to delay showing until after initialization)</param>
+	/// <param name="showCurrentLevelText">Whether to show the current level text immediately (set to false to delay showing until after initialization)</param>
+	/// <param name="showSettingsButton">Whether to show the settings button immediately (set to false to delay showing until after initialization)</param>
+	/// <param name="showSpawnAreas">Whether to show the spawn areas immediately (set to false to delay showing until after initialization)</param>
+	public void ShowAllUI(bool showTurnOrderTimeline = true, bool showStatusDisplayPanel = true, bool showEventPanel = true, bool showCurrentLevelText = true, bool showSettingsButton = true, bool showSpawnAreas = true)
+	{
+		// Show status display panel (only if requested - can be delayed until after initialization)
+		if (showStatusDisplayPanel && statusDisplayPanel != null)
+		{
+			statusDisplayPanel.SetActive(true);
+			Debug.Log($"GameManager: Showed statusDisplayPanel: {statusDisplayPanel.name}");
+		}
+		
+		// Show user panel
+		if (userPanelRoot != null)
+		{
+			userPanelRoot.SetActive(true);
+			Debug.Log($"GameManager: Showed userPanelRoot: {userPanelRoot.name}");
+		}
+		
+		// Show turn order timeline (only if requested - can be delayed until after initialization)
+		if (showTurnOrderTimeline && turnOrderTimeline != null)
+		{
+			turnOrderTimeline.SetActive(true);
+			Debug.Log($"GameManager: Showed turnOrderTimeline: {turnOrderTimeline.name}");
+		}
+		
+		// Show event panel (only if requested - can be delayed until after initialization)
+		if (showEventPanel && eventPanel != null)
+		{
+			eventPanel.SetActive(true);
+			Debug.Log($"GameManager: Showed eventPanel: {eventPanel.name}");
+		}
+		
+		// Show info panel
+		if (infoPanel != null)
+		{
+			infoPanel.SetActive(true);
+			Debug.Log($"GameManager: Showed infoPanel: {infoPanel.name}");
+		}
+		
+		// Show current level text (only if requested - can be delayed until after initialization)
+		if (showCurrentLevelText && currentLevelText != null)
+		{
+			currentLevelText.SetActive(true);
+			Debug.Log($"GameManager: Showed currentLevelText: {currentLevelText.name}");
+		}
+		
+		// Show settings button (only if requested - can be delayed until after initialization)
+		if (showSettingsButton && settingsButton != null)
+		{
+			settingsButton.SetActive(true);
+			Debug.Log($"GameManager: Showed settingsButton: {settingsButton.name}");
+		}
+		
+		// Show creature spawn area (only if requested - can be delayed until after initialization)
+		if (showSpawnAreas && creatureSpawnArea != null && creatureSpawnArea.gameObject != null)
+		{
+			creatureSpawnArea.gameObject.SetActive(true);
+			Debug.Log($"GameManager: Showed creatureSpawnArea: {creatureSpawnArea.name}");
+		}
+		
+		// Show enemy spawn area (only if requested - can be delayed until after initialization)
+		if (showSpawnAreas && enemySpawnArea != null && enemySpawnArea.gameObject != null)
+		{
+			enemySpawnArea.gameObject.SetActive(true);
+			Debug.Log($"GameManager: Showed enemySpawnArea: {enemySpawnArea.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the turn order timeline (used after game initialization to prevent showing incorrect information)
+	/// </summary>
+	public void ShowTurnOrderTimeline()
+	{
+		if (turnOrderTimeline != null)
+		{
+			turnOrderTimeline.SetActive(true);
+			Debug.Log($"GameManager: Showed turnOrderTimeline: {turnOrderTimeline.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the status display panel (used after game initialization to prevent showing incorrect information)
+	/// </summary>
+	public void ShowStatusDisplayPanel()
+	{
+		if (statusDisplayPanel != null)
+		{
+			statusDisplayPanel.SetActive(true);
+			Debug.Log($"GameManager: Showed statusDisplayPanel: {statusDisplayPanel.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the event panel (used after game initialization to prevent showing incorrect information)
+	/// </summary>
+	public void ShowEventPanel()
+	{
+		if (eventPanel != null)
+		{
+			eventPanel.SetActive(true);
+			Debug.Log($"GameManager: Showed eventPanel: {eventPanel.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the current level text (used after game initialization to prevent showing incorrect information)
+	/// </summary>
+	public void ShowCurrentLevelText()
+	{
+		if (currentLevelText != null)
+		{
+			currentLevelText.SetActive(true);
+			Debug.Log($"GameManager: Showed currentLevelText: {currentLevelText.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the settings button (used after game initialization to prevent showing incorrect information)
+	/// </summary>
+	public void ShowSettingsButton()
+	{
+		if (settingsButton != null)
+		{
+			settingsButton.SetActive(true);
+			Debug.Log($"GameManager: Showed settingsButton: {settingsButton.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the spawn areas (used after game initialization to prevent units from appearing before UI is ready)
+	/// </summary>
+	public void ShowSpawnAreas()
+	{
+		if (creatureSpawnArea != null && creatureSpawnArea.gameObject != null)
+		{
+			creatureSpawnArea.gameObject.SetActive(true);
+			Debug.Log($"GameManager: Showed creatureSpawnArea: {creatureSpawnArea.name}");
+		}
+		
+		if (enemySpawnArea != null && enemySpawnArea.gameObject != null)
+		{
+			enemySpawnArea.gameObject.SetActive(true);
+			Debug.Log($"GameManager: Showed enemySpawnArea: {enemySpawnArea.name}");
+		}
+	}
+	
+	/// <summary>
 	/// Hides action UI elements to prevent player input during skill execution
 	/// </summary>
 	private void HideActionUI()
@@ -1079,7 +1428,7 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Called when all enemies are dead - opens the round end panel with "Round Won!" or "Game Won!" message
+	/// Called when all enemies are dead - opens the map panel instead of round end panel
 	/// </summary>
 	public void OnAllEnemiesDead()
 	{
@@ -1093,16 +1442,8 @@ public class GameManager : MonoBehaviour
             actionPanelManager.HideForRoundEnd();
         }
 
-		// Determine the message based on current level
-		string message = "Round Won!";
-		LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
-		if (levelNavigation != null && levelNavigation.GetCurrentLevel() == "B1-3")
-		{
-			message = "Game Won!";
-		}
-
-		// Delay showing the round won screen to allow death animations to play
-		StartCoroutine(DelayedShowRoundEndPanel(message));
+		// Delay showing the map panel to allow death animations to play
+		StartCoroutine(DelayedShowMapPanel());
 	}
 	
 	/// <summary>
@@ -1114,6 +1455,35 @@ public class GameManager : MonoBehaviour
 		float totalDelay = postAttackAnimationDelay + roundEndScreenDelay;
 		yield return new WaitForSeconds(totalDelay);
 		ShowRoundEndPanel(message);
+	}
+	
+	/// <summary>
+	/// Coroutine to delay showing the map panel to allow death animations to play
+	/// </summary>
+	private System.Collections.IEnumerator DelayedShowMapPanel()
+	{
+		// Wait for post-attack animation delay + additional round end screen delay
+		float totalDelay = postAttackAnimationDelay + roundEndScreenDelay;
+		yield return new WaitForSeconds(totalDelay);
+		
+		// Find LevelMap and show the map panel
+		LevelMap levelMap = FindFirstObjectByType<LevelMap>();
+		if (levelMap != null)
+		{
+			levelMap.ShowMapPanel();
+		}
+		else
+		{
+			Debug.LogWarning("GameManager: LevelMap not found! Falling back to round end panel.");
+			// Fallback to old behavior if LevelMap not found
+			string message = "Round Won!";
+			LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+			if (levelNavigation != null && levelNavigation.GetCurrentLevel() == "B1-3")
+			{
+				message = "Game Won!";
+			}
+			ShowRoundEndPanel(message);
+		}
 	}
 	
 	/// <summary>
