@@ -109,74 +109,20 @@ public class ActionPanelManager : MonoBehaviour
         // Reset the static flag at the start of each frame
         EscHandledThisFrame = false;
         
-        // Don't process if in inspect mode
-        if (IsInInspectMode())
+        // Don't process if input is blocked
+        if (IsInputBlocked())
         {
             return;
         }
         
-        // Check for ESC key press or right-click to return to ActionPanel or cancel selection
-        // ESC key: only handle if SkillsPanel or ItemsPanel are active (otherwise let InGameMenu handle it for settings)
-        // Right-click and X key: always handle
-        bool isEscapeKey = Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame;
-        bool isRightClick = Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
-        bool isXKey = Keyboard.current != null && Keyboard.current[Key.X].wasPressedThisFrame;
+        // Handle back input (ESC / right-click / X)
+        HandleBackInput();
         
-        if (isEscapeKey || isRightClick || isXKey)
-        {
-            // If in NormalAttack selection mode, cancel it first
-            if (isNormalAttackSelectionMode)
-            {
-                CancelNormalAttackSelectionMode();
-                if (isEscapeKey)
-                {
-                    EscHandledThisFrame = true; // Mark that we handled ESC
-                }
-                return; // Don't go back to ActionPanel, just cancel selection
-            }
-            
-            // For ESC key: only handle if SkillsPanel or ItemsPanel are active
-            // But don't handle if settings panel is open (let InGameMenu close it first)
-            if (isEscapeKey)
-            {
-                // If settings panel is open, let InGameMenu handle ESC to close it
-                if (InGameMenu.IsSettingsPanelActiveStatic())
-                {
-                    return; // Let InGameMenu handle ESC to close settings panel
-                }
-                
-                bool skillsPanelActive = SkillsPanel != null && SkillsPanel.activeSelf;
-                bool itemsPanelActive = ItemsPanel != null && ItemsPanel.activeSelf;
-                
-                // Only handle ESC if one of the panels is active
-                if (!skillsPanelActive && !itemsPanelActive)
-                {
-                    // Let InGameMenu handle ESC to open settings panel
-                    return;
-                }
-                
-                // Mark that we're handling ESC
-                EscHandledThisFrame = true;
-            }
-            
-            // Handle right-click, X key, or ESC when panels are active
-            GoBackToActionPanel();
-        }
-        
-        // Check for E key to end turn (only when ActionPanel is active)
-        if (Keyboard.current != null && Keyboard.current[Key.E].wasPressedThisFrame)
-        {
-            if (ActionPanel != null && ActionPanel.activeSelf)
-            {
-                EndTurn();
-            }
-        }
+        // Handle end turn input (E key)
+        HandleEndTurnInput();
         
         // Handle button selection mode input
-        if (isButtonSelectionMode && ActionPanel != null && ActionPanel.activeSelf)
-        {
-            HandleButtonSelectionInput();
-        }
+        HandleButtonSelectionModeInput();
         
         // Handle NormalAttack selection mode input
         if (isNormalAttackSelectionMode)
@@ -228,46 +174,57 @@ public class ActionPanelManager : MonoBehaviour
             }
         }
     }
-    
-    /// <summary>
-    /// Checks if inspect mode is currently active
-    /// </summary>
-    private bool IsInInspectMode()
+
+    private void OnDestroy()
     {
-        if (inspectPanelManager == null)
+        // Unsubscribe from button clicks to prevent memory leaks
+        if (SkillsButton != null)
         {
-            inspectPanelManager = FindFirstObjectByType<InspectPanelManager>();
+            SkillsButton.onClick.RemoveListener(ShowSkillsPanel);
+        }
+
+        if (ItemsButton != null)
+        {
+            ItemsButton.onClick.RemoveListener(ShowItemsPanel);
+        }
+
+        if (EndTurnButton != null)
+        {
+            EndTurnButton.onClick.RemoveListener(EndTurn);
         }
         
-        return inspectPanelManager != null && inspectPanelManager.IsInspectMode();
+        if (BackButton != null)
+        {
+            BackButton.onClick.RemoveListener(OnBackButtonClicked);
+        }
+        
+        if (NormalAttackButton != null)
+        {
+            NormalAttackButton.onClick.RemoveListener(OnNormalAttackClicked);
+        }
+        
+        // Unsubscribe from selection changes
+        if (selection != null)
+        {
+            selection.OnSelectionChanged -= OnButtonSelectionChanged;
+        }
     }
 
+    #region Public Methods - Panel Management
+    
     /// <summary>
     /// Updates panel visibility based on whose turn it is
     /// </summary>
     public void UpdatePanelVisibility()
     {
-        // Don't update visibility during skill execution or inspect mode
-        if (isSkillExecuting || IsInInspectMode())
+        // Don't update visibility if blocked
+        if (IsInputBlocked())
         {
             return;
         }
         
         // Don't update visibility during selection mode (skill/item/normal attack target selection)
-        if (isNormalAttackSelectionMode)
-        {
-            return;
-        }
-        
-        // Check if skill or item selection mode is active
-        SkillPanelManager skillPanelManager = FindFirstObjectByType<SkillPanelManager>();
-        if (skillPanelManager != null && skillPanelManager.IsInSelectionMode())
-        {
-            return;
-        }
-        
-        ItemPanelManager itemPanelManager = FindFirstObjectByType<ItemPanelManager>();
-        if (itemPanelManager != null && itemPanelManager.IsInSelectionMode())
+        if (IsInSelectionMode())
         {
             return;
         }
@@ -341,52 +298,13 @@ public class ActionPanelManager : MonoBehaviour
         }
     }
 
-    private void OnDestroy()
-    {
-        // Unsubscribe from button clicks to prevent memory leaks
-        if (SkillsButton != null)
-        {
-            SkillsButton.onClick.RemoveListener(ShowSkillsPanel);
-        }
-
-        if (ItemsButton != null)
-        {
-            ItemsButton.onClick.RemoveListener(ShowItemsPanel);
-        }
-
-        if (EndTurnButton != null)
-        {
-            EndTurnButton.onClick.RemoveListener(EndTurn);
-        }
-        
-        if (BackButton != null)
-        {
-            BackButton.onClick.RemoveListener(OnBackButtonClicked);
-        }
-        
-        if (NormalAttackButton != null)
-        {
-            NormalAttackButton.onClick.RemoveListener(OnNormalAttackClicked);
-        }
-        
-        // Unsubscribe from selection changes
-        if (selection != null)
-        {
-            selection.OnSelectionChanged -= OnButtonSelectionChanged;
-        }
-    }
-
     public void ShowActionPanel()
     {
-        // Don't allow if in inspect mode
-        if (IsInInspectMode())
+        // Don't allow if blocked
+        if (!CanInteractWithActionUI())
         {
             return;
         }
-        
-        // Check if we're returning from SkillsPanel or ItemsPanel (before hiding panels)
-        bool returningFromSubPanel = (SkillsPanel != null && SkillsPanel.activeSelf) || 
-                                     (ItemsPanel != null && ItemsPanel.activeSelf);
         
         // Update unit name BEFORE showing the panel to prevent flickering
         if (gameManager == null)
@@ -434,37 +352,11 @@ public class ActionPanelManager : MonoBehaviour
         // Update marker position after layout has fully settled (prevents marker appearing in wrong position)
         StartCoroutine(DelayedUpdateSelectionMarkerPosition());
     }
-    
-    /// <summary>
-    /// Coroutine to update selection marker position after UI layout has fully settled
-    /// </summary>
-    private System.Collections.IEnumerator DelayedUpdateSelectionMarkerPosition()
-    {
-        // Wait one frame to ensure all layout updates are complete
-        yield return null;
-        
-        // Check if ActionPanel is still active (might have been hidden)
-        if (ActionPanel == null || !ActionPanel.activeSelf)
-        {
-            yield break;
-        }
-        
-        // Force canvas update to ensure UI layout is finalized
-        Canvas.ForceUpdateCanvases();
-        
-        // Update the selection marker position by refreshing the selection
-        if (selection != null && selection.IsValidSelection())
-        {
-            // Trigger marker update by setting the index to itself
-            int currentIndex = selection.CurrentIndex;
-            selection.SetIndex(currentIndex);
-        }
-    }
 
     public void ShowSkillsPanel()
     {
-        // Don't allow if in inspect mode
-        if (IsInInspectMode())
+        // Don't allow if blocked
+        if (!CanInteractWithActionUI())
         {
             return;
         }
@@ -503,8 +395,8 @@ public class ActionPanelManager : MonoBehaviour
 
     public void ShowItemsPanel()
     {
-        // Don't allow if in inspect mode
-        if (IsInInspectMode())
+        // Don't allow if blocked
+        if (!CanInteractWithActionUI())
         {
             return;
         }
@@ -646,47 +538,23 @@ public class ActionPanelManager : MonoBehaviour
         BackButton.gameObject.SetActive(shouldShow);
     }
     
-    /// <summary>
-    /// Hides the EndTurnButton (used during enemy turns)
-    /// </summary>
-    public void HideEndTurnButton()
-    {
-        if (EndTurnButton != null)
-        {
-            EndTurnButton.gameObject.SetActive(false);
-        }
-    }
+    #endregion
     
-    /// <summary>
-    /// Shows the EndTurnButton (used during creature turns)
-    /// </summary>
-    private void ShowEndTurnButton()
-    {
-        if (EndTurnButton != null)
-        {
-            EndTurnButton.gameObject.SetActive(true);
-        }
-    }
-
+    #region Public Methods - Turn Management
+    
     /// <summary>
     /// Ends the current turn and advances to the next unit's turn
     /// </summary>
     public void EndTurn()
     {
-        // Don't allow if in inspect mode
-        if (IsInInspectMode())
+        // Don't allow if blocked
+        if (!CanInteractWithActionUI())
         {
             return;
         }
         
         // Don't allow if ActionPanel is not active (animations may be playing)
         if (ActionPanel == null || !ActionPanel.activeSelf)
-        {
-            return;
-        }
-        
-        // Don't allow if skill execution is in progress
-        if (IsSkillExecuting())
         {
             return;
         }
@@ -707,6 +575,21 @@ public class ActionPanelManager : MonoBehaviour
             Debug.LogWarning("ActionPanelManager: Cannot end turn - TurnOrder not found!");
         }
     }
+    
+    /// <summary>
+    /// Hides the EndTurnButton (used during enemy turns)
+    /// </summary>
+    public void HideEndTurnButton()
+    {
+        if (EndTurnButton != null)
+        {
+            EndTurnButton.gameObject.SetActive(false);
+        }
+    }
+    
+    #endregion
+    
+    #region Public Methods - Skill Execution
     
     /// <summary>
     /// Hides all action UI elements (called during skill execution to prevent player input)
@@ -811,59 +694,191 @@ public class ActionPanelManager : MonoBehaviour
         HideAllPanels();
     }
     
+    #endregion
+    
+    #region Public Methods - Button Selection
+    
     /// <summary>
-    /// Gets the appropriate attack-to-hurt delay based on caster's animation length
+    /// Selects the NormalAttackButton in the current button selection
     /// </summary>
-    private float GetAttackToHurtDelay(Unit caster, GameManager gameManager)
+    public void SelectNormalAttackButton()
     {
-        if (gameManager == null)
-        {
-            return 0.5f; // Fallback
-        }
+        if (selection == null || NormalAttackButton == null)
+            return;
         
-        if (caster != null)
+        // Get all items from selection (even if not valid yet, GetAllItems should still work)
+        object[] allItems = selection.GetAllItems();
+        if (allItems == null || allItems.Length == 0)
+            return;
+        
+        // Find the index of NormalAttackButton in the selection
+        for (int i = 0; i < allItems.Length; i++)
         {
-            UnitAnimations unitAnimations = caster.GetComponent<UnitAnimations>();
-            if (unitAnimations != null)
+            if (allItems[i] is Button button && button == NormalAttackButton)
             {
-                float animationLength = unitAnimations.GetAttackAnimationLength();
-                if (animationLength > 0f)
-                {
-                    // Return animation length + post-animation delay
-                    return animationLength + gameManager.postAttackAnimationDelay;
-                }
+                selection.SetIndex(i);
+                UpdateButtonSelectionMarkers();
+                return;
             }
         }
-        // Fallback if animation length can't be determined
-        return 0.5f;
+    }
+    
+    #endregion
+    
+    #region Input Handling
+    
+    /// <summary>
+    /// Handles back input (ESC / right-click / X key)
+    /// </summary>
+    private void HandleBackInput()
+    {
+        // Check for ESC key press or right-click to return to ActionPanel or cancel selection
+        // ESC key: only handle if SkillsPanel or ItemsPanel are active (otherwise let InGameMenu handle it for settings)
+        // Right-click and X key: always handle
+        bool isEscapeKey = Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame;
+        bool isRightClick = Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
+        bool isXKey = Keyboard.current != null && Keyboard.current[Key.X].wasPressedThisFrame;
+        
+        if (isEscapeKey || isRightClick || isXKey)
+        {
+            // If in NormalAttack selection mode, cancel it first
+            if (isNormalAttackSelectionMode)
+            {
+                CancelNormalAttackSelectionMode();
+                if (isEscapeKey)
+                {
+                    EscHandledThisFrame = true; // Mark that we handled ESC
+                }
+                return; // Don't go back to ActionPanel, just cancel selection
+            }
+            
+            // For ESC key: only handle if SkillsPanel or ItemsPanel are active
+            // But don't handle if settings panel is open (let InGameMenu close it first)
+            if (isEscapeKey)
+            {
+                // If settings panel is open, let InGameMenu handle ESC to close it
+                if (InGameMenu.IsSettingsPanelActiveStatic())
+                {
+                    return; // Let InGameMenu handle ESC to close settings panel
+                }
+                
+                bool skillsPanelActive = SkillsPanel != null && SkillsPanel.activeSelf;
+                bool itemsPanelActive = ItemsPanel != null && ItemsPanel.activeSelf;
+                
+                // Only handle ESC if one of the panels is active
+                if (!skillsPanelActive && !itemsPanelActive)
+                {
+                    // Let InGameMenu handle ESC to open settings panel
+                    return;
+                }
+                
+                // Mark that we're handling ESC
+                EscHandledThisFrame = true;
+            }
+            
+            // Handle right-click, X key, or ESC when panels are active
+            GoBackToActionPanel();
+        }
     }
     
     /// <summary>
-    /// Updates the UnitNameText UI with the current unit's name
+    /// Handles end turn input (E key)
     /// </summary>
-    private void UpdateUnitNameText(Unit currentUnit)
+    private void HandleEndTurnInput()
     {
-        if (UnitNameText != null)
+        // Check for E key to end turn (only when ActionPanel is active)
+        if (Keyboard.current != null && Keyboard.current[Key.E].wasPressedThisFrame)
         {
-            if (currentUnit != null)
+            if (ActionPanel != null && ActionPanel.activeSelf)
             {
-                // Update text for creature turns using ScriptableObject name
-                // Note: userPanelRoot visibility is handled by UpdatePanelVisibility()
-                if (currentUnit.IsPlayerUnit)
-                {
-                    UnitNameText.text = currentUnit.UnitName;
-                }
+                EndTurn();
             }
         }
     }
+    
+    /// <summary>
+    /// Handles button selection mode input
+    /// </summary>
+    private void HandleButtonSelectionModeInput()
+    {
+        // Handle button selection mode input
+        if (isButtonSelectionMode && ActionPanel != null && ActionPanel.activeSelf)
+        {
+            HandleButtonSelectionInput();
+        }
+    }
+    
+    #endregion
+    
+    #region Guard Checks
+    
+    /// <summary>
+    /// Checks if input should be blocked (inspect mode)
+    /// </summary>
+    private bool IsInputBlocked()
+    {
+        return IsInInspectMode();
+    }
+    
+    /// <summary>
+    /// Checks if we can interact with action UI (not in inspect mode)
+    /// </summary>
+    private bool CanInteractWithActionUI()
+    {
+        return !IsInInspectMode();
+    }
+    
+    /// <summary>
+    /// Checks if inspect mode is currently active
+    /// </summary>
+    private bool IsInInspectMode()
+    {
+        if (inspectPanelManager == null)
+        {
+            inspectPanelManager = FindFirstObjectByType<InspectPanelManager>();
+        }
+        
+        return inspectPanelManager != null && inspectPanelManager.IsInspectMode();
+    }
+    
+    /// <summary>
+    /// Checks if we're in any selection mode (skill/item/normal attack)
+    /// </summary>
+    private bool IsInSelectionMode()
+    {
+        // Check if NormalAttack selection mode is active
+        if (isNormalAttackSelectionMode)
+        {
+            return true;
+        }
+        
+        // Check if skill or item selection mode is active
+        SkillPanelManager skillPanelManager = FindFirstObjectByType<SkillPanelManager>();
+        if (skillPanelManager != null && skillPanelManager.IsInSelectionMode())
+        {
+            return true;
+        }
+        
+        ItemPanelManager itemPanelManager = FindFirstObjectByType<ItemPanelManager>();
+        if (itemPanelManager != null && itemPanelManager.IsInSelectionMode())
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    #endregion
+    
+    #region NormalAttack Selection and Execution
     
     /// <summary>
     /// Called when the NormalAttack button is clicked
     /// </summary>
     private void OnNormalAttackClicked()
     {
-        // Don't allow if in inspect mode
-        if (IsInInspectMode())
+        // Don't allow if blocked
+        if (!CanInteractWithActionUI())
         {
             return;
         }
@@ -969,26 +984,6 @@ public class ActionPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Converts SkillTargetType to UnitTargetType
-    /// </summary>
-    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
-    {
-        switch (skillTargetType)
-        {
-            case SkillTargetType.Self:
-                return UnitTargetType.Self;
-            case SkillTargetType.Ally:
-                return UnitTargetType.Allies;
-            case SkillTargetType.Enemy:
-                return UnitTargetType.Enemies;
-            case SkillTargetType.Any:
-                return UnitTargetType.Any;
-            default:
-                return UnitTargetType.Any;
-        }
-    }
-    
-    /// <summary>
     /// Cancels NormalAttack selection mode
     /// </summary>
     private void CancelNormalAttackSelectionMode()
@@ -1033,15 +1028,6 @@ public class ActionPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Coroutine to delay confirmation so selection marker is visible
-    /// </summary>
-    private System.Collections.IEnumerator DelayedConfirmNormalAttackSelection(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        ConfirmNormalAttackSelection();
-    }
-    
-    /// <summary>
     /// Confirms the NormalAttack target selection and executes the skill
     /// </summary>
     private void ConfirmNormalAttackSelection()
@@ -1069,33 +1055,6 @@ public class ActionPanelManager : MonoBehaviour
                 // Advance turn after delays complete
                 StartCoroutine(DelayedAdvanceTurnAfterNormalAttack());
             }
-        }
-    }
-    
-    /// <summary>
-    /// Coroutine to advance turn after NormalAttack animation delays complete
-    /// </summary>
-    private System.Collections.IEnumerator DelayedAdvanceTurnAfterNormalAttack()
-    {
-        if (gameManager == null)
-            yield break;
-            
-        // Wait for skill animation + attack-to-hurt delay + hit animation delays
-        // Get the actual delay (accounts for animation-based delay if enabled)
-        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
-        float attackDelay = GetAttackToHurtDelay(currentUnit, gameManager);
-        float totalDelay = gameManager.skillAnimationDelay + attackDelay + gameManager.hitAnimationDelay;
-        yield return new WaitForSeconds(totalDelay);
-        
-        // Advance turn
-        if (turnOrder == null)
-        {
-            turnOrder = FindFirstObjectByType<TurnOrder>();
-        }
-        
-        if (turnOrder != null)
-        {
-            turnOrder.AdvanceToNextTurn();
         }
     }
     
@@ -1145,6 +1104,64 @@ public class ActionPanelManager : MonoBehaviour
         // Mouse click handling is done in LateUpdate to ensure Selection class processes it first
     }
     
+    /// <summary>
+    /// Converts SkillTargetType to UnitTargetType
+    /// </summary>
+    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
+    {
+        switch (skillTargetType)
+        {
+            case SkillTargetType.Self:
+                return UnitTargetType.Self;
+            case SkillTargetType.Ally:
+                return UnitTargetType.Allies;
+            case SkillTargetType.Enemy:
+                return UnitTargetType.Enemies;
+            case SkillTargetType.Any:
+                return UnitTargetType.Any;
+            default:
+                return UnitTargetType.Any;
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to delay confirmation so selection marker is visible
+    /// </summary>
+    private System.Collections.IEnumerator DelayedConfirmNormalAttackSelection(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ConfirmNormalAttackSelection();
+    }
+    
+    /// <summary>
+    /// Coroutine to advance turn after NormalAttack animation delays complete
+    /// </summary>
+    private System.Collections.IEnumerator DelayedAdvanceTurnAfterNormalAttack()
+    {
+        if (gameManager == null)
+            yield break;
+            
+        // Wait for skill animation + attack-to-hurt delay + hit animation delays
+        // Get the actual delay (accounts for animation-based delay if enabled)
+        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
+        float attackDelay = GetAttackToHurtDelay(currentUnit, gameManager);
+        float totalDelay = gameManager.skillAnimationDelay + attackDelay + gameManager.hitAnimationDelay;
+        yield return new WaitForSeconds(totalDelay);
+        
+        // Advance turn
+        if (turnOrder == null)
+        {
+            turnOrder = FindFirstObjectByType<TurnOrder>();
+        }
+        
+        if (turnOrder != null)
+        {
+            turnOrder.AdvanceToNextTurn();
+        }
+    }
+    
+    #endregion
+    
     #region Button Selection Mode
     
     /// <summary>
@@ -1175,31 +1192,6 @@ public class ActionPanelManager : MonoBehaviour
         
         // Update markers based on initial selection
         UpdateButtonSelectionMarkers();
-    }
-    
-    /// <summary>
-    /// Selects the NormalAttackButton in the current button selection
-    /// </summary>
-    public void SelectNormalAttackButton()
-    {
-        if (selection == null || NormalAttackButton == null)
-            return;
-        
-        // Get all items from selection (even if not valid yet, GetAllItems should still work)
-        object[] allItems = selection.GetAllItems();
-        if (allItems == null || allItems.Length == 0)
-            return;
-        
-        // Find the index of NormalAttackButton in the selection
-        for (int i = 0; i < allItems.Length; i++)
-        {
-            if (allItems[i] is Button button && button == NormalAttackButton)
-            {
-                selection.SetIndex(i);
-                UpdateButtonSelectionMarkers();
-                return;
-            }
-        }
     }
     
     /// <summary>
@@ -1322,6 +1314,82 @@ public class ActionPanelManager : MonoBehaviour
                 if (markerIndex >= 0)
                 {
                     selection.SetUISelectionMarker(markerIndex, true);
+                }
+            }
+        }
+    }
+    
+    #endregion
+    
+    #region Helper Methods
+    
+    /// <summary>
+    /// Coroutine to update selection marker position after UI layout has fully settled
+    /// </summary>
+    private System.Collections.IEnumerator DelayedUpdateSelectionMarkerPosition()
+    {
+        // Wait one frame to ensure all layout updates are complete
+        yield return null;
+        
+        // Check if ActionPanel is still active (might have been hidden)
+        if (ActionPanel == null || !ActionPanel.activeSelf)
+        {
+            yield break;
+        }
+        
+        // Force canvas update to ensure UI layout is finalized
+        Canvas.ForceUpdateCanvases();
+        
+        // Update the selection marker position by refreshing the selection
+        if (selection != null && selection.IsValidSelection())
+        {
+            // Trigger marker update by setting the index to itself
+            int currentIndex = selection.CurrentIndex;
+            selection.SetIndex(currentIndex);
+        }
+    }
+    
+    /// <summary>
+    /// Gets the appropriate attack-to-hurt delay based on caster's animation length
+    /// </summary>
+    private float GetAttackToHurtDelay(Unit caster, GameManager gameManager)
+    {
+        if (gameManager == null)
+        {
+            return 0.5f; // Fallback
+        }
+        
+        if (caster != null)
+        {
+            UnitAnimations unitAnimations = caster.GetComponent<UnitAnimations>();
+            if (unitAnimations != null)
+            {
+                float animationLength = unitAnimations.GetAttackAnimationLength();
+                if (animationLength > 0f)
+                {
+                    // Return animation length + post-animation delay
+                    return animationLength + gameManager.postAttackAnimationDelay;
+                }
+            }
+        }
+        // Fallback if animation length can't be determined
+        return 0.5f;
+    }
+    
+    /// <summary>
+    /// Updates the UnitNameText UI with the current unit's name
+    /// </summary>
+    private void UpdateUnitNameText(Unit currentUnit)
+    {
+        if (UnitNameText != null)
+        {
+            if (currentUnit != null)
+            {
+                // Update text for creature turns using ScriptableObject name
+                // Note: userPanelRoot visibility is handled by UpdatePanelVisibility()
+                if (currentUnit.IsPlayerUnit)
+                {
+                    UnitNameText.text = currentUnit.UnitName;
                 }
             }
         }
