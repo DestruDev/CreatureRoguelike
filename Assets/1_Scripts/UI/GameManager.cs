@@ -87,7 +87,7 @@ public class GameManager : MonoBehaviour
 	
 	[Tooltip("Name of the main menu scene to load")]
 	public string mainMenuSceneName = "MainMenu";
-	
+
     private TurnOrder turnOrderRef; // Reference to get spawn indices
 
     [Header("Turn Management")]
@@ -125,8 +125,63 @@ public class GameManager : MonoBehaviour
     [Range(0f, 5f)]
     public float roundEndScreenDelay = 0.5f;
 
+    #region Lifecycle Methods
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
+    {
+        // Validate and cache references
+        ValidateReferences();
+        
+        // Set up button listeners
+        SetupButtonListeners();
+        
+        // Hide round end panel at start
+        if (roundEndPanel != null)
+        {
+            roundEndPanel.SetActive(false);
+        }
+
+        // Get the first unit that should go - delay slightly to ensure all units are initialized
+        StartCoroutine(DelayedStart());
+    }
+
+    private System.Collections.IEnumerator DelayedStart()
+    {
+        // Wait a frame to ensure all units are fully initialized
+        yield return null;
+        
+        // Cache TurnOrder reference for spawn index lookup
+        CacheTurnOrderReference();
+        
+        // Connect all units to their UI elements
+        UpdateAllUnitUI();
+        
+        // Initialize gauges and select first unit
+        yield return StartCoroutine(InitializeGaugesAndSelectFirstUnit());
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+		// Debug: Print action gauge status when pressing G
+		if (Keyboard.current != null && Keyboard.current[Key.G].wasPressedThisFrame)
+		{
+			PrintActionGaugeStatus();
+		}
+		
+		// Update all action gauge UI displays
+		UpdateAllActionGaugeUI();
+    }
+    
+    #endregion
+    
+    #region Reference Validation
+    
+    /// <summary>
+    /// Validates and caches all required references
+    /// </summary>
+    private void ValidateReferences()
     {
         // Find TurnOrder if not assigned
         if (turnOrder == null)
@@ -135,8 +190,32 @@ public class GameManager : MonoBehaviour
         }
         
         // Cache ActionPanelManager reference
-        actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-        
+        if (actionPanelManager == null)
+        {
+            actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        }
+    }
+    
+    /// <summary>
+    /// Caches TurnOrder reference for spawn index lookup
+    /// </summary>
+    private void CacheTurnOrderReference()
+    {
+        if (turnOrder != null)
+        {
+            turnOrderRef = turnOrder;
+        }
+        else
+        {
+            turnOrderRef = FindFirstObjectByType<TurnOrder>();
+        }
+    }
+    
+    /// <summary>
+    /// Sets up button listeners
+    /// </summary>
+    private void SetupButtonListeners()
+    {
         // Set up return to main menu button listener
         if (returnToMainMenuButton != null)
         {
@@ -154,125 +233,105 @@ public class GameManager : MonoBehaviour
 		{
 			nextLevelButton.onClick.AddListener(OnNextLevelClicked);
 		}
-        
-        // Hide round end panel at start
-        if (roundEndPanel != null)
-        {
-            roundEndPanel.SetActive(false);
-        }
-
-        // Get the first unit that should go - delay slightly to ensure all units are initialized
-        StartCoroutine(DelayedStart());
     }
-
-    private System.Collections.IEnumerator DelayedStart()
+    
+    #endregion
+    
+    #region Initialization
+    
+    /// <summary>
+    /// Initializes gauges and selects the first unit to act
+    /// </summary>
+    private System.Collections.IEnumerator InitializeGaugesAndSelectFirstUnit()
     {
-        // Wait a frame to ensure all units are fully initialized
-        yield return null;
-        
-        // Get reference to TurnOrder for spawn index lookup
-        if (turnOrder != null)
-        {
-            turnOrderRef = turnOrder;
-        }
-        else
-        {
-            turnOrderRef = FindFirstObjectByType<TurnOrder>();
-        }
-        
-        // Connect all units to their UI elements
-        UpdateAllUnitUI();
-        
-        if (turnOrder != null)
-        {
-            // Increment all units' gauges until someone reaches 100 for the first turn
-            // This makes the first turn selection based on gauge accumulation, not just initial speed
-            Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            if (allUnits != null && allUnits.Length > 0)
-            {
-                bool someoneCanAct = false;
-                int maxIterations = 20; // Safety limit
-                int iterations = 0;
-                
-                //Debug.Log("=== Initializing first turn - incrementing gauges until someone can act ===");
-                
-                while (!someoneCanAct && iterations < maxIterations)
-                {
-                    iterations++;
-                    
-                    foreach (var unit in allUnits)
-                    {
-                        if (unit == null || !unit.IsAlive())
-                            continue;
-                        
-                        float oldGauge = unit.GetActionGauge();
-                        bool reached100 = unit.IncrementActionGauge();
-                        float newGauge = unit.GetActionGauge();
-                        
-                        //Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge:F1} -> {newGauge:F1}");
-                        
-                        if (reached100)
-                        {
-                            someoneCanAct = true;
-                        }
-                    }
-                }
-                
-                if (iterations >= maxIterations && !someoneCanAct)
-                {
-                    Debug.LogError("Max iterations reached during first turn initialization!");
-                }
-            }
-            
-            // Wait a moment for initialization
-            yield return new WaitForSeconds(0.1f);
-            
-            // Get the first unit with tiebreaker logic (player units first, then by spawn slot)
-            Unit firstUnit = turnOrder.GetFirstUnit();
-            if (firstUnit != null)
-            {
-                //Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name + " with gauge " + firstUnit.GetActionGauge());
-                // Set the acting flag before setting the unit
-                if (turnOrder != null)
-                {
-                    turnOrder.SetUnitActing(true);
-                }
-                SetCurrentUnit(firstUnit);
-                // If first unit is enemy, delay processing slightly to ensure player units exist
-                if (firstUnit.IsEnemyUnit)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-            }
-            else
-            {
-                // No units found - this is expected when units are hidden at start (map panel open)
-                // Units will be found once a level is selected and started
-            }
-        }
-        else
+        if (turnOrder == null)
         {
             Debug.LogWarning("GameManager: No TurnOrder component found in scene!");
+            yield break;
+        }
+        
+        // Increment all units' gauges until someone reaches 100 for the first turn
+        InitializeFirstTurnGauges();
+        
+        // Wait a moment for initialization
+        yield return new WaitForSeconds(0.1f);
+        
+        // Get the first unit with tiebreaker logic (player units first, then by spawn slot)
+        Unit firstUnit = turnOrder.GetFirstUnit();
+        if (firstUnit != null)
+        {
+            //Debug.Log("GameManager: First unit determined - " + firstUnit.gameObject.name + " with gauge " + firstUnit.GetActionGauge());
+            // Set the acting flag before setting the unit
+            if (turnOrder != null)
+            {
+                turnOrder.SetUnitActing(true);
+            }
+            SetCurrentUnit(firstUnit);
+            // If first unit is enemy, delay processing slightly to ensure player units exist
+            if (firstUnit.IsEnemyUnit)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+        else
+        {
+            // No units found - this is expected when units are hidden at start (map panel open)
+            // Units will be found once a level is selected and started
         }
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    /// <summary>
+    /// Initializes first turn by incrementing gauges until someone can act
+    /// </summary>
+    private void InitializeFirstTurnGauges()
     {
-		// Debug: Print action gauge status when pressing G
-		if (Keyboard.current != null && Keyboard.current[Key.G].wasPressedThisFrame)
-		{
-			PrintActionGaugeStatus();
-		}
-		
-		// Update all action gauge UI displays
-		UpdateAllActionGaugeUI();
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null || allUnits.Length == 0)
+        {
+            return;
+        }
+        
+        bool someoneCanAct = false;
+        int maxIterations = 20; // Safety limit
+        int iterations = 0;
+        
+        //Debug.Log("=== Initializing first turn - incrementing gauges until someone can act ===");
+        
+        while (!someoneCanAct && iterations < maxIterations)
+        {
+            iterations++;
+            
+            foreach (var unit in allUnits)
+            {
+                if (unit == null || !unit.IsAlive())
+                    continue;
+                
+                float oldGauge = unit.GetActionGauge();
+                bool reached100 = unit.IncrementActionGauge();
+                float newGauge = unit.GetActionGauge();
+                
+                //Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge:F1} -> {newGauge:F1}");
+                
+                if (reached100)
+                {
+                    someoneCanAct = true;
+                }
+            }
+        }
+        
+        if (iterations >= maxIterations && !someoneCanAct)
+        {
+            Debug.LogError("Max iterations reached during first turn initialization!");
+        }
     }
-
-
-	/// <summary>
-	/// Sets the current unit whose turn it is and updates the UI
-	/// </summary>
+    
+    #endregion
+    
+    #region Turn Management
+    
+    /// <summary>
+    /// Sets the current unit whose turn it is and updates the UI
+    /// </summary>
 	public void SetCurrentUnit(Unit unit)
 	{
 		// Prevent duplicate calls for the same unit
@@ -310,8 +369,44 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Processes an enemy's turn: picks random skill and targets random player unit
+	/// Gets the current unit whose turn it is
 	/// </summary>
+	public Unit GetCurrentUnit()
+	{
+		return currentUnit;
+	}
+	
+	/// <summary>
+	/// Clears the current unit (used when resetting for next level)
+	/// </summary>
+	public void ClearCurrentUnit()
+	{
+		currentUnit = null;
+	}
+	
+	/// <summary>
+	/// Calls TurnOrder to advance to the next turn
+	/// </summary>
+	private void AdvanceToNextTurn()
+	{
+		if (turnOrder == null)
+		{
+			turnOrder = FindFirstObjectByType<TurnOrder>();
+		}
+		
+		if (turnOrder != null)
+		{
+			turnOrder.AdvanceToNextTurn();
+		}
+	}
+	
+	#endregion
+    
+    #region Enemy Turn Processing
+    
+    /// <summary>
+    /// Processes an enemy's turn: picks random skill and targets random player unit
+    /// </summary>
 	private void ProcessEnemyTurn()
 	{
 		if (currentUnit == null || !currentUnit.IsEnemyUnit)
@@ -321,72 +416,37 @@ public class GameManager : MonoBehaviour
 		if (!currentUnit.IsAlive())
 		{
 			Debug.LogWarning($"Enemy unit {currentUnit.gameObject.name} is dead! Skipping turn and advancing.");
-			if (turnOrder != null)
-			{
-				turnOrder.AdvanceToNextTurn();
-			}
+			AdvanceToNextTurn();
 			return;
 		}
 		
 		// Get all alive player units (targetable by enemies)
-		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-		List<Unit> playerUnits = new List<Unit>();
-		
-		foreach (var unit in allUnits)
-		{
-			if (unit == null) continue;
-			
-			if (unit.IsPlayerUnit && unit.IsAlive())
-			{
-				playerUnits.Add(unit);
-			}
-		}
+		List<Unit> playerUnits = GetAlivePlayerUnits();
 		
 		if (playerUnits.Count == 0)
 		{
-			Debug.LogWarning($"No alive player units to target! Total units found: {allUnits.Length}. Advancing turn.");
-			Debug.LogWarning("Checking all units:");
-			foreach (var unit in allUnits)
-			{
-				if (unit != null)
-				{
-					Debug.LogWarning($"  - {unit.gameObject.name}: IsPlayerUnit={unit.IsPlayerUnit}, IsAlive={unit.IsAlive()}");
-				}
-			}
-			// Advance turn immediately since there are no valid targets
-			if (turnOrder != null)
-			{
-				turnOrder.AdvanceToNextTurn();
-			}
+			Debug.LogWarning($"No alive player units to target! Advancing turn.");
+			LogAllUnitsForDebug();
+			AdvanceToNextTurn();
 			return;
 		}
 		
 		// Get available skills (not on cooldown)
-		List<int> availableSkills = new List<int>();
-		for (int i = 0; i < currentUnit.Skills.Length; i++)
-		{
-			if (currentUnit.CanUseSkill(i))
-			{
-				availableSkills.Add(i);
-			}
-		}
+		List<int> availableSkills = GetAvailableSkills(currentUnit);
 		
 		// If no skills available, just attack or skip
 		if (availableSkills.Count == 0)
 		{
 			Debug.Log(currentUnit.gameObject.name + " has no available skills!");
-			if (turnOrder != null)
-			{
-				turnOrder.AdvanceToNextTurn();
-			}
+			AdvanceToNextTurn();
 			return;
 		}
 		
 		// Pick random skill
-		int randomSkillIndex = availableSkills[Random.Range(0, availableSkills.Count)];
+		int randomSkillIndex = PickRandomSkill(availableSkills);
 		
 		// Pick random player unit target (already confirmed alive)
-		Unit randomTarget = playerUnits[Random.Range(0, playerUnits.Count)];
+		Unit randomTarget = PickRandomTarget(playerUnits);
 		
 		// Double-check target is still alive (in case it died between selection and use)
 		if (randomTarget == null || !randomTarget.IsAlive())
@@ -398,14 +458,11 @@ public class GameManager : MonoBehaviour
 			if (playerUnits.Count == 0)
 			{
 				Debug.LogWarning("No alive targets remaining! Advancing turn.");
-				if (turnOrder != null)
-				{
-					turnOrder.AdvanceToNextTurn();
-				}
+				AdvanceToNextTurn();
 				return;
 			}
 			
-			randomTarget = playerUnits[Random.Range(0, playerUnits.Count)];
+			randomTarget = PickRandomTarget(playerUnits);
 		}
 		
 		// Start the turn (reduce cooldowns)
@@ -419,60 +476,81 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Coroutine to execute enemy skill with proper timing delays
+	/// Gets all alive player units
 	/// </summary>
-	private System.Collections.IEnumerator ExecuteEnemySkillWithDelay(Unit caster, int skillIndex, Unit target)
+	private List<Unit> GetAlivePlayerUnits()
 	{
-		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		List<Unit> playerUnits = new List<Unit>();
+		
+		foreach (var unit in allUnits)
 		{
-			Debug.LogWarning($"Invalid skill index {skillIndex} for enemy unit {caster.UnitName}");
-			ShowActionUI(); // Restore UI in case of error
-			yield break;
-		}
+			if (unit == null) continue;
 			
-		Skill skill = caster.Skills[skillIndex];
-		
-		// Set cooldown (same as UseSkill does)
-		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
-		
-		// Log skill usage immediately
-		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
-		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
-		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
-		
-		// Wait for skill animation
-		yield return new WaitForSeconds(skillAnimationDelay);
-		
-		// Check if caster is still alive before applying skill effects
-		if (caster == null || !caster.IsAlive())
-		{
-			Debug.LogWarning($"Caster {caster?.gameObject.name} died during skill animation delay! Advancing turn.");
-			ShowActionUI();
-			AdvanceToNextTurn();
-			yield break;
+			if (unit.IsPlayerUnit && unit.IsAlive())
+			{
+				playerUnits.Add(unit);
+			}
 		}
 		
-		// Apply skill effects (which will log damage and start attack animation)
-		caster.ApplySkillEffects(skill, target);
-		
-		// Wait for attack-to-hurt delay (damage is applied during this time)
-		// If using animation-based delay, wait for animation + post delay
-		float delayToWait = GetAttackToHurtDelay(caster);
-		yield return new WaitForSeconds(delayToWait);
-		
-		// Wait for hit animation
-		yield return new WaitForSeconds(hitAnimationDelay);
-		
-		// Show action UI again
-		ShowActionUI();
-		
-		// Advance turn
-		AdvanceToNextTurn();
+		return playerUnits;
 	}
 	
 	/// <summary>
-	/// Public method to execute a skill with proper timing delays (for both player and enemy units)
+	/// Gets available skills (not on cooldown) for a unit
 	/// </summary>
+	private List<int> GetAvailableSkills(Unit unit)
+	{
+		List<int> availableSkills = new List<int>();
+		for (int i = 0; i < unit.Skills.Length; i++)
+		{
+			if (unit.CanUseSkill(i))
+			{
+				availableSkills.Add(i);
+			}
+		}
+		return availableSkills;
+	}
+	
+	/// <summary>
+	/// Picks a random skill from available skills
+	/// </summary>
+	private int PickRandomSkill(List<int> availableSkills)
+	{
+		return availableSkills[Random.Range(0, availableSkills.Count)];
+	}
+	
+	/// <summary>
+	/// Picks a random target from available targets
+	/// </summary>
+	private Unit PickRandomTarget(List<Unit> targets)
+	{
+		return targets[Random.Range(0, targets.Count)];
+	}
+	
+	/// <summary>
+	/// Logs all units for debugging
+	/// </summary>
+	private void LogAllUnitsForDebug()
+	{
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		Debug.LogWarning($"Checking all units (Total: {allUnits.Length}):");
+		foreach (var unit in allUnits)
+		{
+			if (unit != null)
+			{
+				Debug.LogWarning($"  - {unit.gameObject.name}: IsPlayerUnit={unit.IsPlayerUnit}, IsAlive={unit.IsAlive()}");
+			}
+		}
+	}
+	
+	#endregion
+    
+    #region Skill Execution
+    
+    /// <summary>
+    /// Public method to execute a skill with proper timing delays (for both player and enemy units)
+    /// </summary>
 	public void ExecuteSkillWithDelay(Unit caster, int skillIndex, Unit target, bool autoAdvanceTurn = false)
 	{
 		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
@@ -522,7 +600,33 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Coroutine to execute skill with proper timing delays
+	/// Coroutine to execute enemy skill with proper timing delays
+	/// </summary>
+	private System.Collections.IEnumerator ExecuteEnemySkillWithDelay(Unit caster, int skillIndex, Unit target)
+	{
+		if (skillIndex < 0 || skillIndex >= caster.Skills.Length)
+		{
+			Debug.LogWarning($"Invalid skill index {skillIndex} for enemy unit {caster.UnitName}");
+			ShowActionUI(); // Restore UI in case of error
+			yield break;
+		}
+			
+		Skill skill = caster.Skills[skillIndex];
+		
+		// Set cooldown (same as UseSkill does)
+		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
+		
+		// Log skill usage immediately
+		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
+		
+		// Use shared coroutine for skill execution
+		yield return StartCoroutine(ExecuteSkillWithDelayCoroutine(caster, skill, target, autoAdvanceTurn: true));
+	}
+	
+	/// <summary>
+	/// Coroutine to execute skill with proper timing delays (shared by both player and enemy paths)
 	/// </summary>
 	private System.Collections.IEnumerator ExecuteSkillWithDelayCoroutine(Unit caster, Skill skill, Unit target, bool autoAdvanceTurn)
 	{
@@ -570,15 +674,6 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Coroutine to delay turn advancement for visual feedback (legacy, kept for compatibility)
-	/// </summary>
-	private System.Collections.IEnumerator DelayedAdvanceTurn()
-	{
-		yield return new WaitForSeconds(enemyTurnDelay);
-		AdvanceToNextTurn();
-	}
-	
-	/// <summary>
 	/// Gets the appropriate attack-to-hurt delay based on caster's animation length
 	/// </summary>
 	private float GetAttackToHurtDelay(Unit caster)
@@ -600,25 +695,13 @@ public class GameManager : MonoBehaviour
 		return 0.5f;
 	}
 	
-	/// <summary>
-	/// Calls TurnOrder to advance to the next turn
-	/// </summary>
-	private void AdvanceToNextTurn()
-	{
-		if (turnOrder == null)
-		{
-			turnOrder = FindFirstObjectByType<TurnOrder>();
-		}
-		
-		if (turnOrder != null)
-		{
-			turnOrder.AdvanceToNextTurn();
-		}
-	}
-
-	/// <summary>
-	/// Notifies SkillPanelManager to update when unit changes
-	/// </summary>
+	#endregion
+    
+    #region UI Management
+    
+    /// <summary>
+    /// Notifies SkillPanelManager to update when unit changes
+    /// </summary>
 	private void UpdateSkillPanel()
 	{
 		SkillPanelManager skillPanel = FindFirstObjectByType<SkillPanelManager>();
@@ -627,413 +710,45 @@ public class GameManager : MonoBehaviour
 			skillPanel.UpdateSkills();
 		}
 	}
-
-
-	/// <summary>
-	/// Gets the current unit whose turn it is
-	/// </summary>
-	public Unit GetCurrentUnit()
-	{
-		return currentUnit;
-	}
 	
 	/// <summary>
-	/// Clears the current unit (used when resetting for next level)
+	/// Hides action UI elements to prevent player input during skill execution
 	/// </summary>
-	public void ClearCurrentUnit()
+	private void HideActionUI()
 	{
-		currentUnit = null;
-	}
-	
-	/// <summary>
-	/// Updates all unit UI displays by connecting units to their corresponding UI elements based on spawn index
-	/// </summary>
-	public void UpdateAllUnitUI()
-	{
-		if (turnOrderRef == null)
+		// Hide user panel root which contains all UI elements
+		HideUserPanel();
+		
+		// Also notify ActionPanelManager to set the skill executing flag
+		if (actionPanelManager == null)
 		{
-			turnOrderRef = FindFirstObjectByType<TurnOrder>();
+			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
 		}
 		
-		// Find all units in the scene
-		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-		
-		// Clear all UI first
-		ClearCreatureUI();
-		ClearEnemyUI();
-		
-        // Connect each unit to its UI based on which spawn area array it belongs to
-		int aliveAlliesCount = 0;
-		int aliveEnemiesCount = 0;
-		
-		foreach (var unit in allUnits)
+		if (actionPanelManager != null)
 		{
-			if (unit == null || !unit.IsAlive()) continue;
-			
-			// Check if unit is in creature spawn areas or enemy spawn areas
-			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
-			if (creatureIndex >= 0)
-			{
-				aliveAlliesCount++;
-				
-				// Creature UI (indices 0-2)
-				if (creatureNameTexts[creatureIndex] != null)
-				{
-					creatureNameTexts[creatureIndex].text = unit.UnitName;
-					creatureNameTexts[creatureIndex].gameObject.SetActive(true);
-				}
-				
-				if (creatureHealthFills[creatureIndex] != null)
-				{
-					creatureHealthFills[creatureIndex].gameObject.SetActive(true);
-					UpdateUnitHealthUI(unit, creatureIndex, isCreature: true);
-					unit.SetHealthFill(creatureHealthFills[creatureIndex]);
-				}
-				
-				if (creatureActionGaugeFills[creatureIndex] != null)
-				{
-					creatureActionGaugeFills[creatureIndex].gameObject.SetActive(true);
-					UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
-				}
-                
-                // Ensure the creature UI root is active for alive unit
-                if (creatureUIRoots != null && creatureIndex >= 0 && creatureIndex < creatureUIRoots.Length && creatureUIRoots[creatureIndex] != null)
-                {
-                    creatureUIRoots[creatureIndex].SetActive(true);
-                }
-				continue;
-			}
-			
-			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
-			if (enemyIndex >= 0)
-			{
-				aliveEnemiesCount++;
-				
-				// Enemy UI (indices 0-2)
-				if (enemyNameTexts[enemyIndex] != null)
-				{
-					enemyNameTexts[enemyIndex].text = unit.UnitName;
-					enemyNameTexts[enemyIndex].gameObject.SetActive(true);
-				}
-				
-				if (enemyHealthFills[enemyIndex] != null)
-				{
-					enemyHealthFills[enemyIndex].gameObject.SetActive(true);
-					UpdateUnitHealthUI(unit, enemyIndex, isCreature: false);
-					unit.SetHealthFill(enemyHealthFills[enemyIndex]);
-				}
-				
-				if (enemyActionGaugeFills[enemyIndex] != null)
-				{
-					enemyActionGaugeFills[enemyIndex].gameObject.SetActive(true);
-					UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
-				}
-                
-                // Ensure the enemy UI root is active for alive unit
-                if (enemyUIRoots != null && enemyIndex >= 0 && enemyIndex < enemyUIRoots.Length && enemyUIRoots[enemyIndex] != null)
-                {
-                    enemyUIRoots[enemyIndex].SetActive(true);
-                }
-			}
-		}
-		
-		// Hide the 3rd UI root (index 2) if there are fewer than 3 units on the field
-		if (aliveAlliesCount < 3 && creatureUIRoots != null && creatureUIRoots.Length > 2 && creatureUIRoots[2] != null)
-		{
-			creatureUIRoots[2].SetActive(false);
-		}
-		
-		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
-		if (aliveAlliesCount < 2 && creatureUIRoots != null && creatureUIRoots.Length > 1 && creatureUIRoots[1] != null)
-		{
-			creatureUIRoots[1].SetActive(false);
-		}
-		
-		if (aliveEnemiesCount < 3 && enemyUIRoots != null && enemyUIRoots.Length > 2 && enemyUIRoots[2] != null)
-		{
-			enemyUIRoots[2].SetActive(false);
-		}
-		
-		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
-		if (aliveEnemiesCount < 2 && enemyUIRoots != null && enemyUIRoots.Length > 1 && enemyUIRoots[1] != null)
-		{
-			enemyUIRoots[1].SetActive(false);
+			actionPanelManager.HideAllActionUI();
 		}
 	}
 	
 	/// <summary>
-	/// Clears all creature UI displays
+	/// Shows action UI elements after skill execution completes
 	/// </summary>
-	private void ClearCreatureUI()
+	private void ShowActionUI()
 	{
-		for (int i = 0; i < 3; i++)
-		{
-			if (creatureNameTexts[i] != null)
-			{
-				creatureNameTexts[i].text = "";
-				creatureNameTexts[i].gameObject.SetActive(false);
-			}
-			if (creatureHealthFills[i] != null)
-			{
-				creatureHealthFills[i].fillAmount = 0f;
-				creatureHealthFills[i].gameObject.SetActive(false);
-			}
-			if (creatureActionGaugeFills[i] != null)
-			{
-				creatureActionGaugeFills[i].fillAmount = 0f;
-				creatureActionGaugeFills[i].gameObject.SetActive(false);
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Clears all enemy UI displays
-	/// </summary>
-	private void ClearEnemyUI()
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			if (enemyNameTexts[i] != null)
-			{
-				enemyNameTexts[i].text = "";
-				enemyNameTexts[i].gameObject.SetActive(false);
-			}
-			if (enemyHealthFills[i] != null)
-			{
-				enemyHealthFills[i].fillAmount = 0f;
-				enemyHealthFills[i].gameObject.SetActive(false);
-			}
-			if (enemyActionGaugeFills[i] != null)
-			{
-				enemyActionGaugeFills[i].fillAmount = 0f;
-				enemyActionGaugeFills[i].gameObject.SetActive(false);
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Updates a specific unit's health UI
-	/// </summary>
-	private void UpdateUnitHealthUI(Unit unit, int spawnIndex, bool isCreature)
-	{
-		if (unit == null || spawnIndex < 0 || spawnIndex >= 3) return;
+		// Show user panel root
+		ShowUserPanel();
 		
-		UnityEngine.UI.Image healthFill = null;
-		
-		if (isCreature && creatureHealthFills[spawnIndex] != null)
+		// Show ActionPanelManager elements (they will handle visibility based on current unit)
+		if (actionPanelManager == null)
 		{
-			healthFill = creatureHealthFills[spawnIndex];
-		}
-		else if (!isCreature && enemyHealthFills[spawnIndex] != null)
-		{
-			healthFill = enemyHealthFills[spawnIndex];
+			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
 		}
 		
-		if (healthFill != null)
+		if (actionPanelManager != null)
 		{
-			float healthPercentage = unit.GetHPPercentage();
-			healthFill.fillAmount = healthPercentage;
+			actionPanelManager.ShowAllActionUI();
 		}
-	}
-	
-	/// <summary>
-	/// Gets the spawn area index (0-2) within the creature or enemy array for a unit
-	/// Returns -1 if not found in the specified array
-	/// </summary>
-	private int GetUnitSpawnAreaIndexInArray(Unit unit, bool isCreature)
-	{
-		if (unit == null) return -1;
-		
-		// Get reference to Spawning to access spawn areas
-		Spawning spawning = FindFirstObjectByType<Spawning>();
-		if (spawning == null) return -1;
-		
-		// Get the appropriate spawn areas array
-		string fieldName = isCreature ? "creatureSpawnAreas" : "enemySpawnAreas";
-		var spawnAreasField = typeof(Spawning).GetField(fieldName, 
-			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-		
-		if (spawnAreasField != null)
-		{
-			var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
-			if (spawnAreas != null)
-			{
-				// Find which spawn area the unit belongs to by checking parent hierarchy
-				for (int i = 0; i < spawnAreas.Length; i++)
-				{
-					if (spawnAreas[i] != null)
-					{
-						// Check if unit is a child of this spawn area
-						Transform unitTransform = unit.transform;
-						while (unitTransform != null)
-						{
-							if (unitTransform == spawnAreas[i])
-							{
-								return i; // Return index within the array (0-2)
-							}
-							unitTransform = unitTransform.parent;
-						}
-					}
-				}
-			}
-		}
-		
-		return -1;
-	}
-	
-	/// <summary>
-	/// Gets the UI index (0-2) within the unit's team type (creature or enemy) based on spawn area
-	/// Returns -1 if not found
-	/// </summary>
-	private int GetUnitSpawnIndexWithinType(Unit unit)
-	{
-		// Try creature array first
-		int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
-		if (creatureIndex >= 0)
-		{
-			return creatureIndex;
-		}
-		
-		// Try enemy array
-		int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
-		if (enemyIndex >= 0)
-		{
-			return enemyIndex;
-		}
-		
-		return -1;
-	}
-	
-	/// <summary>
-	/// Called when a unit's health changes - updates the corresponding UI
-	/// </summary>
-	public void OnUnitHealthChanged(Unit unit)
-	{
-		if (unit == null) return;
-		
-		int spawnIndex = GetUnitSpawnIndexWithinType(unit);
-		if (spawnIndex >= 0 && spawnIndex < 3)
-		{
-			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsPlayerUnit);
-
-            // Toggle the corresponding UI root based on alive state
-            bool isAlive = unit.IsAlive();
-            if (unit.IsPlayerUnit)
-            {
-                if (creatureUIRoots != null && spawnIndex < creatureUIRoots.Length && creatureUIRoots[spawnIndex] != null)
-                {
-                    creatureUIRoots[spawnIndex].SetActive(isAlive);
-                }
-            }
-            else
-            {
-                if (enemyUIRoots != null && spawnIndex < enemyUIRoots.Length && enemyUIRoots[spawnIndex] != null)
-                {
-                    enemyUIRoots[spawnIndex].SetActive(isAlive);
-                }
-            }
-		}
-	}
-	
-	/// <summary>
-	/// Updates a specific unit's action gauge UI
-	/// </summary>
-	private void UpdateUnitActionGaugeUI(Unit unit, int spawnIndex, bool isCreature)
-	{
-		if (unit == null || spawnIndex < 0 || spawnIndex >= 3) return;
-		
-		UnityEngine.UI.Image actionGaugeFill = null;
-		
-		if (isCreature && creatureActionGaugeFills[spawnIndex] != null)
-		{
-			actionGaugeFill = creatureActionGaugeFills[spawnIndex];
-		}
-		else if (!isCreature && enemyActionGaugeFills[spawnIndex] != null)
-		{
-			actionGaugeFill = enemyActionGaugeFills[spawnIndex];
-		}
-		
-		if (actionGaugeFill != null)
-		{
-			// Action gauge is 0-100, so divide by 100 to get percentage
-			float gaugePercentage = Mathf.Clamp01(unit.GetActionGauge() / 100f);
-			actionGaugeFill.fillAmount = gaugePercentage;
-		}
-	}
-	
-	/// <summary>
-	/// Updates all units' action gauge UI displays
-	/// </summary>
-	private void UpdateAllActionGaugeUI()
-	{
-		if (turnOrderRef == null)
-		{
-			turnOrderRef = FindFirstObjectByType<TurnOrder>();
-		}
-		
-		// Find all units in the scene
-		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-		
-		foreach (var unit in allUnits)
-		{
-			if (unit == null || !unit.IsAlive()) continue;
-			
-			// Check if unit is in creature spawn areas or enemy spawn areas
-			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
-			if (creatureIndex >= 0)
-			{
-				UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
-				continue;
-			}
-			
-			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
-			if (enemyIndex >= 0)
-			{
-				UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Debug utility: Prints the action gauge status of all units
-	/// Press G key to use this
-	/// </summary>
-	private void PrintActionGaugeStatus()
-	{
-		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-		
-		Debug.Log("=== ACTION GAUGE STATUS ===");
-		
-		if (allUnits == null || allUnits.Length == 0)
-		{
-			Debug.Log("No units found in scene.");
-			return;
-		}
-		
-		foreach (var unit in allUnits)
-		{
-			if (unit == null) continue;
-			
-			string team = unit.IsPlayerUnit ? "PLAYER" : "ENEMY";
-			string alive = unit.IsAlive() ? "ALIVE" : "DEAD";
-			float gauge = unit.GetActionGauge();
-			bool canAct = gauge >= 100f;
-			string canActStr = canAct ? "✓ CAN ACT" : "✗ Cannot act";
-			
-			Debug.Log($"[{team}] {unit.gameObject.name}: Speed={unit.Speed}, Gauge={gauge:F1}/100 ({gauge/100f*100:F1}%), {alive}, {canActStr}");
-		}
-		
-		Unit current = GetCurrentUnit();
-		if (current != null)
-		{
-			Debug.Log($"\nCURRENT UNIT: {current.gameObject.name} (Speed: {current.Speed}, Gauge: {current.GetActionGauge():F1})");
-		}
-		else
-		{
-			Debug.Log("\nCURRENT UNIT: None");
-		}
-		
-		Debug.Log("============================");
 	}
 	
 	/// <summary>
@@ -1378,49 +1093,400 @@ public class GameManager : MonoBehaviour
 		}
 	}
 	
-	/// <summary>
-	/// Hides action UI elements to prevent player input during skill execution
-	/// </summary>
-	private void HideActionUI()
+	#endregion
+    
+    #region Unit UI Management
+    
+    /// <summary>
+    /// Updates all unit UI displays by connecting units to their corresponding UI elements based on spawn index
+    /// </summary>
+	public void UpdateAllUnitUI()
 	{
-		// Hide user panel root which contains all UI elements
-		HideUserPanel();
-		
-		// Also notify ActionPanelManager to set the skill executing flag
-		if (actionPanelManager == null)
+		if (turnOrderRef == null)
 		{
-			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+			turnOrderRef = FindFirstObjectByType<TurnOrder>();
 		}
 		
-		if (actionPanelManager != null)
+		// Find all units in the scene
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		
+		// Clear all UI first
+		ClearCreatureUI();
+		ClearEnemyUI();
+		
+        // Connect each unit to its UI based on which spawn area array it belongs to
+		int aliveAlliesCount = 0;
+		int aliveEnemiesCount = 0;
+		
+		foreach (var unit in allUnits)
 		{
-			actionPanelManager.HideAllActionUI();
+			if (unit == null || !unit.IsAlive()) continue;
+			
+			// Check if unit is in creature spawn areas or enemy spawn areas
+			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
+			if (creatureIndex >= 0)
+			{
+				aliveAlliesCount++;
+				ConnectUnitToCreatureUI(unit, creatureIndex);
+				continue;
+			}
+			
+			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
+			if (enemyIndex >= 0)
+			{
+				aliveEnemiesCount++;
+				ConnectUnitToEnemyUI(unit, enemyIndex);
+			}
+		}
+		
+		// Hide unused UI roots based on alive unit counts
+		HideUnusedCreatureUIRoots(aliveAlliesCount);
+		HideUnusedEnemyUIRoots(aliveEnemiesCount);
+	}
+	
+	/// <summary>
+	/// Connects a unit to its creature UI slot
+	/// </summary>
+	private void ConnectUnitToCreatureUI(Unit unit, int creatureIndex)
+	{
+		// Creature UI (indices 0-2)
+		if (creatureNameTexts[creatureIndex] != null)
+		{
+			creatureNameTexts[creatureIndex].text = unit.UnitName;
+			creatureNameTexts[creatureIndex].gameObject.SetActive(true);
+		}
+		
+		if (creatureHealthFills[creatureIndex] != null)
+		{
+			creatureHealthFills[creatureIndex].gameObject.SetActive(true);
+			UpdateUnitHealthUI(unit, creatureIndex, isCreature: true);
+			unit.SetHealthFill(creatureHealthFills[creatureIndex]);
+		}
+		
+		if (creatureActionGaugeFills[creatureIndex] != null)
+		{
+			creatureActionGaugeFills[creatureIndex].gameObject.SetActive(true);
+			UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
+		}
+        
+        // Ensure the creature UI root is active for alive unit
+        if (creatureUIRoots != null && creatureIndex >= 0 && creatureIndex < creatureUIRoots.Length && creatureUIRoots[creatureIndex] != null)
+        {
+            creatureUIRoots[creatureIndex].SetActive(true);
+        }
+	}
+	
+	/// <summary>
+	/// Connects a unit to its enemy UI slot
+	/// </summary>
+	private void ConnectUnitToEnemyUI(Unit unit, int enemyIndex)
+	{
+		// Enemy UI (indices 0-2)
+		if (enemyNameTexts[enemyIndex] != null)
+		{
+			enemyNameTexts[enemyIndex].text = unit.UnitName;
+			enemyNameTexts[enemyIndex].gameObject.SetActive(true);
+		}
+		
+		if (enemyHealthFills[enemyIndex] != null)
+		{
+			enemyHealthFills[enemyIndex].gameObject.SetActive(true);
+			UpdateUnitHealthUI(unit, enemyIndex, isCreature: false);
+			unit.SetHealthFill(enemyHealthFills[enemyIndex]);
+		}
+		
+		if (enemyActionGaugeFills[enemyIndex] != null)
+		{
+			enemyActionGaugeFills[enemyIndex].gameObject.SetActive(true);
+			UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
+		}
+        
+        // Ensure the enemy UI root is active for alive unit
+        if (enemyUIRoots != null && enemyIndex >= 0 && enemyIndex < enemyUIRoots.Length && enemyUIRoots[enemyIndex] != null)
+        {
+            enemyUIRoots[enemyIndex].SetActive(true);
+        }
+	}
+	
+	/// <summary>
+	/// Hides unused creature UI roots based on alive unit count
+	/// </summary>
+	private void HideUnusedCreatureUIRoots(int aliveAlliesCount)
+	{
+		// Hide the 3rd UI root (index 2) if there are fewer than 3 units on the field
+		if (aliveAlliesCount < 3 && creatureUIRoots != null && creatureUIRoots.Length > 2 && creatureUIRoots[2] != null)
+		{
+			creatureUIRoots[2].SetActive(false);
+		}
+		
+		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
+		if (aliveAlliesCount < 2 && creatureUIRoots != null && creatureUIRoots.Length > 1 && creatureUIRoots[1] != null)
+		{
+			creatureUIRoots[1].SetActive(false);
 		}
 	}
 	
 	/// <summary>
-	/// Shows action UI elements after skill execution completes
+	/// Hides unused enemy UI roots based on alive unit count
 	/// </summary>
-	private void ShowActionUI()
+	private void HideUnusedEnemyUIRoots(int aliveEnemiesCount)
 	{
-		// Show user panel root
-		ShowUserPanel();
-		
-		// Show ActionPanelManager elements (they will handle visibility based on current unit)
-		if (actionPanelManager == null)
+		if (aliveEnemiesCount < 3 && enemyUIRoots != null && enemyUIRoots.Length > 2 && enemyUIRoots[2] != null)
 		{
-			actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+			enemyUIRoots[2].SetActive(false);
 		}
 		
-		if (actionPanelManager != null)
+		// Hide the 2nd UI root (index 1) if there are fewer than 2 units on the field
+		if (aliveEnemiesCount < 2 && enemyUIRoots != null && enemyUIRoots.Length > 1 && enemyUIRoots[1] != null)
 		{
-			actionPanelManager.ShowAllActionUI();
+			enemyUIRoots[1].SetActive(false);
 		}
 	}
 	
 	/// <summary>
-	/// Called when all allies/player units are dead - opens the round end panel with "Game Over!" message
+	/// Clears all creature UI displays
 	/// </summary>
+	private void ClearCreatureUI()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (creatureNameTexts[i] != null)
+			{
+				creatureNameTexts[i].text = "";
+				creatureNameTexts[i].gameObject.SetActive(false);
+			}
+			if (creatureHealthFills[i] != null)
+			{
+				creatureHealthFills[i].fillAmount = 0f;
+				creatureHealthFills[i].gameObject.SetActive(false);
+			}
+			if (creatureActionGaugeFills[i] != null)
+			{
+				creatureActionGaugeFills[i].fillAmount = 0f;
+				creatureActionGaugeFills[i].gameObject.SetActive(false);
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Clears all enemy UI displays
+	/// </summary>
+	private void ClearEnemyUI()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (enemyNameTexts[i] != null)
+			{
+				enemyNameTexts[i].text = "";
+				enemyNameTexts[i].gameObject.SetActive(false);
+			}
+			if (enemyHealthFills[i] != null)
+			{
+				enemyHealthFills[i].fillAmount = 0f;
+				enemyHealthFills[i].gameObject.SetActive(false);
+			}
+			if (enemyActionGaugeFills[i] != null)
+			{
+				enemyActionGaugeFills[i].fillAmount = 0f;
+				enemyActionGaugeFills[i].gameObject.SetActive(false);
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Updates a specific unit's health UI
+	/// </summary>
+	private void UpdateUnitHealthUI(Unit unit, int spawnIndex, bool isCreature)
+	{
+		if (unit == null || spawnIndex < 0 || spawnIndex >= 3) return;
+		
+		UnityEngine.UI.Image healthFill = null;
+		
+		if (isCreature && creatureHealthFills[spawnIndex] != null)
+		{
+			healthFill = creatureHealthFills[spawnIndex];
+		}
+		else if (!isCreature && enemyHealthFills[spawnIndex] != null)
+		{
+			healthFill = enemyHealthFills[spawnIndex];
+		}
+		
+		if (healthFill != null)
+		{
+			float healthPercentage = unit.GetHPPercentage();
+			healthFill.fillAmount = healthPercentage;
+		}
+	}
+	
+	/// <summary>
+	/// Updates a specific unit's action gauge UI
+	/// </summary>
+	private void UpdateUnitActionGaugeUI(Unit unit, int spawnIndex, bool isCreature)
+	{
+		if (unit == null || spawnIndex < 0 || spawnIndex >= 3) return;
+		
+		UnityEngine.UI.Image actionGaugeFill = null;
+		
+		if (isCreature && creatureActionGaugeFills[spawnIndex] != null)
+		{
+			actionGaugeFill = creatureActionGaugeFills[spawnIndex];
+		}
+		else if (!isCreature && enemyActionGaugeFills[spawnIndex] != null)
+		{
+			actionGaugeFill = enemyActionGaugeFills[spawnIndex];
+		}
+		
+		if (actionGaugeFill != null)
+		{
+			// Action gauge is 0-100, so divide by 100 to get percentage
+			float gaugePercentage = Mathf.Clamp01(unit.GetActionGauge() / 100f);
+			actionGaugeFill.fillAmount = gaugePercentage;
+		}
+	}
+	
+	/// <summary>
+	/// Updates all units' action gauge UI displays
+	/// </summary>
+	private void UpdateAllActionGaugeUI()
+	{
+		if (turnOrderRef == null)
+		{
+			turnOrderRef = FindFirstObjectByType<TurnOrder>();
+		}
+		
+		// Find all units in the scene
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		
+		foreach (var unit in allUnits)
+		{
+			if (unit == null || !unit.IsAlive()) continue;
+			
+			// Check if unit is in creature spawn areas or enemy spawn areas
+			int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
+			if (creatureIndex >= 0)
+			{
+				UpdateUnitActionGaugeUI(unit, creatureIndex, isCreature: true);
+				continue;
+			}
+			
+			int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
+			if (enemyIndex >= 0)
+			{
+				UpdateUnitActionGaugeUI(unit, enemyIndex, isCreature: false);
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Called when a unit's health changes - updates the corresponding UI
+	/// </summary>
+	public void OnUnitHealthChanged(Unit unit)
+	{
+		if (unit == null) return;
+		
+		int spawnIndex = GetUnitSpawnIndexWithinType(unit);
+		if (spawnIndex >= 0 && spawnIndex < 3)
+		{
+			UpdateUnitHealthUI(unit, spawnIndex, isCreature: unit.IsPlayerUnit);
+
+            // Toggle the corresponding UI root based on alive state
+            bool isAlive = unit.IsAlive();
+            if (unit.IsPlayerUnit)
+            {
+                if (creatureUIRoots != null && spawnIndex < creatureUIRoots.Length && creatureUIRoots[spawnIndex] != null)
+                {
+                    creatureUIRoots[spawnIndex].SetActive(isAlive);
+                }
+            }
+            else
+            {
+                if (enemyUIRoots != null && spawnIndex < enemyUIRoots.Length && enemyUIRoots[spawnIndex] != null)
+                {
+                    enemyUIRoots[spawnIndex].SetActive(isAlive);
+                }
+            }
+		}
+	}
+	
+	#endregion
+    
+    #region Spawn Index Lookup
+    
+    /// <summary>
+    /// Gets the spawn area index (0-2) within the creature or enemy array for a unit
+    /// Returns -1 if not found in the specified array
+    /// </summary>
+	private int GetUnitSpawnAreaIndexInArray(Unit unit, bool isCreature)
+	{
+		if (unit == null) return -1;
+		
+		// Get reference to Spawning to access spawn areas
+		Spawning spawning = FindFirstObjectByType<Spawning>();
+		if (spawning == null) return -1;
+		
+		// Get the appropriate spawn areas array
+		string fieldName = isCreature ? "creatureSpawnAreas" : "enemySpawnAreas";
+		var spawnAreasField = typeof(Spawning).GetField(fieldName, 
+			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+		
+		if (spawnAreasField != null)
+		{
+			var spawnAreas = spawnAreasField.GetValue(spawning) as Transform[];
+			if (spawnAreas != null)
+			{
+				// Find which spawn area the unit belongs to by checking parent hierarchy
+				for (int i = 0; i < spawnAreas.Length; i++)
+				{
+					if (spawnAreas[i] != null)
+					{
+						// Check if unit is a child of this spawn area
+						Transform unitTransform = unit.transform;
+						while (unitTransform != null)
+						{
+							if (unitTransform == spawnAreas[i])
+							{
+								return i; // Return index within the array (0-2)
+							}
+							unitTransform = unitTransform.parent;
+						}
+					}
+				}
+			}
+		}
+		
+		return -1;
+	}
+	
+	/// <summary>
+	/// Gets the UI index (0-2) within the unit's team type (creature or enemy) based on spawn area
+	/// Returns -1 if not found
+	/// </summary>
+	private int GetUnitSpawnIndexWithinType(Unit unit)
+	{
+		// Try creature array first
+		int creatureIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: true);
+		if (creatureIndex >= 0)
+		{
+			return creatureIndex;
+		}
+		
+		// Try enemy array
+		int enemyIndex = GetUnitSpawnAreaIndexInArray(unit, isCreature: false);
+		if (enemyIndex >= 0)
+		{
+			return enemyIndex;
+		}
+		
+		return -1;
+	}
+	
+	#endregion
+    
+    #region Round End Management
+    
+    /// <summary>
+    /// Called when all allies/player units are dead - opens the round end panel with "Game Over!" message
+    /// </summary>
 	public void OnAllAlliesDead()
 	{
 		// Delay showing the game over screen to allow death animations to play
@@ -1519,9 +1585,13 @@ public class GameManager : MonoBehaviour
 		}
 	}
 	
-	/// <summary>
-	/// Called when the return to main menu button is clicked
-	/// </summary>
+	#endregion
+    
+    #region Button Handlers
+    
+    /// <summary>
+    /// Called when the return to main menu button is clicked
+    /// </summary>
 	public void OnReturnToMainMenuClicked()
 	{
 		LoadMainMenuScene();
@@ -1566,4 +1636,52 @@ public class GameManager : MonoBehaviour
 			Debug.LogWarning("GameManager: mainMenuSceneName is not set! Cannot load main menu.");
 		}
 	}
+	
+	#endregion
+    
+    #region Debug Utilities
+    
+    /// <summary>
+    /// Debug utility: Prints the action gauge status of all units
+    /// Press G key to use this
+    /// </summary>
+	private void PrintActionGaugeStatus()
+	{
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		
+		Debug.Log("=== ACTION GAUGE STATUS ===");
+		
+		if (allUnits == null || allUnits.Length == 0)
+		{
+			Debug.Log("No units found in scene.");
+			return;
+		}
+		
+		foreach (var unit in allUnits)
+		{
+			if (unit == null) continue;
+			
+			string team = unit.IsPlayerUnit ? "PLAYER" : "ENEMY";
+			string alive = unit.IsAlive() ? "ALIVE" : "DEAD";
+			float gauge = unit.GetActionGauge();
+			bool canAct = gauge >= 100f;
+			string canActStr = canAct ? "✓ CAN ACT" : "✗ Cannot act";
+			
+			Debug.Log($"[{team}] {unit.gameObject.name}: Speed={unit.Speed}, Gauge={gauge:F1}/100 ({gauge/100f*100:F1}%), {alive}, {canActStr}");
+		}
+		
+		Unit current = GetCurrentUnit();
+		if (current != null)
+		{
+			Debug.Log($"\nCURRENT UNIT: {current.gameObject.name} (Speed: {current.Speed}, Gauge: {current.GetActionGauge():F1})");
+		}
+		else
+		{
+			Debug.Log("\nCURRENT UNIT: None");
+		}
+		
+		Debug.Log("============================");
+	}
+	
+	#endregion
 }
