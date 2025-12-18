@@ -168,42 +168,72 @@ public class TurnOrder : MonoBehaviour
     /// </summary>
     private void SelectNextUnitToAct()
     {
+        // Validate preconditions
+        if (!ValidateSelectionPreconditions())
+        {
+            return;
+        }
+        
+        // Handle dead current unit
+        HandleDeadCurrentUnitIfNeeded();
+        
+        // Check if we should proceed with selection
+        if (!ShouldProceedWithSelection())
+        {
+            isSelectingNextUnit = false;
+            return;
+        }
+        
+        // Find and select the best candidate unit
+        Unit nextUnitToAct = FindBestCandidateUnit();
+        
+        // Assign the selected unit if found
+        AssignSelectedUnit(nextUnitToAct);
+        
+        isSelectingNextUnit = false; // Reset flag at the end
+    }
+    
+    /// <summary>
+    /// Validates preconditions for selecting next unit
+    /// </summary>
+    private bool ValidateSelectionPreconditions()
+    {
         // Prevent infinite recursion
         if (isSelectingNextUnit)
         {
-            return;
+            return false;
         }
         
         // Stop if game has ended
         if (gameEnded)
         {
-            return;
+            return false;
         }
         
+        // Ensure GameManager is available
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
             if (gameManager == null)
-                return;
+                return false;
         }
         
         // Check if game should end before selecting next unit
         if (!CheckGameEnd())
         {
             isSelectingNextUnit = false;
-            return;
+            return false;
         }
         
         isSelectingNextUnit = true;
-
-        // Find all alive units
-        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        if (allUnits == null || allUnits.Length == 0)
-        {
-            isSelectingNextUnit = false;
-            return;
-        }
-
+        return true;
+    }
+    
+    /// <summary>
+    /// Handles the case where the current unit is dead
+    /// </summary>
+    private void HandleDeadCurrentUnitIfNeeded()
+    {
         Unit currentUnit = gameManager.GetCurrentUnit();
         
         // If current unit is dead, clear the acting flag and allow selection of a new unit
@@ -213,12 +243,37 @@ public class TurnOrder : MonoBehaviour
             isUnitActing = false;
             // Continue to select a new unit
         }
+    }
+    
+    /// <summary>
+    /// Checks if we should proceed with selection (current unit is not acting)
+    /// </summary>
+    private bool ShouldProceedWithSelection()
+    {
+        Unit currentUnit = gameManager.GetCurrentUnit();
+        
         // Only select a new unit if no unit is currently acting (and current unit is alive)
-        else if (isUnitActing && currentUnit != null && currentUnit.IsAlive())
+        if (isUnitActing && currentUnit != null && currentUnit.IsAlive())
         {
-            isSelectingNextUnit = false;
-            return;
+            return false;
         }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Finds the best candidate unit to act next based on gauge and tiebreaker rules
+    /// </summary>
+    private Unit FindBestCandidateUnit()
+    {
+        // Find all alive units
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null || allUnits.Length == 0)
+        {
+            return null;
+        }
+
+        Unit currentUnit = gameManager.GetCurrentUnit();
         
         // Find the unit with the highest gauge that has reached 100
         // Tiebreaker: Player units > Enemy units, then by spawn index (1-3 for players, 4-6 for enemies)
@@ -237,36 +292,51 @@ public class TurnOrder : MonoBehaviour
                 if (currentUnit != null && unit == currentUnit)
                     continue;
                 
-                float unitGauge = unit.GetActionGauge();
-                
-                // Select this unit if:
-                // 1. No unit selected yet, OR
-                // 2. This unit has higher gauge, OR
-                // 3. Same gauge and this unit wins tiebreaker (player > enemy, then lower spawn index)
-                bool shouldSelect = false;
-                
-                if (nextUnitToAct == null)
-                {
-                    shouldSelect = true;
-                }
-                else if (unitGauge > highestGauge)
-                {
-                    shouldSelect = true;
-                }
-                else if (Mathf.Approximately(unitGauge, highestGauge))
-                {
-                    // Same gauge - use tiebreaker
-                    shouldSelect = CompareUnitsForTiebreaker(unit, nextUnitToAct) < 0;
-                }
-                
-                if (shouldSelect)
+                // Evaluate if this unit should be selected
+                if (ShouldSelectUnit(unit, nextUnitToAct, highestGauge))
                 {
                     nextUnitToAct = unit;
-                    highestGauge = unitGauge;
+                    highestGauge = unit.GetActionGauge();
                 }
             }
         }
-
+        
+        return nextUnitToAct;
+    }
+    
+    /// <summary>
+    /// Determines if a unit should be selected based on gauge and tiebreaker rules
+    /// </summary>
+    private bool ShouldSelectUnit(Unit candidate, Unit currentBest, float currentBestGauge)
+    {
+        float candidateGauge = candidate.GetActionGauge();
+        
+        // Select this unit if:
+        // 1. No unit selected yet, OR
+        // 2. This unit has higher gauge, OR
+        // 3. Same gauge and this unit wins tiebreaker (player > enemy, then lower spawn index)
+        if (currentBest == null)
+        {
+            return true;
+        }
+        else if (candidateGauge > currentBestGauge)
+        {
+            return true;
+        }
+        else if (Mathf.Approximately(candidateGauge, currentBestGauge))
+        {
+            // Same gauge - use tiebreaker
+            return CompareUnitsForTiebreaker(candidate, currentBest) < 0;
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// Assigns the selected unit and performs final validation
+    /// </summary>
+    private void AssignSelectedUnit(Unit nextUnitToAct)
+    {
         // If we found a unit ready to act, start their turn
         if (nextUnitToAct != null)
         {
@@ -286,8 +356,6 @@ public class TurnOrder : MonoBehaviour
         }
         // Note: We do NOT increment gauges here - that only happens in AdvanceToNextTurn()
         // If no unit can act, we just wait (AdvanceToNextTurn will handle incrementing)
-        
-        isSelectingNextUnit = false; // Reset flag at the end
     }
 
     /// <summary>
@@ -535,19 +603,57 @@ public class TurnOrder : MonoBehaviour
     /// </summary>
     public void AdvanceToNextTurn()
     {
-        // Stop if game has ended
-        if (gameEnded)
+        // Validate preconditions
+        if (!ValidateAdvancePreconditions())
         {
             return;
         }
         
+        Unit currentUnit = gameManager.GetCurrentUnit();
+        
+        // Handle dead current unit
+        if (HandleDeadCurrentUnitInAdvance(currentUnit))
+        {
+            return;
+        }
+        
+        // Reset current unit's gauge
+        float gaugeBeforeReset = currentUnit.GetActionGauge();
+        currentUnit.ResetActionGauge();
+        float gaugeAfterReset = currentUnit.GetActionGauge();
+        
+        // Increment all units' gauges until someone can act
+        IncrementGaugesUntilSomeoneCanAct(currentUnit);
+        
+        // Log gauge reset info
+        string gaugeInfo = gaugeBeforeReset > 100f 
+            ? $"Gauge {gaugeBeforeReset:F1} -> {gaugeAfterReset:F1} (preserved excess)" 
+            : $"Gauge reset to {gaugeAfterReset:F1}";
+        Debug.Log(currentUnit.gameObject.name + " finished their turn. " + gaugeInfo + ". All other units' gauges incremented.");
+        
+        // Now select the next unit that can act
+        SelectNextUnitToAct();
+    }
+    
+    /// <summary>
+    /// Validates preconditions for advancing to next turn
+    /// </summary>
+    private bool ValidateAdvancePreconditions()
+    {
+        // Stop if game has ended
+        if (gameEnded)
+        {
+            return false;
+        }
+        
+        // Ensure GameManager is available
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
             if (gameManager == null)
             {
                 Debug.LogWarning("Cannot advance turn - GameManager not found!");
-                return;
+                return false;
             }
         }
 
@@ -555,17 +661,25 @@ public class TurnOrder : MonoBehaviour
         if (!CheckGameEnd())
         {
             isUnitActing = false;
-            return;
+            return false;
         }
-
-        Unit currentUnit = gameManager.GetCurrentUnit();
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Handles the case where the current unit is dead during advance
+    /// Returns true if handled (should return early), false if should continue
+    /// </summary>
+    private bool HandleDeadCurrentUnitInAdvance(Unit currentUnit)
+    {
         if (currentUnit == null)
         {
             Debug.LogWarning("Cannot advance turn - no current unit!");
             isUnitActing = false;
-            return;
+            return true;
         }
-
+        
         // Check if current unit is dead - if so, just advance without resetting gauge
         if (!currentUnit.IsAlive())
         {
@@ -575,37 +689,43 @@ public class TurnOrder : MonoBehaviour
             // Check if game should end
             if (!CheckGameEnd())
             {
-                return;
+                return true;
             }
             
-            // Find all alive units to increment
-            Unit[] aliveUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            if (aliveUnits != null)
-            {
-                // Increment all alive units
-                foreach (var unit in aliveUnits)
-                {
-                    if (unit != null && unit.IsAlive())
-                    {
-                        unit.IncrementActionGauge();
-                    }
-                }
-            }
+            // Increment all alive units
+            IncrementAllAliveUnits();
             
             SelectNextUnitToAct();
-            return;
+            return true;
         }
-
-        // Get gauge before reset to log excess
-        float gaugeBeforeReset = currentUnit.GetActionGauge();
         
-        // Reset the current unit's action gauge after they've acted
-        currentUnit.ResetActionGauge();
-        
-        float gaugeAfterReset = currentUnit.GetActionGauge();
-        
-        // Increment all units' action gauges based on their speed (once per turn)
-        // If no unit can act after incrementing, continue incrementing until someone can
+        return false;
+    }
+    
+    /// <summary>
+    /// Increments all alive units' gauges once
+    /// </summary>
+    private void IncrementAllAliveUnits()
+    {
+        Unit[] aliveUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (aliveUnits != null)
+        {
+            // Increment all alive units
+            foreach (var unit in aliveUnits)
+            {
+                if (unit != null && unit.IsAlive())
+                {
+                    unit.IncrementActionGauge();
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Increments all units' gauges until someone can act
+    /// </summary>
+    private void IncrementGaugesUntilSomeoneCanAct(Unit currentUnit)
+    {
         Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         
         Debug.Log($"=== Advancing turn from {currentUnit.gameObject.name} ===");
@@ -616,83 +736,99 @@ public class TurnOrder : MonoBehaviour
         if (allUnits != null)
         {
             // First, increment all other units once
-            foreach (var unit in allUnits)
-            {
-                if (unit != null && unit.IsAlive() && unit != currentUnit)
-                {
-                    float oldGauge = unit.GetActionGauge();
-                    unit.IncrementActionGauge();
-                    float newGauge = unit.GetActionGauge();
-                    //Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge} -> {newGauge}");
-                }
-            }
+            IncrementOtherUnitsOnce(allUnits, currentUnit);
             
             // Check if anyone can act now
-            bool someoneCanAct = false;
-            foreach (var unit in allUnits)
-            {
-                if (unit != null && unit.IsAlive() && unit.GetActionGauge() >= 100f)
-                {
-                    someoneCanAct = true;
-                    break;
-                }
-            }
+            bool someoneCanAct = CheckIfAnyoneCanAct(allUnits);
             
             // If no one can act yet, continue incrementing until someone reaches 100
             if (!someoneCanAct)
             {
-                Debug.Log("No unit can act after first increment. Continuing to increment...");
-                int maxIterations = 10;
-                int iterations = 0;
+                ContinueIncrementingUntilSomeoneCanAct(allUnits, currentUnit);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Increments all other units (excluding current unit) once
+    /// </summary>
+    private void IncrementOtherUnitsOnce(Unit[] allUnits, Unit currentUnit)
+    {
+        foreach (var unit in allUnits)
+        {
+            if (unit != null && unit.IsAlive() && unit != currentUnit)
+            {
+                float oldGauge = unit.GetActionGauge();
+                unit.IncrementActionGauge();
+                float newGauge = unit.GetActionGauge();
+                //Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge} -> {newGauge}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Checks if any unit can act (gauge >= 100)
+    /// </summary>
+    private bool CheckIfAnyoneCanAct(Unit[] allUnits)
+    {
+        foreach (var unit in allUnits)
+        {
+            if (unit != null && unit.IsAlive() && unit.GetActionGauge() >= 100f)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// Continues incrementing units until someone can act
+    /// </summary>
+    private void ContinueIncrementingUntilSomeoneCanAct(Unit[] allUnits, Unit currentUnit)
+    {
+        Debug.Log("No unit can act after first increment. Continuing to increment...");
+        int maxIterations = 10;
+        int iterations = 0;
+        bool someoneCanAct = false;
+        
+        while (!someoneCanAct && iterations < maxIterations && !gameEnded)
+        {
+            iterations++;
+            
+            // Check game end before each iteration
+            if (!CheckGameEnd())
+            {
+                break;
+            }
+            
+            foreach (var unit in allUnits)
+            {
+                if (unit == null || !unit.IsAlive() || unit == currentUnit)
+                    continue;
                 
-                while (!someoneCanAct && iterations < maxIterations && !gameEnded)
-                {
-                    iterations++;
-                    
-                    // Check game end before each iteration
-                    if (!CheckGameEnd())
-                    {
-                        break;
-                    }
-                    
-                    foreach (var unit in allUnits)
-                    {
-                        if (unit == null || !unit.IsAlive() || unit == currentUnit)
-                            continue;
-                        
-                        float oldGauge = unit.GetActionGauge();
-                        bool reached100 = unit.IncrementActionGauge();
-                        float newGauge = unit.GetActionGauge();
-                        
-                        Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge} -> {newGauge}");
-                        
-                        if (reached100)
-                        {
-                            someoneCanAct = true;
-                        }
-                    }
-                }
+                float oldGauge = unit.GetActionGauge();
+                bool reached100 = unit.IncrementActionGauge();
+                float newGauge = unit.GetActionGauge();
                 
-                if (iterations >= maxIterations && !someoneCanAct && !gameEnded)
-                {
-                    Debug.LogError("Max iterations reached trying to find a unit that can act!");
-                }
+                Debug.Log($"{unit.gameObject.name} (Speed {unit.Speed}): Gauge {oldGauge} -> {newGauge}");
                 
-                // If game ended during increment loop, stop
-                if (gameEnded)
+                if (reached100)
                 {
-                    return;
+                    someoneCanAct = true;
                 }
             }
         }
         
-        string gaugeInfo = gaugeBeforeReset > 100f 
-            ? $"Gauge {gaugeBeforeReset:F1} -> {gaugeAfterReset:F1} (preserved excess)" 
-            : $"Gauge reset to {gaugeAfterReset:F1}";
-        Debug.Log(currentUnit.gameObject.name + " finished their turn. " + gaugeInfo + ". All other units' gauges incremented.");
+        if (iterations >= maxIterations && !someoneCanAct && !gameEnded)
+        {
+            Debug.LogError("Max iterations reached trying to find a unit that can act!");
+        }
         
-        // Now select the next unit that can act
-        SelectNextUnitToAct();
+        // If game ended during increment loop, stop
+        if (gameEnded)
+        {
+            return;
+        }
     }
     
     /// <summary>
