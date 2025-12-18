@@ -116,7 +116,9 @@ public class EventLogPanel : MonoBehaviour
             {
                 if (sameNameUnits[i] == unit)
                 {
-                    return $"{baseName} ({i + 1})";
+                    // Convert index to letter (0 = A, 1 = B, 2 = C, etc.)
+                    char letter = (char)('A' + i);
+                    return $"{baseName} {letter}";
                 }
             }
         }
