@@ -63,6 +63,8 @@ public class SkillPanelManager : MonoBehaviour
     private bool ignoreInputThisFrame = false; // Prevents accidental activation when opening panel
     private int lastSelectedButtonIndex = -1; // Track which button was selected before entering selection mode
 
+    #region Lifecycle Methods
+    
     private void Start()
     {
         // Find GameManager if not assigned
@@ -118,213 +120,23 @@ public class SkillPanelManager : MonoBehaviour
     {
         DisableButtonSelectionMode();
     }
-    
-    /// <summary>
-    /// Enables button selection mode for navigating skill buttons vertically
-    /// </summary>
-    public void EnableButtonSelectionMode()
-    {
-        if (selection == null)
-        {
-            selection = FindFirstObjectByType<Selection>();
-            if (selection == null)
-            {
-                Debug.LogWarning("SkillPanelManager: Selection component not found. Button selection mode disabled.");
-                return;
-            }
-        }
-        
-        // Clear any existing selection first to ensure we start fresh
-        selection.ClearSelection();
-        
-        isButtonSelectionMode = true;
-        
-        // Get available skill buttons (only buttons with skills)
-        List<Button> availableButtons = new List<Button>();
-        if (gameManager != null)
-        {
-            Unit currentUnit = gameManager.GetCurrentUnit();
-            if (currentUnit != null && currentUnit.Skills != null)
-            {
-                for (int i = 0; i < 4 && i < currentUnit.Skills.Length; i++)
-                {
-                    if (currentUnit.Skills[i] != null && skillButtons[i] != null)
-                    {
-                        availableButtons.Add(skillButtons[i]);
-                    }
-                }
-            }
-        }
-        
-        // Set up selection with available buttons
-        if (availableButtons.Count > 0)
-        {
-            selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
-            // Ignore input for this frame to prevent accidental activation
-            ignoreInputThisFrame = true;
-        }
-    }
-    
-    /// <summary>
-    /// Disables button selection mode
-    /// </summary>
-    private void DisableButtonSelectionMode()
-    {
-        isButtonSelectionMode = false;
-        
-        if (selection != null)
-        {
-            selection.ClearSelection();
-        }
-    }
-    
-    /// <summary>
-    /// Handles input for button selection mode (Up/Down or W/S to cycle, Enter/Space to activate)
-    /// </summary>
-    private void HandleButtonSelectionInput()
-    {
-        if (selection == null || !selection.IsValidSelection())
-            return;
-        
-        // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
-        if (Keyboard.current != null && (Keyboard.current[Key.UpArrow].wasPressedThisFrame || Keyboard.current[Key.W].wasPressedThisFrame))
-        {
-            selection.Previous();
-        }
-        else if (Keyboard.current != null && (Keyboard.current[Key.DownArrow].wasPressedThisFrame || Keyboard.current[Key.S].wasPressedThisFrame))
-        {
-            selection.Next();
-        }
-        
-        // Activate selected button with Enter or Space
-        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
-        {
-            // Block input during skill execution
-            ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-            if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
-            {
-                return;
-            }
-            
-            ActivateSelectedButton();
-        }
-    }
-    
-    /// <summary>
-    /// Activates the currently selected skill button
-    /// </summary>
-    private void ActivateSelectedButton()
-    {
-        if (selection == null || !selection.IsValidSelection())
-            return;
-        
-        object selectedItem = selection.CurrentSelection;
-        if (selectedItem is Button button)
-        {
-            // Find which skill button was selected
-            for (int i = 0; i < skillButtons.Length; i++)
-            {
-                if (skillButtons[i] == button)
-                {
-                    OnSkillButtonClicked(i);
-                    break;
-                }
-            }
-        }
-    }
 
     private void Update()
     {
-        // Only process input if this GameObject is active in the hierarchy
-        if (!gameObject.activeInHierarchy)
-            return;
-        
-        // Check if SkillsPanel is actually visible (via ActionPanelManager)
-        ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-        if (actionPanelManager != null && actionPanelManager.SkillsPanel != null && !actionPanelManager.SkillsPanel.activeSelf)
+        // Check if we should process input
+        if (!ShouldProcessInput())
         {
-            // Skills panel is not visible, don't process input
             return;
         }
         
-        // Update skills to reflect cooldown changes (only for player units, and only update brightness)
-        if (gameManager != null && !isSelectionMode && !isButtonSelectionMode)
-        {
-            Unit currentUnit = gameManager.GetCurrentUnit();
-            if (currentUnit != null && currentUnit.IsPlayerUnit && currentUnit == lastDisplayedUnit)
-            {
-                // Only update brightness and cooldown text without full refresh (more efficient)
-                Skill[] skills = currentUnit.Skills;
-                for (int i = 0; i < 4 && i < skills.Length; i++)
-                {
-                    if (skills[i] != null && originalColorsStored[i])
-                    {
-                        bool isUnusable = !currentUnit.CanUseSkill(i);
-                        UpdateSkillBrightness(i, isUnusable);
-                        UpdateCooldownText(i, currentUnit);
-                    }
-                }
-            }
-        }
+        // Handle cooldown UI refresh
+        HandleCooldownUIRefresh();
         
-        // Handle button selection mode (vertical navigation through skill buttons)
-        if (isButtonSelectionMode && !isSelectionMode)
-        {
-            // Skip input handling if we're ignoring input this frame
-            if (ignoreInputThisFrame)
-            {
-                ignoreInputThisFrame = false;
-            }
-            else
-            {
-                HandleButtonSelectionInput();
-            }
-        }
+        // Handle button selection mode input
+        HandleButtonSelectionModeInput();
         
-        // Check for cancellation (right click or ESC)
-        if (isSelectionMode)
-        {
-            // Skip input handling if we're ignoring input this frame
-            if (ignoreInputThisFrame)
-            {
-                ignoreInputThisFrame = false;
-            }
-            else
-            {
-                if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
-                    (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame))
-                {
-                    CancelSelectionMode();
-                }
-                // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
-                // Navigate through targets with arrow keys or WASD
-                else if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
-                {
-                    if (selection != null)
-                    {
-                        selection.Previous();
-                    }
-                }
-                else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
-                {
-                    if (selection != null)
-                    {
-                        selection.Next();
-                    }
-                }
-                // Confirm selection with Enter or Space (keyboard navigation confirmation)
-                else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
-                {
-                    // Block input during skill execution
-                    if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
-                    {
-                        return;
-                    }
-                    
-                    ConfirmSelection();
-                }
-            }
-        }
+        // Handle target selection mode input
+        HandleTargetSelectionInput();
     }
     
     void LateUpdate()
@@ -362,6 +174,31 @@ public class SkillPanelManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        // Unsubscribe from button clicks
+        if (skillButtons != null)
+        {
+            for (int i = 0; i < skillButtons.Length; i++)
+            {
+                if (skillButtons[i] != null)
+                {
+                    skillButtons[i].onClick.RemoveAllListeners();
+                }
+            }
+        }
+        
+        // Unsubscribe from selection events
+        if (selection != null)
+        {
+            selection.OnSelectionChanged -= OnSelectionChanged;
+        }
+    }
+    
+    #endregion
+    
+    #region Public API
+    
     /// <summary>
     /// Updates the skill UI to match the current unit's skills
     /// </summary>
@@ -397,87 +234,11 @@ public class SkillPanelManager : MonoBehaviour
         {
             if (i < skills.Length && skills[i] != null)
             {
-                // Update skill name
-                if (skillNames[i] != null)
-                {
-                    skillNames[i].text = skills[i].skillName;
-                }
-
-                // Store original colors if not already stored
-                if (!originalColorsStored[i])
-                {
-                    // Store original icon color
-                    if (skillIcons[i] != null)
-                    {
-                        originalIconColors[i] = skillIcons[i].color;
-                    }
-                    
-                    // Store original button color
-                    if (skillButtons[i] != null && skillButtons[i].image != null)
-                    {
-                        originalButtonColors[i] = skillButtons[i].image.color;
-                    }
-                    
-                    originalColorsStored[i] = true;
-                }
-                
-                // Update skill icon
-                if (skillIcons[i] != null)
-                {
-                    if (skills[i].icon != null)
-                    {
-                        skillIcons[i].sprite = skills[i].icon;
-                        skillIcons[i].enabled = true;
-                    }
-                    else
-                    {
-                        // If no icon, disable the image
-                        skillIcons[i].enabled = false;
-                    }
-                }
-                
-                // Update brightness based on cooldown or unusability
-                bool isUnusable = !currentUnit.CanUseSkill(i);
-                UpdateSkillBrightness(i, isUnusable);
-                
-                // Update cooldown text
-                UpdateCooldownText(i, currentUnit);
+                PopulateSkillSlot(i, skills[i], currentUnit);
             }
             else
             {
-                // Clear this skill slot
-                if (skillNames[i] != null)
-                {
-                    skillNames[i].text = "";
-                }
-
-                if (skillIcons[i] != null)
-                {
-                    skillIcons[i].enabled = false;
-                }
-                
-                // Clear cooldown text
-                if (skillCooldowns[i] != null)
-                {
-                    skillCooldowns[i].text = "";
-                }
-                
-                // Restore colors when clearing slot
-                if (originalColorsStored[i])
-                {
-                    if (skillIcons[i] != null)
-                    {
-                        skillIcons[i].color = originalIconColors[i];
-                    }
-                    if (skillButtons[i] != null && skillButtons[i].image != null)
-                    {
-                        skillButtons[i].image.color = originalButtonColors[i];
-                    }
-                }
-                // If not stored, leave it as is (don't modify alpha)
-                
-                // Reset stored flag
-                originalColorsStored[i] = false;
+                ClearSkillSlot(i);
             }
         }
         
@@ -487,39 +248,638 @@ public class SkillPanelManager : MonoBehaviour
             EnableButtonSelectionMode();
         }
     }
+    
+    /// <summary>
+    /// Checks if we're currently in target selection mode
+    /// </summary>
+    public bool IsInSelectionMode()
+    {
+        return isSelectionMode;
+    }
+    
+    /// <summary>
+    /// Gets the current skill being cast during selection mode
+    /// </summary>
+    public Skill GetCurrentSkill()
+    {
+        return currentSkill;
+    }
+    
+    /// <summary>
+    /// Gets the current skill index being cast during selection mode
+    /// </summary>
+    public int GetSelectedSkillIndex()
+    {
+        return selectedSkillIndex;
+    }
+    
+    /// <summary>
+    /// Cancels selection mode (public method for external cancellation)
+    /// </summary>
+    public void CancelSelectionModePublic()
+    {
+        CancelSelectionMode();
+    }
+    
+    /// <summary>
+    /// Enables button selection mode for navigating skill buttons vertically
+    /// </summary>
+    public void EnableButtonSelectionMode()
+    {
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+            if (selection == null)
+            {
+                Debug.LogWarning("SkillPanelManager: Selection component not found. Button selection mode disabled.");
+                return;
+            }
+        }
+        
+        // Clear any existing selection first to ensure we start fresh
+        selection.ClearSelection();
+        
+        isButtonSelectionMode = true;
+        
+        // Get available skill buttons (only buttons with skills)
+        List<Button> availableButtons = GetAvailableSkillButtons();
+        
+        // Set up selection with available buttons
+        if (availableButtons.Count > 0)
+        {
+            selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
+            // Ignore input for this frame to prevent accidental activation
+            ignoreInputThisFrame = true;
+        }
+    }
+    
+    #endregion
+    
+    #region Target Selection Lifecycle
+    
+    /// <summary>
+    /// Called when a skill button is clicked
+    /// </summary>
+    private void OnSkillButtonClicked(int skillIndex)
+    {
+        if (!CanUseSkillNow(skillIndex))
+        {
+            return;
+        }
+        
+        Unit currentUnit = gameManager.GetCurrentUnit();
+        Skill skill = currentUnit.Skills[skillIndex];
+
+        // If skill targets self, use it with delay for proper animation timing
+        if (skill.targetType == SkillTargetType.Self)
+        {
+            if (gameManager != null)
+            {
+                gameManager.ExecuteSkillWithDelay(currentUnit, skillIndex, currentUnit, false);
+                // Update skills immediately to reflect cooldown
+                UpdateSkills();
+                // Advance turn after delays complete
+                StartCoroutine(DelayedAdvanceTurnAfterSkill());
+            }
+            else
+            {
+                // Fallback to immediate execution
+                currentUnit.UseSkill(skillIndex, currentUnit);
+                UpdateSkills();
+                AdvanceTurn();
+            }
+            return;
+        }
+
+        // Enter selection mode
+        EnterSelectionMode(skillIndex, currentUnit, skill);
+    }
+    
+    /// <summary>
+    /// Enters selection mode for choosing a target
+    /// </summary>
+    private void EnterSelectionMode(int skillIndex, Unit caster, Skill skill)
+    {
+        if (selection == null)
+        {
+            Debug.LogWarning("SkillPanelManager: Selection component not found!");
+            return;
+        }
+
+        // Store which button was selected before entering selection mode
+        StoreCurrentButtonSelection();
+
+        // Disable button selection mode before entering target selection mode
+        DisableButtonSelectionMode();
+
+        isSelectionMode = true;
+        selectedSkillIndex = skillIndex;
+        currentCastingUnit = caster;
+        currentSkill = skill;
+
+        // Hide user panel when entering selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.HideUserPanel();
+        }
+
+        // Convert SkillTargetType to UnitTargetType
+        UnitTargetType targetType = ConvertTargetType(skill.targetType);
+
+        // Setup unit selection (will automatically restore previously selected unit based on target type)
+        selection.SetupUnitSelection(targetType, caster, skill);
+
+        Debug.Log($"Entered selection mode for skill: {skill.skillName}, Target type: {targetType}");
+
+        // If no valid targets, exit selection mode
+        if (selection.Count == 0)
+        {
+            Debug.LogWarning("No valid targets for this skill!");
+            CancelSelectionMode();
+            return;
+        }
+        
+        // Ignore input for this frame to prevent accidental confirmation
+        ignoreInputThisFrame = true;
+    }
+    
+    /// <summary>
+    /// Cancels selection mode
+    /// </summary>
+    private void CancelSelectionMode()
+    {
+        if (!isSelectionMode)
+            return;
+
+        // Store the currently selected unit before clearing (for next time, based on target type)
+        if (selection != null && currentCastingUnit != null)
+        {
+            selection.StoreLastSelectedUnit(currentCastingUnit);
+        }
+
+        isSelectionMode = false;
+        // Don't clear selectedSkillIndex and currentSkill yet - keep them until button selection is restored
+        // This prevents InfoPanel from flickering to the first skill during the transition
+
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+
+        // Show user panel again when exiting selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
+        }
+
+        // Store the button index to restore before re-enabling button selection mode
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        
+        // Re-enable button selection mode to return to skill button navigation
+        EnableButtonSelectionMode();
+        
+        // Try to restore selection immediately to prevent flickering
+        bool restoredImmediately = TryRestoreButtonSelectionImmediately(buttonIndexToRestore);
+        
+        // Now clear the skill info after button selection is restored
+        // This allows InfoPanel to use the stored skill during the transition
+        if (restoredImmediately)
+        {
+            // Button selection restored immediately, safe to clear now
+            ClearSelectionModeState();
+        }
+        else if (buttonIndexToRestore >= 0)
+        {
+            // Will be restored by coroutine, clear after it completes
+            StartCoroutine(RestoreButtonSelectionAfterDelay());
+        }
+        else
+        {
+            // No button to restore, safe to clear immediately
+            ClearSelectionModeState();
+        }
+
+        Debug.Log("Selection mode cancelled");
+    }
+    
+    /// <summary>
+    /// Confirms the current selection and uses the skill
+    /// </summary>
+    private void ConfirmSelection()
+    {
+        if (!isSelectionMode || selection == null)
+            return;
+
+        Unit selectedTarget = selection.GetSelectedUnit();
+        
+        if (selectedTarget != null && currentCastingUnit != null && currentSkill != null && selectedSkillIndex >= 0)
+        {
+            // Save references before clearing selection mode
+            Unit caster = currentCastingUnit;
+            int skillIndex = selectedSkillIndex;
+            Unit target = selectedTarget;
+            
+            // Exit selection mode
+            CancelSelectionMode();
+            
+            // Use the skill on the selected target with delay for proper animation timing
+            Debug.Log($"[SkillPanel] ConfirmSelection: caster={caster.UnitName}, skillIndex={skillIndex}, target={target.UnitName}");
+            if (gameManager != null)
+            {
+                gameManager.ExecuteSkillWithDelay(caster, skillIndex, target, false);
+                // Update skills immediately to reflect cooldown
+                UpdateSkills();
+                // Advance turn after delays complete
+                StartCoroutine(DelayedAdvanceTurnAfterSkill());
+            }
+            else
+            {
+                Debug.LogWarning($"[SkillPanel] GameManager is null! Using fallback.");
+                // Fallback to immediate execution
+                caster.UseSkill(skillIndex, target);
+                UpdateSkills();
+                AdvanceTurn();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to delay confirmation so selection marker is visible
+    /// </summary>
+    private System.Collections.IEnumerator DelayedConfirmSelection(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ConfirmSelection();
+    }
+    
+    /// <summary>
+    /// Coroutine to restore button selection after EnableButtonSelectionMode has set up the selection
+    /// </summary>
+    private System.Collections.IEnumerator RestoreButtonSelectionAfterDelay()
+    {
+        // Wait a frame to ensure EnableButtonSelectionMode has fully set up the selection
+        yield return null;
+        
+        // Only restore if we're still in button selection mode (not if something else changed)
+        if (!isButtonSelectionMode || selection == null)
+        {
+            // Clear skill info and reset index even if we can't restore
+            ClearSelectionModeState();
+            yield break;
+        }
+        
+        // Restore selection to the previously selected button (if it's still available)
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        lastSelectedButtonIndex = -1; // Reset immediately to prevent issues
+        
+        if (buttonIndexToRestore >= 0 && buttonIndexToRestore < skillButtons.Length && skillButtons[buttonIndexToRestore] != null)
+        {
+            // Check if the button has a skill (is available)
+            if (gameManager != null)
+            {
+                Unit currentUnit = gameManager.GetCurrentUnit();
+                if (currentUnit != null && currentUnit.Skills != null && 
+                    buttonIndexToRestore < currentUnit.Skills.Length && 
+                    currentUnit.Skills[buttonIndexToRestore] != null)
+                {
+                    // Button is available, restore selection to it
+                    if (selection.IsValidSelection())
+                    {
+                        object[] allItems = selection.GetAllItems();
+                        if (allItems != null)
+                        {
+                            for (int i = 0; i < allItems.Length; i++)
+                            {
+                                if (allItems[i] is Button button && button == skillButtons[buttonIndexToRestore])
+                                {
+                                    selection.SetIndex(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Clear skill info after button selection is restored
+        ClearSelectionModeState();
+    }
+    
+    #endregion
+    
+    #region Input Handling
+    
+    /// <summary>
+    /// Checks if we should process input in Update()
+    /// </summary>
+    private bool ShouldProcessInput()
+    {
+        // Only process input if this GameObject is active in the hierarchy
+        if (!gameObject.activeInHierarchy)
+            return false;
+        
+        // Check if SkillsPanel is actually visible
+        if (!IsSkillPanelVisible())
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Handles cooldown UI refresh
+    /// </summary>
+    private void HandleCooldownUIRefresh()
+    {
+        // Update skills to reflect cooldown changes (only for player units, and only update brightness)
+        if (gameManager != null && !isSelectionMode && !isButtonSelectionMode)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && currentUnit.IsPlayerUnit && currentUnit == lastDisplayedUnit)
+            {
+                // Only update brightness and cooldown text without full refresh (more efficient)
+                Skill[] skills = currentUnit.Skills;
+                for (int i = 0; i < 4 && i < skills.Length; i++)
+                {
+                    if (skills[i] != null && originalColorsStored[i])
+                    {
+                        bool isUnusable = !currentUnit.CanUseSkill(i);
+                        UpdateSkillBrightness(i, isUnusable);
+                        UpdateCooldownText(i, currentUnit);
+                    }
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Handles button selection mode input
+    /// </summary>
+    private void HandleButtonSelectionModeInput()
+    {
+        // Handle button selection mode (vertical navigation through skill buttons)
+        if (isButtonSelectionMode && !isSelectionMode)
+        {
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+            }
+            else
+            {
+                HandleButtonSelectionInput();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Handles target selection mode input
+    /// </summary>
+    private void HandleTargetSelectionInput()
+    {
+        // Handle selection mode input
+        if (isSelectionMode)
+        {
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+            }
+            else
+            {
+                HandleTargetSelectionNavigation();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Handles navigation and confirmation input for target selection
+    /// </summary>
+    private void HandleTargetSelectionNavigation()
+    {
+        // Exit with ESC or right-click
+        if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
+            (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame))
+        {
+            CancelSelectionMode();
+            return;
+        }
+        
+        // Navigate through targets with arrow keys or WASD
+        if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
+        {
+            if (selection != null)
+            {
+                selection.Previous();
+            }
+        }
+        else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
+        {
+            if (selection != null)
+            {
+                selection.Next();
+            }
+        }
+        // Confirm selection with Enter or Space (keyboard navigation confirmation)
+        else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
+        {
+            // Block input during skill execution
+            if (IsInputBlockedByExecution())
+            {
+                return;
+            }
+            
+            ConfirmSelection();
+        }
+        // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
+    }
+    
+    /// <summary>
+    /// Handles input for button selection mode (Up/Down or W/S to cycle, Enter/Space to activate)
+    /// </summary>
+    private void HandleButtonSelectionInput()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
+        if (Keyboard.current != null && (Keyboard.current[Key.UpArrow].wasPressedThisFrame || Keyboard.current[Key.W].wasPressedThisFrame))
+        {
+            selection.Previous();
+        }
+        else if (Keyboard.current != null && (Keyboard.current[Key.DownArrow].wasPressedThisFrame || Keyboard.current[Key.S].wasPressedThisFrame))
+        {
+            selection.Next();
+        }
+        
+        // Activate selected button with Enter or Space
+        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
+        {
+            // Block input during skill execution
+            if (IsInputBlockedByExecution())
+            {
+                return;
+            }
+            
+            ActivateSelectedButton();
+        }
+    }
+    
+    /// <summary>
+    /// Activates the currently selected skill button
+    /// </summary>
+    private void ActivateSelectedButton()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        object selectedItem = selection.CurrentSelection;
+        if (selectedItem is Button button)
+        {
+            // Find which skill button was selected
+            for (int i = 0; i < skillButtons.Length; i++)
+            {
+                if (skillButtons[i] == button)
+                {
+                    OnSkillButtonClicked(i);
+                    break;
+                }
+            }
+        }
+    }
+    
+    #endregion
+    
+    #region Skill Display Management
+    
+    /// <summary>
+    /// Populates a skill slot with skill data
+    /// </summary>
+    private void PopulateSkillSlot(int index, Skill skill, Unit currentUnit)
+    {
+        // Update skill name
+        if (skillNames[index] != null)
+        {
+            skillNames[index].text = skill.skillName;
+        }
+
+        // Store original colors if not already stored
+        if (!originalColorsStored[index])
+        {
+            StoreOriginalColors(index);
+        }
+        
+        // Update skill icon
+        UpdateSkillIcon(index, skill);
+        
+        // Update brightness based on cooldown or unusability
+        bool isUnusable = !currentUnit.CanUseSkill(index);
+        UpdateSkillBrightness(index, isUnusable);
+        
+        // Update cooldown text
+        UpdateCooldownText(index, currentUnit);
+    }
+    
+    /// <summary>
+    /// Stores original colors for a skill slot
+    /// </summary>
+    private void StoreOriginalColors(int index)
+    {
+        // Store original icon color
+        if (skillIcons[index] != null)
+        {
+            originalIconColors[index] = skillIcons[index].color;
+        }
+        
+        // Store original button color
+        if (skillButtons[index] != null && skillButtons[index].image != null)
+        {
+            originalButtonColors[index] = skillButtons[index].image.color;
+        }
+        
+        originalColorsStored[index] = true;
+    }
+    
+    /// <summary>
+    /// Updates the skill icon for a slot
+    /// </summary>
+    private void UpdateSkillIcon(int index, Skill skill)
+    {
+        if (skillIcons[index] != null)
+        {
+            if (skill.icon != null)
+            {
+                skillIcons[index].sprite = skill.icon;
+                skillIcons[index].enabled = true;
+            }
+            else
+            {
+                // If no icon, disable the image
+                skillIcons[index].enabled = false;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Clears a specific skill slot
+    /// </summary>
+    private void ClearSkillSlot(int index)
+    {
+        if (skillNames[index] != null)
+        {
+            skillNames[index].text = "";
+        }
+
+        if (skillIcons[index] != null)
+        {
+            skillIcons[index].enabled = false;
+        }
+        
+        // Clear cooldown text
+        if (skillCooldowns[index] != null)
+        {
+            skillCooldowns[index].text = "";
+        }
+        
+        // Restore colors when clearing slot
+        if (originalColorsStored[index])
+        {
+            if (skillIcons[index] != null)
+            {
+                skillIcons[index].color = originalIconColors[index];
+            }
+            if (skillButtons[index] != null && skillButtons[index].image != null)
+            {
+                skillButtons[index].image.color = originalButtonColors[index];
+            }
+        }
+        // If not stored, leave it as is (don't modify alpha)
+        
+        // Reset stored flag
+        originalColorsStored[index] = false;
+    }
 
     /// <summary>
-    /// Resets all skill colors to their original state when switching units
+    /// Clears all skill displays
     /// </summary>
-    private void ResetAllSkillColors()
+    private void ClearAllSkills()
     {
         for (int i = 0; i < 4; i++)
         {
-            // Restore icon color
-            if (skillIcons[i] != null)
-            {
-                if (originalColorsStored[i])
-                {
-                    skillIcons[i].color = originalIconColors[i];
-                }
-                // If not stored, leave it as is (don't modify)
-            }
-            
-            // Restore button color
-            if (skillButtons[i] != null && skillButtons[i].image != null)
-            {
-                if (originalColorsStored[i])
-                {
-                    skillButtons[i].image.color = originalButtonColors[i];
-                }
-                // If not stored, leave it as is (don't modify)
-            }
-            
-            // Reset stored flag so colors will be re-stored for new unit
-            originalColorsStored[i] = false;
+            ClearSkillSlot(i);
         }
     }
-
+    
     /// <summary>
     /// Updates the brightness of a skill's icon and button based on cooldown status
     /// </summary>
@@ -600,59 +960,52 @@ public class SkillPanelManager : MonoBehaviour
             skillCooldowns[skillIndex].text = "";
         }
     }
-
+    
     /// <summary>
-    /// Clears all skill displays
+    /// Resets all skill colors to their original state when switching units
     /// </summary>
-    private void ClearAllSkills()
+    private void ResetAllSkillColors()
     {
         for (int i = 0; i < 4; i++)
         {
-            if (skillNames[i] != null)
-            {
-                skillNames[i].text = "";
-            }
-
+            // Restore icon color
             if (skillIcons[i] != null)
             {
-                skillIcons[i].enabled = false;
-            }
-            
-            // Clear cooldown text
-            if (skillCooldowns[i] != null)
-            {
-                skillCooldowns[i].text = "";
-            }
-            
-            // Restore colors when clearing
-            if (originalColorsStored[i])
-            {
-                if (skillIcons[i] != null)
+                if (originalColorsStored[i])
                 {
                     skillIcons[i].color = originalIconColors[i];
                 }
-                if (skillButtons[i] != null && skillButtons[i].image != null)
+                // If not stored, leave it as is (don't modify)
+            }
+            
+            // Restore button color
+            if (skillButtons[i] != null && skillButtons[i].image != null)
+            {
+                if (originalColorsStored[i])
                 {
                     skillButtons[i].image.color = originalButtonColors[i];
                 }
+                // If not stored, leave it as is (don't modify)
             }
-            // If not stored, leave it as is (don't modify alpha)
             
+            // Reset stored flag so colors will be re-stored for new unit
             originalColorsStored[i] = false;
         }
     }
-
-    #region Skill Button Handlers
-
+    
+    #endregion
+    
+    #region Guard Checks and Conditions
+    
     /// <summary>
-    /// Called when a skill button is clicked
+    /// Checks if a skill can be used now (consolidates all guard checks)
     /// </summary>
-    private void OnSkillButtonClicked(int skillIndex)
+    private bool CanUseSkillNow(int skillIndex)
     {
         if (gameManager == null)
         {
             Debug.LogWarning("SkillPanelManager: GameManager not found!");
-            return;
+            return false;
         }
 
         Unit currentUnit = gameManager.GetCurrentUnit();
@@ -660,68 +1013,100 @@ public class SkillPanelManager : MonoBehaviour
         // Only allow skill selection during player unit's turn
         if (currentUnit == null || !currentUnit.IsPlayerUnit || isSelectionMode)
         {
-            return;
+            return false;
         }
         
         // Don't allow skill usage during inspect mode
         InspectPanelManager inspectPanel = FindFirstObjectByType<InspectPanelManager>();
         if (inspectPanel != null && inspectPanel.IsInspectMode())
         {
-            return;
+            return false;
         }
 
         // Check if unit has this skill
         if (skillIndex < 0 || skillIndex >= currentUnit.Skills.Length || currentUnit.Skills[skillIndex] == null)
         {
-            return;
+            return false;
         }
 
         // Check if skill is available (not on cooldown)
         if (!currentUnit.CanUseSkill(skillIndex))
         {
             Debug.Log($"Skill {skillIndex} is on cooldown!");
-            return;
+            return false;
         }
-
-        Skill skill = currentUnit.Skills[skillIndex];
-
-        // If skill targets self, use it with delay for proper animation timing
-        if (skill.targetType == SkillTargetType.Self)
-        {
-            if (gameManager != null)
-            {
-                gameManager.ExecuteSkillWithDelay(currentUnit, skillIndex, currentUnit, false);
-                // Update skills immediately to reflect cooldown
-                UpdateSkills();
-                // Advance turn after delays complete
-                StartCoroutine(DelayedAdvanceTurnAfterSkill());
-            }
-            else
-            {
-                // Fallback to immediate execution
-                currentUnit.UseSkill(skillIndex, currentUnit);
-                UpdateSkills();
-                AdvanceTurn();
-            }
-            return;
-        }
-
-        // Enter selection mode
-        EnterSelectionMode(skillIndex, currentUnit, skill);
+        
+        return true;
     }
-
+    
     /// <summary>
-    /// Enters selection mode for choosing a target
+    /// Checks if the skill panel is visible
     /// </summary>
-    private void EnterSelectionMode(int skillIndex, Unit caster, Skill skill)
+    private bool IsSkillPanelVisible()
     {
-        if (selection == null)
+        ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        if (actionPanelManager != null && actionPanelManager.SkillsPanel != null && !actionPanelManager.SkillsPanel.activeSelf)
         {
-            Debug.LogWarning("SkillPanelManager: Selection component not found!");
-            return;
+            // Skills panel is not visible, don't process input
+            return false;
         }
-
-        // Store which button was selected before entering selection mode
+        return true;
+    }
+    
+    /// <summary>
+    /// Checks if input is blocked by skill execution
+    /// </summary>
+    private bool IsInputBlockedByExecution()
+    {
+        ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        return actionPanelManager != null && actionPanelManager.IsSkillExecuting();
+    }
+    
+    #endregion
+    
+    #region Button Selection Mode Helpers
+    
+    /// <summary>
+    /// Disables button selection mode
+    /// </summary>
+    private void DisableButtonSelectionMode()
+    {
+        isButtonSelectionMode = false;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+    }
+    
+    /// <summary>
+    /// Gets available skill buttons for selection
+    /// </summary>
+    private List<Button> GetAvailableSkillButtons()
+    {
+        List<Button> availableButtons = new List<Button>();
+        if (gameManager != null)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && currentUnit.Skills != null)
+            {
+                for (int i = 0; i < 4 && i < currentUnit.Skills.Length; i++)
+                {
+                    if (currentUnit.Skills[i] != null && skillButtons[i] != null)
+                    {
+                        availableButtons.Add(skillButtons[i]);
+                    }
+                }
+            }
+        }
+        return availableButtons;
+    }
+    
+    /// <summary>
+    /// Stores the current button selection before entering target selection mode
+    /// </summary>
+    private void StoreCurrentButtonSelection()
+    {
         if (selection != null && selection.IsValidSelection())
         {
             object selectedItem = selection.CurrentSelection;
@@ -738,320 +1123,13 @@ public class SkillPanelManager : MonoBehaviour
                 }
             }
         }
-
-        // Disable button selection mode before entering target selection mode
-        DisableButtonSelectionMode();
-
-        isSelectionMode = true;
-        selectedSkillIndex = skillIndex;
-        currentCastingUnit = caster;
-        currentSkill = skill;
-
-        // Hide user panel when entering selection mode
-        if (gameManager == null)
-        {
-            gameManager = FindFirstObjectByType<GameManager>();
-        }
-        if (gameManager != null)
-        {
-            gameManager.HideUserPanel();
-        }
-
-        // Convert SkillTargetType to UnitTargetType
-        UnitTargetType targetType = ConvertTargetType(skill.targetType);
-
-        // Setup unit selection (will automatically restore previously selected unit based on target type)
-        selection.SetupUnitSelection(targetType, caster, skill);
-
-        Debug.Log($"Entered selection mode for skill: {skill.skillName}, Target type: {targetType}");
-
-        // If no valid targets, exit selection mode
-        if (selection.Count == 0)
-        {
-            Debug.LogWarning("No valid targets for this skill!");
-            CancelSelectionMode();
-            return;
-        }
-        
-        // Ignore input for this frame to prevent accidental confirmation
-        ignoreInputThisFrame = true;
-    }
-
-    /// <summary>
-    /// Converts SkillTargetType to UnitTargetType
-    /// </summary>
-    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
-    {
-        switch (skillTargetType)
-        {
-            case SkillTargetType.Self:
-                return UnitTargetType.Self;
-            case SkillTargetType.Ally:
-                return UnitTargetType.AllAllies; // Use AllAllies to include self (for heal abilities)
-            case SkillTargetType.Enemy:
-                return UnitTargetType.AllEnemies;
-            case SkillTargetType.Any:
-                return UnitTargetType.Any;
-            default:
-                return UnitTargetType.Any;
-        }
-    }
-
-    /// <summary>
-    /// Called when selection changes (for visual feedback, etc.)
-    /// </summary>
-    private void OnSelectionChanged(object selectedItem)
-    {
-        if (isSelectionMode && selectedItem is Unit selectedUnit)
-        {
-            // You can add visual feedback here (highlight selected unit, etc.)
-            Debug.Log($"Selected unit: {selectedUnit.gameObject.name}");
-        }
-    }
-
-    /// <summary>
-    /// Handles mouse click to check if clicking directly on a unit
-    /// </summary>
-    private void HandleMouseClickOnUnit()
-    {
-        if (!isSelectionMode || selection == null)
-            return;
-
-        // Don't process if clicking on UI elements
-        if (UnityEngine.EventSystems.EventSystem.current != null && 
-            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        // The Selection class's Update() has already handled the mouse click and selected the unit
-        // We just need to confirm if there's a valid selection (meaning a unit was clicked)
-        if (selection.IsValidSelection())
-        {
-            Unit selectedUnit = selection.GetSelectedUnit();
-            // Only confirm if we have a valid unit selected (not empty space)
-            if (selectedUnit != null)
-            {
-                ConfirmSelection();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the unit under the mouse cursor (reuses Selection's method if available, or uses raycast)
-    /// </summary>
-    private Unit GetUnitUnderMouse()
-    {
-        Camera cam = Camera.main;
-        if (cam == null)
-            return null;
-
-        // Raycast from camera through mouse position
-        Vector2 mousePos = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
-        Ray ray = cam.ScreenPointToRay(mousePos);
-        RaycastHit hit;
-
-        // Try physics raycast first (if units have colliders)
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-        {
-            Unit unit = hit.collider.GetComponent<Unit>();
-            if (unit != null && unit.IsAlive())
-            {
-                return unit;
-            }
-        }
-
-        // Fallback: Distance-based check for units
-        Unit[] allUnits = UnityEngine.Object.FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        Unit closestUnit = null;
-        float closestDistance = 2f; // Same as Selection's hoverDetectionDistance
-
-        // Project mouse to ground plane
-        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
-        float distance;
-        if (groundPlane.Raycast(ray, out distance))
-        {
-            Vector3 hitPoint = ray.GetPoint(distance);
-
-            foreach (var unit in allUnits)
-            {
-                if (unit == null || !unit.IsAlive())
-                    continue;
-
-                float distToUnit = Vector3.Distance(hitPoint, unit.transform.position);
-                if (distToUnit < closestDistance)
-                {
-                    closestDistance = distToUnit;
-                    closestUnit = unit;
-                }
-            }
-        }
-
-        return closestUnit;
-    }
-
-    /// <summary>
-    /// Checks if a unit is selectable (in the current selection list)
-    /// </summary>
-    private bool IsUnitSelectable(Unit unit)
-    {
-        if (unit == null || selection == null)
-            return false;
-
-        // Check if the unit is in the selection's selectable items
-        object[] allItems = selection.GetAllItems();
-        foreach (var item in allItems)
-        {
-            if (item is Unit u && u == unit)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// Coroutine to delay confirmation so selection marker is visible
-    /// </summary>
-    private System.Collections.IEnumerator DelayedConfirmSelection(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        ConfirmSelection();
     }
     
     /// <summary>
-    /// Confirms the current selection and uses the skill
+    /// Tries to restore button selection immediately
     /// </summary>
-    private void ConfirmSelection()
+    private bool TryRestoreButtonSelectionImmediately(int buttonIndexToRestore)
     {
-        if (!isSelectionMode || selection == null)
-            return;
-
-        Unit selectedTarget = selection.GetSelectedUnit();
-        
-        if (selectedTarget != null && currentCastingUnit != null && currentSkill != null && selectedSkillIndex >= 0)
-        {
-            // Save references before clearing selection mode
-            Unit caster = currentCastingUnit;
-            int skillIndex = selectedSkillIndex;
-            Unit target = selectedTarget;
-            
-            // Exit selection mode
-            CancelSelectionMode();
-            
-            // Use the skill on the selected target with delay for proper animation timing
-            Debug.Log($"[SkillPanel] ConfirmSelection: caster={caster.UnitName}, skillIndex={skillIndex}, target={target.UnitName}");
-            if (gameManager != null)
-            {
-                gameManager.ExecuteSkillWithDelay(caster, skillIndex, target, false);
-                // Update skills immediately to reflect cooldown
-                UpdateSkills();
-                // Advance turn after delays complete
-                StartCoroutine(DelayedAdvanceTurnAfterSkill());
-            }
-            else
-            {
-                Debug.LogWarning($"[SkillPanel] GameManager is null! Using fallback.");
-                // Fallback to immediate execution
-                caster.UseSkill(skillIndex, target);
-                UpdateSkills();
-                AdvanceTurn();
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Coroutine to advance turn after skill animation delays complete
-    /// </summary>
-    private System.Collections.IEnumerator DelayedAdvanceTurnAfterSkill()
-    {
-        if (gameManager == null)
-            yield break;
-            
-        // Wait for skill animation + attack-to-hurt delay + hit animation delays
-        // Get the actual delay (accounts for animation-based delay if enabled)
-        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
-        float attackDelay = GetAttackToHurtDelay(currentUnit, gameManager);
-        float totalDelay = gameManager.skillAnimationDelay + attackDelay + gameManager.hitAnimationDelay;
-        yield return new WaitForSeconds(totalDelay);
-        
-        // Advance turn
-        AdvanceTurn();
-    }
-
-    /// <summary>
-    /// Checks if we're currently in target selection mode
-    /// </summary>
-    public bool IsInSelectionMode()
-    {
-        return isSelectionMode;
-    }
-    
-    /// <summary>
-    /// Gets the current skill being cast during selection mode
-    /// </summary>
-    public Skill GetCurrentSkill()
-    {
-        return currentSkill;
-    }
-    
-    /// <summary>
-    /// Gets the current skill index being cast during selection mode
-    /// </summary>
-    public int GetSelectedSkillIndex()
-    {
-        return selectedSkillIndex;
-    }
-    
-    /// <summary>
-    /// Cancels selection mode (public method for external cancellation)
-    /// </summary>
-    public void CancelSelectionModePublic()
-    {
-        CancelSelectionMode();
-    }
-    
-    /// <summary>
-    /// Cancels selection mode
-    /// </summary>
-    private void CancelSelectionMode()
-    {
-        if (!isSelectionMode)
-            return;
-
-        // Store the currently selected unit before clearing (for next time, based on target type)
-        if (selection != null && currentCastingUnit != null)
-        {
-            selection.StoreLastSelectedUnit(currentCastingUnit);
-        }
-
-        isSelectionMode = false;
-        // Don't clear selectedSkillIndex and currentSkill yet - keep them until button selection is restored
-        // This prevents InfoPanel from flickering to the first skill during the transition
-
-        if (selection != null)
-        {
-            selection.ClearSelection();
-        }
-
-        // Show user panel again when exiting selection mode
-        if (gameManager == null)
-        {
-            gameManager = FindFirstObjectByType<GameManager>();
-        }
-        if (gameManager != null)
-        {
-            gameManager.ShowUserPanel();
-        }
-
-        // Store the button index to restore before re-enabling button selection mode
-        int buttonIndexToRestore = lastSelectedButtonIndex;
-        
-        // Re-enable button selection mode to return to skill button navigation
-        EnableButtonSelectionMode();
-        
-        // Try to restore selection immediately to prevent flickering
-        bool restoredImmediately = false;
         if (buttonIndexToRestore >= 0 && buttonIndexToRestore < skillButtons.Length && skillButtons[buttonIndexToRestore] != null)
         {
             // Check if the button has a skill (is available)
@@ -1073,8 +1151,7 @@ public class SkillPanelManager : MonoBehaviour
                                 if (allItems[i] is Button button && button == skillButtons[buttonIndexToRestore])
                                 {
                                     selection.SetIndex(i);
-                                    restoredImmediately = true;
-                                    break;
+                                    return true;
                                 }
                             }
                         }
@@ -1082,93 +1159,75 @@ public class SkillPanelManager : MonoBehaviour
                 }
             }
         }
-        
-        // Now clear the skill info after button selection is restored
-        // This allows InfoPanel to use the stored skill during the transition
-        if (restoredImmediately)
-        {
-            // Button selection restored immediately, safe to clear now
-            selectedSkillIndex = -1;
-            currentSkill = null;
-            currentCastingUnit = null;
-            lastSelectedButtonIndex = -1;
-        }
-        else if (buttonIndexToRestore >= 0)
-        {
-            // Will be restored by coroutine, clear after it completes
-            StartCoroutine(RestoreButtonSelectionAfterDelay());
-        }
-        else
-        {
-            // No button to restore, safe to clear immediately
-            selectedSkillIndex = -1;
-            currentSkill = null;
-            currentCastingUnit = null;
-            lastSelectedButtonIndex = -1;
-        }
-
-        Debug.Log("Selection mode cancelled");
+        return false;
     }
     
     /// <summary>
-    /// Coroutine to restore button selection after EnableButtonSelectionMode has set up the selection
+    /// Clears selection mode state variables
     /// </summary>
-    private System.Collections.IEnumerator RestoreButtonSelectionAfterDelay()
+    private void ClearSelectionModeState()
     {
-        // Wait a frame to ensure EnableButtonSelectionMode has fully set up the selection
-        yield return null;
-        
-        // Only restore if we're still in button selection mode (not if something else changed)
-        if (!isButtonSelectionMode || selection == null)
-        {
-            // Clear skill info and reset index even if we can't restore
-            selectedSkillIndex = -1;
-            currentSkill = null;
-            currentCastingUnit = null;
-            lastSelectedButtonIndex = -1;
-            yield break;
-        }
-        
-        // Restore selection to the previously selected button (if it's still available)
-        int buttonIndexToRestore = lastSelectedButtonIndex;
-        lastSelectedButtonIndex = -1; // Reset immediately to prevent issues
-        
-        if (buttonIndexToRestore >= 0 && buttonIndexToRestore < skillButtons.Length && skillButtons[buttonIndexToRestore] != null)
-        {
-            // Check if the button has a skill (is available)
-            if (gameManager != null)
-            {
-                Unit currentUnit = gameManager.GetCurrentUnit();
-                if (currentUnit != null && currentUnit.Skills != null && 
-                    buttonIndexToRestore < currentUnit.Skills.Length && 
-                    currentUnit.Skills[buttonIndexToRestore] != null)
-                {
-                    // Button is available, restore selection to it
-                    if (selection.IsValidSelection())
-                    {
-                        object[] allItems = selection.GetAllItems();
-                        if (allItems != null)
-                        {
-                            for (int i = 0; i < allItems.Length; i++)
-                            {
-                                if (allItems[i] is Button button && button == skillButtons[buttonIndexToRestore])
-                                {
-                                    selection.SetIndex(i);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Clear skill info after button selection is restored
         selectedSkillIndex = -1;
         currentSkill = null;
         currentCastingUnit = null;
+        lastSelectedButtonIndex = -1;
     }
-
+    
+    #endregion
+    
+    #region Helper Methods
+    
+    /// <summary>
+    /// Converts SkillTargetType to UnitTargetType
+    /// </summary>
+    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
+    {
+        switch (skillTargetType)
+        {
+            case SkillTargetType.Self:
+                return UnitTargetType.Self;
+            case SkillTargetType.Ally:
+                return UnitTargetType.AllAllies; // Use AllAllies to include self (for heal abilities)
+            case SkillTargetType.Enemy:
+                return UnitTargetType.AllEnemies;
+            case SkillTargetType.Any:
+                return UnitTargetType.Any;
+            default:
+                return UnitTargetType.Any;
+        }
+    }
+    
+    /// <summary>
+    /// Called when selection changes (for visual feedback, etc.)
+    /// </summary>
+    private void OnSelectionChanged(object selectedItem)
+    {
+        if (isSelectionMode && selectedItem is Unit selectedUnit)
+        {
+            // You can add visual feedback here (highlight selected unit, etc.)
+            Debug.Log($"Selected unit: {selectedUnit.gameObject.name}");
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to advance turn after skill animation delays complete
+    /// </summary>
+    private System.Collections.IEnumerator DelayedAdvanceTurnAfterSkill()
+    {
+        if (gameManager == null)
+            yield break;
+            
+        // Wait for skill animation + attack-to-hurt delay + hit animation delays
+        // Get the actual delay (accounts for animation-based delay if enabled)
+        Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
+        float attackDelay = GetAttackToHurtDelay(currentUnit, gameManager);
+        float totalDelay = gameManager.skillAnimationDelay + attackDelay + gameManager.hitAnimationDelay;
+        yield return new WaitForSeconds(totalDelay);
+        
+        // Advance turn
+        AdvanceTurn();
+    }
+    
     /// <summary>
     /// Gets the appropriate attack-to-hurt delay based on caster's animation length
     /// </summary>
@@ -1210,6 +1269,6 @@ public class SkillPanelManager : MonoBehaviour
             turnOrder.AdvanceToNextTurn();
         }
     }
-
+    
     #endregion
 }
