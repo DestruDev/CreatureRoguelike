@@ -68,6 +68,8 @@ public class ItemPanelManager : MonoBehaviour
     private bool isEnablingButtonSelection = false; // Prevents double-calling EnableButtonSelectionMode
     private int lastSelectedButtonIndex = -1; // Track which button was selected before entering selection mode
 
+    #region Lifecycle Methods
+    
     private void Start()
     {
         // Find references
@@ -138,292 +140,20 @@ public class ItemPanelManager : MonoBehaviour
     {
         DisableButtonSelectionMode();
     }
-    
-    /// <summary>
-    /// Enables button selection mode for navigating item buttons vertically
-    /// </summary>
-    public void EnableButtonSelectionMode()
-    {
-        // Prevent double-calling
-        if (isEnablingButtonSelection)
-            return;
-            
-        isEnablingButtonSelection = true;
-        
-        if (selection == null)
-        {
-            selection = FindFirstObjectByType<Selection>();
-            if (selection == null)
-            {
-                Debug.LogWarning("ItemPanelManager: Selection component not found. Button selection mode disabled.");
-                isEnablingButtonSelection = false;
-                return;
-            }
-        }
-        
-        if (inventory == null)
-        {
-            inventory = FindFirstObjectByType<Inventory>();
-        }
-        
-        // Store the currently selected button to preserve selection if possible
-        Button previouslySelectedButton = null;
-        
-        // First, try to use lastSelectedButtonIndex (set before entering selection mode)
-        // This is the most reliable source when CancelSelectionMode is called
-        if (lastSelectedButtonIndex >= 0 && 
-            lastSelectedButtonIndex < itemButtons.Length && 
-            itemButtons[lastSelectedButtonIndex] != null)
-        {
-            previouslySelectedButton = itemButtons[lastSelectedButtonIndex];
-        }
-        // Fallback: check current selection if we're in button selection mode
-        else if (isButtonSelectionMode && selection != null && selection.IsValidSelection())
-        {
-            object currentSelection = selection.CurrentSelection;
-            if (currentSelection is Button currentButton)
-            {
-                // Only preserve if this button is one of our item buttons
-                for (int i = 0; i < itemButtons.Length; i++)
-                {
-                    if (itemButtons[i] == currentButton)
-                    {
-                        previouslySelectedButton = currentButton;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Clear any existing selection first to ensure we start fresh
-        selection.ClearSelection();
-        
-        isButtonSelectionMode = true;
-        
-        // Get available item buttons (only buttons with items and that are active in hierarchy)
-        List<Button> availableButtons = new List<Button>();
-        
-        if (inventory == null)
-        {
-            Debug.LogWarning("ItemPanelManager: Inventory is null in EnableButtonSelectionMode!");
-        }
-        else if (inventory.Items == null)
-        {
-            Debug.LogWarning("ItemPanelManager: Inventory.Items is null in EnableButtonSelectionMode!");
-        }
-        else
-        {
-            for (int i = 0; i < 4 && i < inventory.Items.Count; i++)
-            {
-                if (inventory.Items[i] != null && inventory.Items[i].item != null && itemButtons[i] != null && itemButtons[i].gameObject.activeInHierarchy)
-                {
-                    // Include all buttons with items (even if unusable) - same as SkillPanelManager
-                    // This prevents selection from jumping when items become unusable
-                    availableButtons.Add(itemButtons[i]);
-                }
-            }
-        }
-        
-        // Set up selection with available buttons
-        if (availableButtons.Count > 0)
-        {
-            selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
-            
-            // Try to restore the previously selected button if it's still in the list
-            if (previouslySelectedButton != null && availableButtons.Contains(previouslySelectedButton))
-            {
-                int targetIndex = availableButtons.IndexOf(previouslySelectedButton);
-                if (targetIndex >= 0 && targetIndex < availableButtons.Count)
-                {
-                    // Set the index directly to preserve selection
-                    selection.SetIndex(targetIndex);
-                }
-            }
-            
-            // Ignore input for this frame to prevent accidental activation
-            ignoreInputThisFrame = true;
-        }
-        else
-        {
-            //Debug.LogWarning($"ItemPanelManager: No available item buttons to select! inventory={inventory != null}, items={inventory?.Items != null}, itemsCount={inventory?.Items?.Count ?? 0}");
-            // Still set isButtonSelectionMode to false if we can't set up selection
-            isButtonSelectionMode = false;
-        }
-        
-        isEnablingButtonSelection = false;
-    }
-    
-    /// <summary>
-    /// Disables button selection mode
-    /// </summary>
-    private void DisableButtonSelectionMode()
-    {
-        isButtonSelectionMode = false;
-        
-        if (selection != null)
-        {
-            selection.ClearSelection();
-        }
-    }
-    
-    /// <summary>
-    /// Handles input for button selection mode (Up/Down or W/S to cycle, Enter/Space to activate)
-    /// </summary>
-    private void HandleButtonSelectionInput()
-    {
-        if (selection == null)
-        {
-            Debug.LogWarning("ItemPanelManager: Selection is null in HandleButtonSelectionInput!");
-            return;
-        }
-        
-        if (!selection.IsValidSelection())
-        {
-            Debug.LogWarning($"ItemPanelManager: Selection is not valid! Count: {selection.Count}, CurrentIndex: {selection.CurrentIndex}");
-            return;
-        }
-        
-        // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
-        if (Keyboard.current != null && (Keyboard.current[Key.UpArrow].wasPressedThisFrame || Keyboard.current[Key.W].wasPressedThisFrame))
-        {
-            selection.Previous();
-        }
-        else if (Keyboard.current != null && (Keyboard.current[Key.DownArrow].wasPressedThisFrame || Keyboard.current[Key.S].wasPressedThisFrame))
-        {
-            selection.Next();
-        }
-        
-        // Activate selected button with Enter or Space
-        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
-        {
-            // Block input during skill execution
-            ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-            if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
-            {
-                return;
-            }
-            
-            ActivateSelectedButton();
-        }
-    }
-    
-    /// <summary>
-    /// Activates the currently selected item button
-    /// </summary>
-    private void ActivateSelectedButton()
-    {
-        if (selection == null || !selection.IsValidSelection())
-            return;
-        
-        object selectedItem = selection.CurrentSelection;
-        if (selectedItem is Button button)
-        {
-            // Find which item button was selected
-            for (int i = 0; i < itemButtons.Length; i++)
-            {
-                if (itemButtons[i] == button)
-                {
-                    OnItemButtonClicked(i);
-                    break;
-                }
-            }
-        }
-    }
 
     private void Update()
     {
-        // Only process input if this GameObject is active in the hierarchy
-        if (!gameObject.activeInHierarchy)
-            return;
-        
-        // Check if ItemsPanel is actually visible (via ActionPanelManager)
-        if (actionPanelManager == null)
+        // Check if we should process input
+        if (!ShouldProcessInput())
         {
-            actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-        }
-        if (actionPanelManager != null && actionPanelManager.ItemsPanel != null && !actionPanelManager.ItemsPanel.activeSelf)
-        {
-            // Items panel is not visible, don't process input
             return;
         }
         
-        // Handle button selection mode (vertical navigation through item buttons)
-        if (isButtonSelectionMode && !isSelectionMode)
-        {
-            // Skip input handling if we're ignoring input this frame
-            if (ignoreInputThisFrame)
-            {
-                ignoreInputThisFrame = false;
-            }
-            else
-            {
-                // Debug: Check if we're in the right state
-                if (selection != null)
-                {
-                    HandleButtonSelectionInput();
-                }
-                else
-                {
-                    Debug.LogWarning("ItemPanelManager: Selection is null in Update()!");
-                }
-            }
-        }
-        else if (isButtonSelectionMode && isSelectionMode)
-        {
-            // Debug: We're in button selection mode but also in selection mode (shouldn't happen)
-            Debug.LogWarning($"ItemPanelManager: isButtonSelectionMode={isButtonSelectionMode}, isSelectionMode={isSelectionMode}");
-        }
-        else if (!isButtonSelectionMode && !isSelectionMode)
-        {
-            // Debug: Check if we should be in button selection mode
-            // This shouldn't log constantly, so only log once
-        }
+        // Handle button selection mode input
+        HandleButtonSelectionModeInput();
         
-        // Handle selection mode input
-        if (isSelectionMode)
-        {
-            // Skip input handling if we're ignoring input this frame
-            if (ignoreInputThisFrame)
-            {
-                ignoreInputThisFrame = false;
-            }
-            else
-            {
-                if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
-                    (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame))
-                {
-                    CancelSelectionMode();
-                }
-                // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
-                // Navigate through targets with arrow keys or WASD
-                else if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
-                {
-                    if (selection != null)
-                    {
-                        selection.Previous();
-                    }
-                }
-                else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
-                {
-                    if (selection != null)
-                    {
-                        selection.Next();
-                    }
-                }
-                // Confirm selection with Enter or Space
-                else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
-                {
-                    // Block input during skill execution
-                    ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
-                    if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
-                    {
-                        return;
-                    }
-                    
-                    ConfirmSelection();
-                }
-            }
-        }
+        // Handle target selection mode input
+        HandleTargetSelectionInput();
     }
     
     void LateUpdate()
@@ -481,7 +211,11 @@ public class ItemPanelManager : MonoBehaviour
             selection.OnSelectionChanged -= OnSelectionChanged;
         }
     }
-
+    
+    #endregion
+    
+    #region Public API
+    
     /// <summary>
     /// Updates the item display based on inventory contents
     /// </summary>
@@ -530,76 +264,10 @@ public class ItemPanelManager : MonoBehaviour
         {
             if (i < items.Count && items[i] != null && items[i].item != null)
             {
-                Item item = items[i].item;
-                int quantity = items[i].quantity;
-
-                // Update item name
-                if (itemNames != null && i < itemNames.Length && itemNames[i] != null)
-                {
-                    itemNames[i].text = item.itemName;
-                }
-
-                // Store original colors if not already stored
-                if (!originalColorsStored[i])
-                {
-                    // Store original icon color
-                    if (itemIcons != null && i < itemIcons.Length && itemIcons[i] != null)
-                    {
-                        originalIconColors[i] = itemIcons[i].color;
-                    }
-                    
-                    // Store original button color
-                    if (itemButtons != null && i < itemButtons.Length && itemButtons[i] != null && itemButtons[i].image != null)
-                    {
-                        originalButtonColors[i] = itemButtons[i].image.color;
-                    }
-                    
-                    originalColorsStored[i] = true;
-                }
-
-                // Update item icon
-                if (itemIcons != null && i < itemIcons.Length && itemIcons[i] != null)
-                {
-                    if (item.icon != null)
-                    {
-                        itemIcons[i].sprite = item.icon;
-                        itemIcons[i].enabled = true;
-                    }
-                    else
-                    {
-                        itemIcons[i].enabled = false;
-                    }
-                }
-
-                // Update quantity display (if available)
-                if (itemQuantities != null && i < itemQuantities.Length && itemQuantities[i] != null)
-                {
-                    if (quantity > 1)
-                    {
-                        itemQuantities[i].text = quantity.ToString();
-                    }
-                    else
-                    {
-                        itemQuantities[i].text = "";
-                    }
-                }
-
-                // Check if item is unusable (healing items when all allies are at full HP)
-                bool isUnusable = itemUsedThisTurn || !CanUseHealingItem(item, currentUnit);
-                
-                // Update brightness based on item usage or unusability
-                UpdateItemBrightness(i, isUnusable);
-
-                // Keep buttons interactable even when unusable (like skills) so pressed state shows on click
-                // Visual feedback (dimmed brightness) already indicates unusability
-                if (itemButtons != null && i < itemButtons.Length && itemButtons[i] != null)
-                {
-                    itemButtons[i].interactable = true;
-                }
+                PopulateItemSlot(i, items[i], currentUnit);
             }
             else
             {
-                // Clear empty slot
                 ClearItemSlot(i);
             }
         }
@@ -612,56 +280,19 @@ public class ItemPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Checks if a healing item can be used (at least one valid target needs healing)
+    /// Checks if we're currently in target selection mode
     /// </summary>
-    private bool CanUseHealingItem(Item item, Unit currentUnit)
+    public bool IsInSelectionMode()
     {
-        if (item == null || currentUnit == null) return true; // Default to usable if we can't check
-        
-        // Only check healing consumables
-        if (item.itemType != ItemType.Consumable || item.consumableSubtype != ConsumableSubtype.Heal)
-        {
-            return true; // Non-healing items are always usable (if not used this turn)
-        }
-        
-        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        if (allUnits == null) return true;
-        
-        // Check if any valid target needs healing
-        foreach (Unit unit in allUnits)
-        {
-            if (unit == null || !unit.IsAlive()) continue;
-            
-            // Check if this unit is a valid target for the item (based on targetType)
-            bool isValidTarget = false;
-            switch (item.targetType)
-            {
-                case SkillTargetType.Self:
-                    isValidTarget = unit == currentUnit;
-                    break;
-                case SkillTargetType.Ally:
-                    isValidTarget = currentUnit.IsPlayerUnit == unit.IsPlayerUnit;
-                    break;
-                case SkillTargetType.Enemy:
-                    isValidTarget = currentUnit.IsPlayerUnit != unit.IsPlayerUnit;
-                    break;
-                case SkillTargetType.Any:
-                    isValidTarget = true;
-                    break;
-            }
-            
-            if (isValidTarget)
-            {
-                // If target needs healing (not at full HP), item can be used
-                if (unit.CurrentHP < unit.MaxHP)
-                {
-                    return true;
-                }
-            }
-        }
-        
-        // No valid targets need healing
-        return false;
+        return isSelectionMode;
+    }
+    
+    /// <summary>
+    /// Cancels selection mode (public method for external cancellation)
+    /// </summary>
+    public void CancelSelectionModePublic()
+    {
+        CancelSelectionMode();
     }
     
     /// <summary>
@@ -678,6 +309,613 @@ public class ItemPanelManager : MonoBehaviour
         }
         
         return "";
+    }
+    
+    /// <summary>
+    /// Enables button selection mode for navigating item buttons vertically
+    /// </summary>
+    public void EnableButtonSelectionMode()
+    {
+        // Prevent double-calling
+        if (isEnablingButtonSelection)
+            return;
+            
+        isEnablingButtonSelection = true;
+        
+        if (selection == null)
+        {
+            selection = FindFirstObjectByType<Selection>();
+            if (selection == null)
+            {
+                Debug.LogWarning("ItemPanelManager: Selection component not found. Button selection mode disabled.");
+                isEnablingButtonSelection = false;
+                return;
+            }
+        }
+        
+        if (inventory == null)
+        {
+            inventory = FindFirstObjectByType<Inventory>();
+        }
+        
+        // Store the currently selected button to preserve selection if possible
+        Button previouslySelectedButton = GetPreviouslySelectedButton();
+        
+        // Clear any existing selection first to ensure we start fresh
+        selection.ClearSelection();
+        
+        isButtonSelectionMode = true;
+        
+        // Get available item buttons (only buttons with items and that are active in hierarchy)
+        List<Button> availableButtons = GetAvailableItemButtons();
+        
+        // Set up selection with available buttons
+        if (availableButtons.Count > 0)
+        {
+            selection.SetSelection(availableButtons.ToArray(), SelectionType.UIButtons);
+            
+            // Try to restore the previously selected button if it's still in the list
+            RestoreButtonSelection(availableButtons, previouslySelectedButton);
+            
+            // Ignore input for this frame to prevent accidental activation
+            ignoreInputThisFrame = true;
+        }
+        else
+        {
+            //Debug.LogWarning($"ItemPanelManager: No available item buttons to select! inventory={inventory != null}, items={inventory?.Items != null}, itemsCount={inventory?.Items?.Count ?? 0}");
+            // Still set isButtonSelectionMode to false if we can't set up selection
+            isButtonSelectionMode = false;
+        }
+        
+        isEnablingButtonSelection = false;
+    }
+    
+    #endregion
+    
+    #region Target Selection Lifecycle
+    
+    /// <summary>
+    /// Called when an item button is clicked
+    /// </summary>
+    private void OnItemButtonClicked(int itemIndex)
+    {
+        if (!CanUseItemNow(itemIndex))
+        {
+            return;
+        }
+        
+        if (inventory == null)
+        {
+            inventory = FindFirstObjectByType<Inventory>();
+            if (inventory == null)
+            {
+                Debug.LogWarning("ItemPanelManager: Inventory not found!");
+                return;
+            }
+        }
+        
+        List<ItemEntry> items = inventory.Items;
+
+        if (itemIndex < 0 || itemIndex >= items.Count)
+        {
+            return;
+        }
+
+        ItemEntry entry = items[itemIndex];
+        if (entry == null || entry.item == null)
+        {
+            return;
+        }
+
+        Item item = entry.item;
+        
+        // Only consumables can be used
+        if (item.itemType != ItemType.Consumable)
+        {
+            Debug.LogWarning($"Cannot use item: {item.itemName} (not a consumable)");
+            return;
+        }
+        
+        // Check if an item was already used this turn
+        if (itemUsedThisTurn)
+        {
+            Debug.Log("You can only use one item per turn!");
+            return;
+        }
+
+        // If item targets self, use it immediately
+        if (item.targetType == SkillTargetType.Self)
+        {
+            UseItemOnTarget(item, itemIndex, gameManager.GetCurrentUnit());
+            return;
+        }
+
+        // Enter selection mode for target selection
+        EnterSelectionMode(itemIndex, item);
+    }
+    
+    /// <summary>
+    /// Enters selection mode for choosing a target
+    /// </summary>
+    private void EnterSelectionMode(int itemIndex, Item item)
+    {
+        if (selection == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Selection component not found!");
+            return;
+        }
+        
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager == null)
+            {
+                Debug.LogWarning("ItemPanelManager: GameManager not found!");
+                return;
+            }
+        }
+
+        Unit currentUnit = gameManager.GetCurrentUnit();
+        if (currentUnit == null)
+        {
+            Debug.LogWarning("ItemPanelManager: No current unit!");
+            return;
+        }
+
+        // Store the currently selected button index before disabling button selection mode
+        StoreCurrentButtonSelection();
+
+        // Disable button selection mode before entering target selection mode
+        DisableButtonSelectionMode();
+
+        isSelectionMode = true;
+        currentItemIndex = itemIndex;
+        currentItem = item;
+
+        // Hide user panel when entering selection mode
+        if (gameManager != null)
+        {
+            gameManager.HideUserPanel();
+        }
+
+        // Store the current unit for restoring selection later
+        currentCastingUnit = currentUnit;
+
+        // Convert SkillTargetType to UnitTargetType
+        UnitTargetType targetType = ConvertTargetType(item.targetType);
+
+        // Setup unit selection (will automatically restore previously selected unit based on target type)
+        selection.SetupUnitSelection(targetType, currentUnit, null, item);
+
+        Debug.Log($"Entered selection mode for item: {item.itemName}, Target type: {targetType}");
+
+        // If no valid targets, exit selection mode
+        if (selection.Count == 0)
+        {
+            Debug.LogWarning("No valid targets for this item!");
+            CancelSelectionMode();
+            return;
+        }
+        
+        // Ignore input for this frame to prevent accidental confirmation
+        ignoreInputThisFrame = true;
+    }
+    
+    /// <summary>
+    /// Cancels selection mode
+    /// </summary>
+    private void CancelSelectionMode()
+    {
+        // Store the currently selected unit before clearing (for next time, based on target type)
+        if (selection != null && currentCastingUnit != null)
+        {
+            selection.StoreLastSelectedUnit(currentCastingUnit);
+        }
+
+        isSelectionMode = false;
+        currentItem = null;
+        currentItemIndex = -1;
+        currentCastingUnit = null;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+        
+        // Show user panel again when exiting selection mode
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
+        }
+        
+        // Store the button index to restore before re-enabling button selection mode
+        // (lastSelectedButtonIndex should already be set from EnterSelectionMode, but ensure it's set)
+        int buttonIndexToRestore = lastSelectedButtonIndex;
+        
+        // Re-enable button selection mode to return to item button navigation
+        // This will reset selection to index 0, so we need to restore it
+        EnableButtonSelectionMode();
+        
+        // Restore selection to the previously selected button (if it's still available)
+        // Use a coroutine to restore after EnableButtonSelectionMode has fully set up the selection
+        if (buttonIndexToRestore >= 0)
+        {
+            StartCoroutine(RestoreButtonSelectionAfterDelay());
+        }
+        
+        Debug.Log("Cancelled item selection mode");
+    }
+    
+    /// <summary>
+    /// Confirms the current selection and uses the item
+    /// </summary>
+    private void ConfirmSelection()
+    {
+        if (!isSelectionMode || selection == null || currentItem == null)
+            return;
+
+        Unit selectedTarget = selection.GetSelectedUnit();
+        
+        if (selectedTarget != null && currentItemIndex >= 0)
+        {
+            // Save references before clearing selection mode
+            Item item = currentItem;
+            int itemIndex = currentItemIndex;
+            Unit target = selectedTarget;
+            
+            // Exit selection mode
+            CancelSelectionMode();
+            
+            // Use the item on the selected target
+            UseItemOnTarget(item, itemIndex, target);
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to delay confirmation so selection marker is visible
+    /// </summary>
+    private System.Collections.IEnumerator DelayedConfirmSelection(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ConfirmSelection();
+    }
+    
+    #endregion
+    
+    #region Input Handling
+    
+    /// <summary>
+    /// Checks if we should process input in Update()
+    /// </summary>
+    private bool ShouldProcessInput()
+    {
+        // Only process input if this GameObject is active in the hierarchy
+        if (!gameObject.activeInHierarchy)
+            return false;
+        
+        // Check if ItemsPanel is actually visible (via ActionPanelManager)
+        if (actionPanelManager == null)
+        {
+            actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        }
+        if (actionPanelManager != null && actionPanelManager.ItemsPanel != null && !actionPanelManager.ItemsPanel.activeSelf)
+        {
+            // Items panel is not visible, don't process input
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Handles button selection mode input
+    /// </summary>
+    private void HandleButtonSelectionModeInput()
+    {
+        // Handle button selection mode (vertical navigation through item buttons)
+        if (isButtonSelectionMode && !isSelectionMode)
+        {
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+            }
+            else
+            {
+                // Debug: Check if we're in the right state
+                if (selection != null)
+                {
+                    HandleButtonSelectionInput();
+                }
+                else
+                {
+                    Debug.LogWarning("ItemPanelManager: Selection is null in Update()!");
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Handles target selection mode input
+    /// </summary>
+    private void HandleTargetSelectionInput()
+    {
+        // Handle selection mode input
+        if (isSelectionMode)
+        {
+            // Skip input handling if we're ignoring input this frame
+            if (ignoreInputThisFrame)
+            {
+                ignoreInputThisFrame = false;
+            }
+            else
+            {
+                HandleTargetSelectionNavigation();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Handles navigation and confirmation input for target selection
+    /// </summary>
+    private void HandleTargetSelectionNavigation()
+    {
+        // Exit with ESC or right-click
+        if ((Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame) || 
+            (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame))
+        {
+            CancelSelectionMode();
+            return;
+        }
+        
+        // Navigate through targets with arrow keys or WASD
+        if (Keyboard.current != null && (Keyboard.current[Key.LeftArrow].wasPressedThisFrame || Keyboard.current[Key.A].wasPressedThisFrame))
+        {
+            if (selection != null)
+            {
+                selection.Previous();
+            }
+        }
+        else if (Keyboard.current != null && (Keyboard.current[Key.RightArrow].wasPressedThisFrame || Keyboard.current[Key.D].wasPressedThisFrame))
+        {
+            if (selection != null)
+            {
+                selection.Next();
+            }
+        }
+        // Confirm selection with Enter or Space
+        else if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
+        {
+            // Block input during skill execution
+            if (IsSkillExecuting())
+            {
+                return;
+            }
+            
+            ConfirmSelection();
+        }
+        // Mouse click handling is done in LateUpdate() to ensure Selection class processes it first
+    }
+    
+    /// <summary>
+    /// Handles input for button selection mode (Up/Down or W/S to cycle, Enter/Space to activate)
+    /// </summary>
+    private void HandleButtonSelectionInput()
+    {
+        if (selection == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Selection is null in HandleButtonSelectionInput!");
+            return;
+        }
+        
+        if (!selection.IsValidSelection())
+        {
+            Debug.LogWarning($"ItemPanelManager: Selection is not valid! Count: {selection.Count}, CurrentIndex: {selection.CurrentIndex}");
+            return;
+        }
+        
+        // Cycle with Up/Down arrow keys or W/S (W = previous, S = next)
+        if (Keyboard.current != null && (Keyboard.current[Key.UpArrow].wasPressedThisFrame || Keyboard.current[Key.W].wasPressedThisFrame))
+        {
+            selection.Previous();
+        }
+        else if (Keyboard.current != null && (Keyboard.current[Key.DownArrow].wasPressedThisFrame || Keyboard.current[Key.S].wasPressedThisFrame))
+        {
+            selection.Next();
+        }
+        
+        // Activate selected button with Enter or Space
+        if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
+        {
+            // Block input during skill execution
+            if (IsSkillExecuting())
+            {
+                return;
+            }
+            
+            ActivateSelectedButton();
+        }
+    }
+    
+    /// <summary>
+    /// Activates the currently selected item button
+    /// </summary>
+    private void ActivateSelectedButton()
+    {
+        if (selection == null || !selection.IsValidSelection())
+            return;
+        
+        object selectedItem = selection.CurrentSelection;
+        if (selectedItem is Button button)
+        {
+            // Find which item button was selected
+            for (int i = 0; i < itemButtons.Length; i++)
+            {
+                if (itemButtons[i] == button)
+                {
+                    OnItemButtonClicked(i);
+                    break;
+                }
+            }
+        }
+    }
+    
+    #endregion
+    
+    #region Item Display Management
+    
+    /// <summary>
+    /// Populates an item slot with item data
+    /// </summary>
+    private void PopulateItemSlot(int index, ItemEntry entry, Unit currentUnit)
+    {
+        Item item = entry.item;
+        int quantity = entry.quantity;
+
+        // Update item name
+        if (itemNames != null && index < itemNames.Length && itemNames[index] != null)
+        {
+            itemNames[index].text = item.itemName;
+        }
+
+        // Store original colors if not already stored
+        if (!originalColorsStored[index])
+        {
+            StoreOriginalColors(index);
+        }
+
+        // Update item icon
+        UpdateItemIcon(index, item);
+
+        // Update quantity display (if available)
+        UpdateItemQuantity(index, quantity);
+
+        // Check if item is unusable (healing items when all allies are at full HP)
+        bool isUnusable = itemUsedThisTurn || !CanUseHealingItem(item, currentUnit);
+        
+        // Update brightness based on item usage or unusability
+        UpdateItemBrightness(index, isUnusable);
+
+        // Keep buttons interactable even when unusable (like skills) so pressed state shows on click
+        // Visual feedback (dimmed brightness) already indicates unusability
+        if (itemButtons != null && index < itemButtons.Length && itemButtons[index] != null)
+        {
+            itemButtons[index].interactable = true;
+        }
+    }
+    
+    /// <summary>
+    /// Stores original colors for an item slot
+    /// </summary>
+    private void StoreOriginalColors(int index)
+    {
+        // Store original icon color
+        if (itemIcons != null && index < itemIcons.Length && itemIcons[index] != null)
+        {
+            originalIconColors[index] = itemIcons[index].color;
+        }
+        
+        // Store original button color
+        if (itemButtons != null && index < itemButtons.Length && itemButtons[index] != null && itemButtons[index].image != null)
+        {
+            originalButtonColors[index] = itemButtons[index].image.color;
+        }
+        
+        originalColorsStored[index] = true;
+    }
+    
+    /// <summary>
+    /// Updates the item icon for a slot
+    /// </summary>
+    private void UpdateItemIcon(int index, Item item)
+    {
+        if (itemIcons != null && index < itemIcons.Length && itemIcons[index] != null)
+        {
+            if (item.icon != null)
+            {
+                itemIcons[index].sprite = item.icon;
+                itemIcons[index].enabled = true;
+            }
+            else
+            {
+                itemIcons[index].enabled = false;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Updates the quantity display for a slot
+    /// </summary>
+    private void UpdateItemQuantity(int index, int quantity)
+    {
+        if (itemQuantities != null && index < itemQuantities.Length && itemQuantities[index] != null)
+        {
+            if (quantity > 1)
+            {
+                itemQuantities[index].text = quantity.ToString();
+            }
+            else
+            {
+                itemQuantities[index].text = "";
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Clears a specific item slot
+    /// </summary>
+    private void ClearItemSlot(int index)
+    {
+        if (index < 0 || index >= 4) return;
+
+        if (itemNames != null && index < itemNames.Length && itemNames[index] != null)
+        {
+            itemNames[index].text = "";
+        }
+
+        if (itemIcons != null && index < itemIcons.Length && itemIcons[index] != null)
+        {
+            itemIcons[index].enabled = false;
+        }
+
+        if (itemQuantities != null && index < itemQuantities.Length && itemQuantities[index] != null)
+        {
+            itemQuantities[index].text = "";
+        }
+
+        if (itemButtons != null && index < itemButtons.Length && itemButtons[index] != null)
+        {
+            itemButtons[index].interactable = false;
+        }
+        
+        // Restore colors when clearing slot
+        if (originalColorsStored[index])
+        {
+            if (itemIcons != null && index < itemIcons.Length && itemIcons[index] != null)
+            {
+                itemIcons[index].color = originalIconColors[index];
+            }
+            if (itemButtons != null && index < itemButtons.Length && itemButtons[index] != null && itemButtons[index].image != null)
+            {
+                itemButtons[index].image.color = originalButtonColors[index];
+            }
+            originalColorsStored[index] = false;
+        }
+    }
+
+    /// <summary>
+    /// Clears all item displays
+    /// </summary>
+    private void ClearAllItems()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            ClearItemSlot(i);
+        }
     }
     
     /// <summary>
@@ -759,83 +997,28 @@ public class ItemPanelManager : MonoBehaviour
             }
         }
     }
-
+    
+    #endregion
+    
+    #region Guard Checks and Conditions
+    
     /// <summary>
-    /// Clears a specific item slot
+    /// Checks if an item can be used now (consolidates all guard checks)
     /// </summary>
-    private void ClearItemSlot(int index)
-    {
-        if (index < 0 || index >= 4) return;
-
-        if (itemNames != null && index < itemNames.Length && itemNames[index] != null)
-        {
-            itemNames[index].text = "";
-        }
-
-        if (itemIcons != null && index < itemIcons.Length && itemIcons[index] != null)
-        {
-            itemIcons[index].enabled = false;
-        }
-
-        if (itemQuantities != null && index < itemQuantities.Length && itemQuantities[index] != null)
-        {
-            itemQuantities[index].text = "";
-        }
-
-        if (itemButtons != null && index < itemButtons.Length && itemButtons[index] != null)
-        {
-            itemButtons[index].interactable = false;
-        }
-        
-        // Restore colors when clearing slot
-        if (originalColorsStored[index])
-        {
-            if (itemIcons != null && index < itemIcons.Length && itemIcons[index] != null)
-            {
-                itemIcons[index].color = originalIconColors[index];
-            }
-            if (itemButtons != null && index < itemButtons.Length && itemButtons[index] != null && itemButtons[index].image != null)
-            {
-                itemButtons[index].image.color = originalButtonColors[index];
-            }
-            originalColorsStored[index] = false;
-        }
-    }
-
-    /// <summary>
-    /// Clears all item displays
-    /// </summary>
-    private void ClearAllItems()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            ClearItemSlot(i);
-        }
-    }
-
-    /// <summary>
-    /// Called when an item button is clicked
-    /// </summary>
-    private void OnItemButtonClicked(int itemIndex)
+    private bool CanUseItemNow(int itemIndex)
     {
         if (inventory == null)
         {
             inventory = FindFirstObjectByType<Inventory>();
             if (inventory == null)
             {
-                Debug.LogWarning("ItemPanelManager: Inventory not found!");
-                return;
+                return false;
             }
         }
         
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
-        }
-        
-        if (selection == null)
-        {
-            selection = FindFirstObjectByType<Selection>();
         }
 
         Unit currentUnit = gameManager != null ? gameManager.GetCurrentUnit() : null;
@@ -843,91 +1026,197 @@ public class ItemPanelManager : MonoBehaviour
         // Only allow item usage during player unit's turn
         if (currentUnit == null || !currentUnit.IsPlayerUnit || isSelectionMode)
         {
-            return;
+            return false;
         }
         
         // Don't allow item usage during inspect mode
         InspectPanelManager inspectPanel = FindFirstObjectByType<InspectPanelManager>();
         if (inspectPanel != null && inspectPanel.IsInspectMode())
         {
-            return;
+            return false;
         }
         
         // Don't allow item usage during skill execution
         if (actionPanelManager != null && actionPanelManager.IsSkillExecuting())
         {
-            return;
-        }
-
-        List<ItemEntry> items = inventory.Items;
-
-        if (itemIndex < 0 || itemIndex >= items.Count)
-        {
-            return;
-        }
-
-        ItemEntry entry = items[itemIndex];
-        if (entry == null || entry.item == null)
-        {
-            return;
-        }
-
-        Item item = entry.item;
-        
-        // Only consumables can be used
-        if (item.itemType != ItemType.Consumable)
-        {
-            Debug.LogWarning($"Cannot use item: {item.itemName} (not a consumable)");
-            return;
+            return false;
         }
         
-        // Check if an item was already used this turn
-        if (itemUsedThisTurn)
-        {
-            Debug.Log("You can only use one item per turn!");
-            return;
-        }
-
-        // If item targets self, use it immediately
-        if (item.targetType == SkillTargetType.Self)
-        {
-            UseItemOnTarget(item, itemIndex, currentUnit);
-            return;
-        }
-
-        // Enter selection mode for target selection
-        EnterSelectionMode(itemIndex, item);
+        return true;
     }
     
     /// <summary>
-    /// Enters selection mode for choosing a target
+    /// Checks if a healing item can be used (at least one valid target needs healing)
     /// </summary>
-    private void EnterSelectionMode(int itemIndex, Item item)
+    private bool CanUseHealingItem(Item item, Unit currentUnit)
     {
-        if (selection == null)
+        if (item == null || currentUnit == null) return true; // Default to usable if we can't check
+        
+        // Only check healing consumables
+        if (item.itemType != ItemType.Consumable || item.consumableSubtype != ConsumableSubtype.Heal)
         {
-            Debug.LogWarning("ItemPanelManager: Selection component not found!");
-            return;
+            return true; // Non-healing items are always usable (if not used this turn)
         }
         
-        if (gameManager == null)
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null) return true;
+        
+        // Check if any valid target needs healing
+        foreach (Unit unit in allUnits)
         {
-            gameManager = FindFirstObjectByType<GameManager>();
-            if (gameManager == null)
+            if (unit == null || !unit.IsAlive()) continue;
+            
+            // Check if this unit is a valid target for the item (based on targetType)
+            bool isValidTarget = IsValidItemTarget(unit, currentUnit, item.targetType);
+            
+            if (isValidTarget)
             {
-                Debug.LogWarning("ItemPanelManager: GameManager not found!");
-                return;
+                // If target needs healing (not at full HP), item can be used
+                if (unit.CurrentHP < unit.MaxHP)
+                {
+                    return true;
+                }
             }
         }
-
-        Unit currentUnit = gameManager.GetCurrentUnit();
-        if (currentUnit == null)
+        
+        // No valid targets need healing
+        return false;
+    }
+    
+    /// <summary>
+    /// Checks if a unit is a valid target for an item based on target type
+    /// </summary>
+    private bool IsValidItemTarget(Unit unit, Unit currentUnit, SkillTargetType targetType)
+    {
+        switch (targetType)
         {
-            Debug.LogWarning("ItemPanelManager: No current unit!");
-            return;
+            case SkillTargetType.Self:
+                return unit == currentUnit;
+            case SkillTargetType.Ally:
+                return currentUnit.IsPlayerUnit == unit.IsPlayerUnit;
+            case SkillTargetType.Enemy:
+                return currentUnit.IsPlayerUnit != unit.IsPlayerUnit;
+            case SkillTargetType.Any:
+                return true;
+            default:
+                return true;
         }
-
-        // Store the currently selected button index before disabling button selection mode
+    }
+    
+    /// <summary>
+    /// Checks if skill execution is in progress
+    /// </summary>
+    private bool IsSkillExecuting()
+    {
+        ActionPanelManager actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        return actionPanelManager != null && actionPanelManager.IsSkillExecuting();
+    }
+    
+    #endregion
+    
+    #region Button Selection Mode Helpers
+    
+    /// <summary>
+    /// Disables button selection mode
+    /// </summary>
+    private void DisableButtonSelectionMode()
+    {
+        isButtonSelectionMode = false;
+        
+        if (selection != null)
+        {
+            selection.ClearSelection();
+        }
+    }
+    
+    /// <summary>
+    /// Gets the previously selected button to preserve selection
+    /// </summary>
+    private Button GetPreviouslySelectedButton()
+    {
+        Button previouslySelectedButton = null;
+        
+        // First, try to use lastSelectedButtonIndex (set before entering selection mode)
+        // This is the most reliable source when CancelSelectionMode is called
+        if (lastSelectedButtonIndex >= 0 && 
+            lastSelectedButtonIndex < itemButtons.Length && 
+            itemButtons[lastSelectedButtonIndex] != null)
+        {
+            previouslySelectedButton = itemButtons[lastSelectedButtonIndex];
+        }
+        // Fallback: check current selection if we're in button selection mode
+        else if (isButtonSelectionMode && selection != null && selection.IsValidSelection())
+        {
+            object currentSelection = selection.CurrentSelection;
+            if (currentSelection is Button currentButton)
+            {
+                // Only preserve if this button is one of our item buttons
+                for (int i = 0; i < itemButtons.Length; i++)
+                {
+                    if (itemButtons[i] == currentButton)
+                    {
+                        previouslySelectedButton = currentButton;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return previouslySelectedButton;
+    }
+    
+    /// <summary>
+    /// Gets available item buttons for selection
+    /// </summary>
+    private List<Button> GetAvailableItemButtons()
+    {
+        List<Button> availableButtons = new List<Button>();
+        
+        if (inventory == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Inventory is null in EnableButtonSelectionMode!");
+        }
+        else if (inventory.Items == null)
+        {
+            Debug.LogWarning("ItemPanelManager: Inventory.Items is null in EnableButtonSelectionMode!");
+        }
+        else
+        {
+            for (int i = 0; i < 4 && i < inventory.Items.Count; i++)
+            {
+                if (inventory.Items[i] != null && inventory.Items[i].item != null && itemButtons[i] != null && itemButtons[i].gameObject.activeInHierarchy)
+                {
+                    // Include all buttons with items (even if unusable) - same as SkillPanelManager
+                    // This prevents selection from jumping when items become unusable
+                    availableButtons.Add(itemButtons[i]);
+                }
+            }
+        }
+        
+        return availableButtons;
+    }
+    
+    /// <summary>
+    /// Restores button selection to a previously selected button
+    /// </summary>
+    private void RestoreButtonSelection(List<Button> availableButtons, Button previouslySelectedButton)
+    {
+        if (previouslySelectedButton != null && availableButtons.Contains(previouslySelectedButton))
+        {
+            int targetIndex = availableButtons.IndexOf(previouslySelectedButton);
+            if (targetIndex >= 0 && targetIndex < availableButtons.Count)
+            {
+                // Set the index directly to preserve selection
+                selection.SetIndex(targetIndex);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Stores the current button selection before entering target selection mode
+    /// </summary>
+    private void StoreCurrentButtonSelection()
+    {
         if (selection != null && selection.IsValidSelection())
         {
             object selectedItem = selection.CurrentSelection;
@@ -944,196 +1233,6 @@ public class ItemPanelManager : MonoBehaviour
                 }
             }
         }
-
-        // Disable button selection mode before entering target selection mode
-        DisableButtonSelectionMode();
-
-        isSelectionMode = true;
-        currentItemIndex = itemIndex;
-        currentItem = item;
-
-        // Hide user panel when entering selection mode
-        if (gameManager != null)
-        {
-            gameManager.HideUserPanel();
-        }
-
-        // Store the current unit for restoring selection later
-        currentCastingUnit = currentUnit;
-
-        // Convert SkillTargetType to UnitTargetType
-        UnitTargetType targetType = ConvertTargetType(item.targetType);
-
-        // Setup unit selection (will automatically restore previously selected unit based on target type)
-        selection.SetupUnitSelection(targetType, currentUnit, null, item);
-
-        Debug.Log($"Entered selection mode for item: {item.itemName}, Target type: {targetType}");
-
-        // If no valid targets, exit selection mode
-        if (selection.Count == 0)
-        {
-            Debug.LogWarning("No valid targets for this item!");
-            CancelSelectionMode();
-            return;
-        }
-        
-        // Ignore input for this frame to prevent accidental confirmation
-        ignoreInputThisFrame = true;
-    }
-    
-    /// <summary>
-    /// Converts SkillTargetType to UnitTargetType
-    /// </summary>
-    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
-    {
-        switch (skillTargetType)
-        {
-            case SkillTargetType.Self:
-                return UnitTargetType.Self;
-            case SkillTargetType.Ally:
-                return UnitTargetType.AllAllies; // Use AllAllies to include self
-            case SkillTargetType.Enemy:
-                return UnitTargetType.AllEnemies;
-            case SkillTargetType.Any:
-                return UnitTargetType.Any;
-            default:
-                return UnitTargetType.Any;
-        }
-    }
-    
-    /// <summary>
-    /// Called when selection changes (for visual feedback, etc.)
-    /// </summary>
-    private void OnSelectionChanged(object selectedItem)
-    {
-        // Can be used for visual feedback if needed
-    }
-    
-    /// <summary>
-    /// Handles mouse click on a unit during selection mode
-    /// </summary>
-    private void HandleMouseClickOnUnit()
-    {
-        if (!isSelectionMode || selection == null)
-            return;
-
-        // Don't process if clicking on UI elements
-        if (UnityEngine.EventSystems.EventSystem.current != null && 
-            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        // The Selection class's Update() has already handled the mouse click and selected the unit
-        // We just need to confirm if there's a valid selection (meaning a unit was clicked)
-        if (selection.IsValidSelection())
-        {
-            Unit selectedUnit = selection.GetSelectedUnit();
-            // Only confirm if we have a valid unit selected (not empty space)
-            if (selectedUnit != null)
-            {
-                ConfirmSelection();
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Coroutine to delay confirmation so selection marker is visible
-    /// </summary>
-    private System.Collections.IEnumerator DelayedConfirmSelection(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        ConfirmSelection();
-    }
-    
-    /// <summary>
-    /// Confirms the current selection and uses the item
-    /// </summary>
-    private void ConfirmSelection()
-    {
-        if (!isSelectionMode || selection == null || currentItem == null)
-            return;
-
-        Unit selectedTarget = selection.GetSelectedUnit();
-        
-        if (selectedTarget != null && currentItemIndex >= 0)
-        {
-            // Save references before clearing selection mode
-            Item item = currentItem;
-            int itemIndex = currentItemIndex;
-            Unit target = selectedTarget;
-            
-            // Exit selection mode
-            CancelSelectionMode();
-            
-            // Use the item on the selected target
-            UseItemOnTarget(item, itemIndex, target);
-        }
-    }
-    
-    /// <summary>
-    /// Checks if we're currently in target selection mode
-    /// </summary>
-    public bool IsInSelectionMode()
-    {
-        return isSelectionMode;
-    }
-    
-    /// <summary>
-    /// Cancels selection mode (public method for external cancellation)
-    /// </summary>
-    public void CancelSelectionModePublic()
-    {
-        CancelSelectionMode();
-    }
-    
-    /// <summary>
-    /// Cancels selection mode
-    /// </summary>
-    private void CancelSelectionMode()
-    {
-        // Store the currently selected unit before clearing (for next time, based on target type)
-        if (selection != null && currentCastingUnit != null)
-        {
-            selection.StoreLastSelectedUnit(currentCastingUnit);
-        }
-
-        isSelectionMode = false;
-        currentItem = null;
-        currentItemIndex = -1;
-        currentCastingUnit = null;
-        
-        if (selection != null)
-        {
-            selection.ClearSelection();
-        }
-        
-        // Show user panel again when exiting selection mode
-        if (gameManager == null)
-        {
-            gameManager = FindFirstObjectByType<GameManager>();
-        }
-        if (gameManager != null)
-        {
-            gameManager.ShowUserPanel();
-        }
-        
-        // Store the button index to restore before re-enabling button selection mode
-        // (lastSelectedButtonIndex should already be set from EnterSelectionMode, but ensure it's set)
-        int buttonIndexToRestore = lastSelectedButtonIndex;
-        
-        // Re-enable button selection mode to return to item button navigation
-        // This will reset selection to index 0, so we need to restore it
-        EnableButtonSelectionMode();
-        
-        // Restore selection to the previously selected button (if it's still available)
-        // Use a coroutine to restore after EnableButtonSelectionMode has fully set up the selection
-        if (buttonIndexToRestore >= 0)
-        {
-            StartCoroutine(RestoreButtonSelectionAfterDelay());
-        }
-        
-        Debug.Log("Cancelled item selection mode");
     }
     
     /// <summary>
@@ -1181,6 +1280,38 @@ public class ItemPanelManager : MonoBehaviour
                 }
             }
         }
+    }
+    
+    #endregion
+    
+    #region Helper Methods
+    
+    /// <summary>
+    /// Converts SkillTargetType to UnitTargetType
+    /// </summary>
+    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
+    {
+        switch (skillTargetType)
+        {
+            case SkillTargetType.Self:
+                return UnitTargetType.Self;
+            case SkillTargetType.Ally:
+                return UnitTargetType.AllAllies; // Use AllAllies to include self
+            case SkillTargetType.Enemy:
+                return UnitTargetType.AllEnemies;
+            case SkillTargetType.Any:
+                return UnitTargetType.Any;
+            default:
+                return UnitTargetType.Any;
+        }
+    }
+    
+    /// <summary>
+    /// Called when selection changes (for visual feedback, etc.)
+    /// </summary>
+    private void OnSelectionChanged(object selectedItem)
+    {
+        // Can be used for visual feedback if needed
     }
     
     /// <summary>
@@ -1234,4 +1365,6 @@ public class ItemPanelManager : MonoBehaviour
         
         Debug.Log($"Used {item.itemName} on {target.UnitName}");
     }
+    
+    #endregion
 }
