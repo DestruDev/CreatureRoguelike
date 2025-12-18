@@ -813,11 +813,11 @@ public class ActionPanelManager : MonoBehaviour
     #region Guard Checks
     
     /// <summary>
-    /// Checks if input should be blocked (inspect mode)
+    /// Checks if input should be blocked (inspect mode or skill execution)
     /// </summary>
     private bool IsInputBlocked()
     {
-        return IsInInspectMode();
+        return IsInInspectMode() || isSkillExecuting;
     }
     
     /// <summary>
