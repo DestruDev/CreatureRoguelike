@@ -319,6 +319,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -455,6 +456,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -849,6 +851,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1028,7 +1031,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &545470489
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2169,6 +2172,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2381,6 +2385,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2517,6 +2522,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2653,6 +2659,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2789,6 +2796,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2914,7 +2922,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2061954209}
-  - component: {fileID: 2061954208}
+  - component: {fileID: 2061954211}
+  - component: {fileID: 2061954210}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2922,31 +2931,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2061954208
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2061954207}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87d50076f02403149834edbc06343404, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MainMenu
-  playButton: {fileID: 598298359}
-  settingsButton: {fileID: 945331761}
-  achievementsButton: {fileID: 627912013}
-  exitButton: {fileID: 922391330}
-  characterSelectPanel: {fileID: 1168445197}
-  settingsPanel: {fileID: 545470488}
-  achievementsPanel: {fileID: 1236598643}
-  characterSelectBackButton: {fileID: 440693810}
-  settingsBackButton: {fileID: 580379854}
-  achievementsBackButton: {fileID: 542550557}
-  startGameButton: {fileID: 599723478}
-  gameSceneName: GameScene
-  buttonsContainer: {fileID: 89950482}
 --- !u!4 &2061954209
 Transform:
   m_ObjectHideFlags: 0
@@ -2963,6 +2947,43 @@ Transform:
   - {fileID: 580173598}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2061954210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061954207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02b628aba615c6845a8de76b05848c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuView
+  playButton: {fileID: 598298359}
+  settingsButton: {fileID: 945331761}
+  achievementsButton: {fileID: 627912013}
+  exitButton: {fileID: 922391330}
+  characterSelectPanel: {fileID: 1168445197}
+  settingsPanel: {fileID: 545470488}
+  achievementsPanel: {fileID: 1236598643}
+  characterSelectBackButton: {fileID: 440693810}
+  settingsBackButton: {fileID: 580379854}
+  achievementsBackButton: {fileID: 542550557}
+  startGameButton: {fileID: 599723478}
+  buttonsContainer: {fileID: 89950482}
+--- !u!114 &2061954211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2061954207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae1048412c0196e4982d41d357fd06aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
+  gameSceneName: GameScene
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
