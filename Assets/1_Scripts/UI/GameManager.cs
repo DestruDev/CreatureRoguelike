@@ -1152,7 +1152,7 @@ public class GameManager : MonoBehaviour
 		// Creature UI (indices 0-2)
 		if (creatureNameTexts[creatureIndex] != null)
 		{
-			creatureNameTexts[creatureIndex].text = unit.UnitName;
+			creatureNameTexts[creatureIndex].text = EventLogPanel.GetDisplayNameForUnit(unit);
 			creatureNameTexts[creatureIndex].gameObject.SetActive(true);
 		}
 		
@@ -1184,7 +1184,7 @@ public class GameManager : MonoBehaviour
 		// Enemy UI (indices 0-2)
 		if (enemyNameTexts[enemyIndex] != null)
 		{
-			enemyNameTexts[enemyIndex].text = unit.UnitName;
+			enemyNameTexts[enemyIndex].text = EventLogPanel.GetDisplayNameForUnit(unit);
 			enemyNameTexts[enemyIndex].gameObject.SetActive(true);
 		}
 		

@@ -61,6 +61,7 @@ public class EventLogPanel : MonoBehaviour
     /// <summary>
     /// Gets a display name for a unit, adding a distinguishing identifier if there are duplicates
     /// Similar to TurnOrderTimeline's GetDisplayNameForUnit method
+    /// Uses a stable ordering that includes all units (alive and dead) to prevent letter reassignment when units die
     /// </summary>
     public static string GetDisplayNameForUnit(Unit unit)
     {
@@ -69,16 +70,17 @@ public class EventLogPanel : MonoBehaviour
         
         string baseName = unit.UnitName;
         
-        // Get all units in the scene
-        Unit[] allUnits = Object.FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        if (allUnits == null || allUnits.Length == 0)
+        // Get ALL units in the scene (including inactive/dead ones) for stable letter assignment
+        // This ensures letters don't change when units die
+        Unit[] allUnitsIncludingInactive = Object.FindObjectsByType<Unit>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (allUnitsIncludingInactive == null || allUnitsIncludingInactive.Length == 0)
             return baseName;
         
-        // Count how many units have the same name
+        // Count how many units have the same name (alive or dead)
         int sameNameCount = 0;
-        foreach (var u in allUnits)
+        foreach (var u in allUnitsIncludingInactive)
         {
-            if (u != null && u.IsAlive() && u.UnitName == baseName)
+            if (u != null && u.UnitName == baseName)
             {
                 sameNameCount++;
             }
@@ -87,11 +89,11 @@ public class EventLogPanel : MonoBehaviour
         // If there are duplicates, add a distinguishing identifier
         if (sameNameCount > 1)
         {
-            // Sort all units with same name to get consistent numbering
+            // Sort all units with same name (alive and dead) to get stable ordering
             List<Unit> sameNameUnits = new List<Unit>();
-            foreach (var u in allUnits)
+            foreach (var u in allUnitsIncludingInactive)
             {
-                if (u != null && u.IsAlive() && u.UnitName == baseName)
+                if (u != null && u.UnitName == baseName)
                 {
                     sameNameUnits.Add(u);
                 }
@@ -101,22 +103,24 @@ public class EventLogPanel : MonoBehaviour
             TurnOrder turnOrder = Object.FindFirstObjectByType<TurnOrder>();
             
             // Sort by team (player first), then by spawn index (if available), then by instance ID
+            // This creates a stable ordering that doesn't change when units die
             sameNameUnits.Sort((a, b) =>
             {
                 // Use tiebreaker logic for consistent ordering
                 int tiebreak = turnOrder != null ? turnOrder.CompareUnitsForTiebreaker(a, b) : 0;
                 if (tiebreak != 0)
                     return tiebreak;
-                // Final fallback: instance ID
+                // Final fallback: instance ID (stable and unique)
                 return a.GetInstanceID().CompareTo(b.GetInstanceID());
             });
             
-            // Find this unit's index in the sorted list
+            // Find this unit's index in the sorted list (stable position)
             for (int i = 0; i < sameNameUnits.Count; i++)
             {
                 if (sameNameUnits[i] == unit)
                 {
                     // Convert index to letter (0 = A, 1 = B, 2 = C, etc.)
+                    // This letter is stable and won't change when other units die
                     char letter = (char)('A' + i);
                     return $"{baseName} {letter}";
                 }

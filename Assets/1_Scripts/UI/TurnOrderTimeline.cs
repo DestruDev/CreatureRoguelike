@@ -68,19 +68,7 @@ public class TurnOrderTimeline : MonoBehaviour
             return;
         }
         
-        // Get current unit (slot 0 = bottom)
-        Unit currentUnit = gameManager.GetCurrentUnit();
-        if (currentUnit != null && currentUnit.IsAlive())
-        {
-            if (turnOrderSlots[0] != null)
-            {
-                turnOrderSlots[0].text = currentUnit.UnitName;
-                turnOrderSlots[0].color = Color.yellow; // Highlight current unit in yellow
-                turnOrderSlots[0].gameObject.SetActive(true);
-            }
-        }
-        
-        // Get all alive units
+        // Get all alive units first (needed for duplicate naming)
         Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         if (allUnits == null || allUnits.Length == 0)
         {
@@ -119,6 +107,19 @@ public class TurnOrderTimeline : MonoBehaviour
                 }
             }
             return;
+        }
+        
+        // Get current unit (slot 0 = bottom) and display with duplicate-aware naming
+        Unit currentUnit = gameManager.GetCurrentUnit();
+        if (currentUnit != null && currentUnit.IsAlive())
+        {
+            if (turnOrderSlots[0] != null)
+            {
+                string displayName = GetDisplayNameForUnit(currentUnit, allUnits);
+                turnOrderSlots[0].text = displayName;
+                turnOrderSlots[0].color = Color.yellow; // Highlight current unit in yellow
+                turnOrderSlots[0].gameObject.SetActive(true);
+            }
         }
         
         // Simulate future turns to see which unit acts in each upcoming turn
@@ -287,16 +288,25 @@ public class TurnOrderTimeline : MonoBehaviour
     
     /// <summary>
     /// Gets a display name for a unit, adding a distinguishing identifier if there are duplicates
+    /// Uses a stable ordering that includes all units (alive and dead) to prevent letter reassignment when units die
     /// </summary>
     private string GetDisplayNameForUnit(Unit unit, Unit[] allUnits)
     {
         string baseName = unit.UnitName;
         
-        // Count how many units have the same name
-        int sameNameCount = 0;
-        foreach (var u in allUnits)
+        // Get ALL units with the same name (including inactive/dead ones) for stable letter assignment
+        // This ensures letters don't change when units die
+        Unit[] allUnitsIncludingInactive = FindObjectsByType<Unit>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (allUnitsIncludingInactive == null || allUnitsIncludingInactive.Length == 0)
         {
-            if (u != null && u.IsAlive() && u.UnitName == baseName)
+            allUnitsIncludingInactive = allUnits; // Fallback to active units only
+        }
+        
+        // Count how many units have the same name (alive or dead)
+        int sameNameCount = 0;
+        foreach (var u in allUnitsIncludingInactive)
+        {
+            if (u != null && u.UnitName == baseName)
             {
                 sameNameCount++;
             }
@@ -305,33 +315,35 @@ public class TurnOrderTimeline : MonoBehaviour
         // If there are duplicates, add a distinguishing identifier
         if (sameNameCount > 1)
         {
-            // Sort all units with same name to get consistent numbering
+            // Sort all units with same name (alive and dead) to get stable ordering
             List<Unit> sameNameUnits = new List<Unit>();
-            foreach (var u in allUnits)
+            foreach (var u in allUnitsIncludingInactive)
             {
-                if (u != null && u.IsAlive() && u.UnitName == baseName)
+                if (u != null && u.UnitName == baseName)
                 {
                     sameNameUnits.Add(u);
                 }
             }
             
             // Sort by team (player first), then by spawn index (if available), then by instance ID
+            // This creates a stable ordering that doesn't change when units die
             sameNameUnits.Sort((a, b) =>
             {
                 // Use tiebreaker logic for consistent ordering
                 int tiebreak = turnOrder != null ? turnOrder.CompareUnitsForTiebreaker(a, b) : 0;
                 if (tiebreak != 0)
                     return tiebreak;
-                // Final fallback: instance ID
+                // Final fallback: instance ID (stable and unique)
                 return a.GetInstanceID().CompareTo(b.GetInstanceID());
             });
             
-            // Find this unit's index in the sorted list
+            // Find this unit's index in the sorted list (stable position)
             for (int i = 0; i < sameNameUnits.Count; i++)
             {
                 if (sameNameUnits[i] == unit)
                 {
                     // Convert index to letter (0 = A, 1 = B, 2 = C, etc.)
+                    // This letter is stable and won't change when other units die
                     char letter = (char)('A' + i);
                     return $"{baseName} {letter}";
                 }
