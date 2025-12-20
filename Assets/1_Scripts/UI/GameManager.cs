@@ -30,6 +30,19 @@ public class GameManager : MonoBehaviour
     [Tooltip("Enemy action gauge fill images (index 0-2 correspond to enemy 1-3)")]
     public UnityEngine.UI.Image[] enemyActionGaugeFills = new UnityEngine.UI.Image[3];
     
+    [Header("Name Text Font Size Settings")]
+    [Tooltip("Maximum font size for short unit names")]
+    [SerializeField] private float maxFontSize = 36f;
+    
+    [Tooltip("Minimum font size for very long unit names")]
+    [SerializeField] private float minFontSize = 18f;
+    
+    [Tooltip("Name length at which font size starts scaling down (names this length or shorter use max font size)")]
+    [SerializeField] private int shortNameThreshold = 10;
+    
+    [Tooltip("Name length at which font size reaches minimum (names this length or longer use min font size)")]
+    [SerializeField] private int longNameThreshold = 30;
+    
     [Header("Unit UI Roots (toggle on death)")]
     [Tooltip("Root GameObjects for creature UI slots (0-2). These will be disabled when the unit dies.")]
     public GameObject[] creatureUIRoots = new GameObject[3];
@@ -1152,7 +1165,9 @@ public class GameManager : MonoBehaviour
 		// Creature UI (indices 0-2)
 		if (creatureNameTexts[creatureIndex] != null)
 		{
-			creatureNameTexts[creatureIndex].text = EventLogPanel.GetDisplayNameForUnit(unit);
+			string displayName = EventLogPanel.GetDisplayNameForUnit(unit);
+			creatureNameTexts[creatureIndex].text = displayName;
+			creatureNameTexts[creatureIndex].fontSize = CalculateFontSize(displayName);
 			creatureNameTexts[creatureIndex].gameObject.SetActive(true);
 		}
 		
@@ -1184,7 +1199,9 @@ public class GameManager : MonoBehaviour
 		// Enemy UI (indices 0-2)
 		if (enemyNameTexts[enemyIndex] != null)
 		{
-			enemyNameTexts[enemyIndex].text = EventLogPanel.GetDisplayNameForUnit(unit);
+			string displayName = EventLogPanel.GetDisplayNameForUnit(unit);
+			enemyNameTexts[enemyIndex].text = displayName;
+			enemyNameTexts[enemyIndex].fontSize = CalculateFontSize(displayName);
 			enemyNameTexts[enemyIndex].gameObject.SetActive(true);
 		}
 		
@@ -1342,6 +1359,38 @@ public class GameManager : MonoBehaviour
 			float gaugePercentage = Mathf.Clamp01(unit.GetActionGauge() / 100f);
 			actionGaugeFill.fillAmount = gaugePercentage;
 		}
+	}
+	
+	/// <summary>
+	/// Calculates the font size based on the length of the unit name
+	/// Shorter names use max font size, longer names scale down to min font size
+	/// </summary>
+	private float CalculateFontSize(string name)
+	{
+		if (string.IsNullOrEmpty(name))
+			return maxFontSize;
+		
+		int nameLength = name.Length;
+		
+		// If name is at or below short threshold, use max font size
+		if (nameLength <= shortNameThreshold)
+		{
+			return maxFontSize;
+		}
+		
+		// If name is at or above long threshold, use min font size
+		if (nameLength >= longNameThreshold)
+		{
+			return minFontSize;
+		}
+		
+		// Interpolate between max and min based on name length
+		// Calculate how far along the range we are (0 = at short threshold, 1 = at long threshold)
+		float range = longNameThreshold - shortNameThreshold;
+		float position = (nameLength - shortNameThreshold) / range;
+		
+		// Lerp from max to min
+		return Mathf.Lerp(maxFontSize, minFontSize, position);
 	}
 	
 	/// <summary>

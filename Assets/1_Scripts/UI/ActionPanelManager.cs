@@ -27,6 +27,19 @@ public class ActionPanelManager : MonoBehaviour
     
     [Header("Unit Info")]
     public TextMeshProUGUI UnitNameText;
+    
+    [Header("Font Size Settings")]
+    [Tooltip("Maximum font size for short unit names")]
+    [SerializeField] private float maxFontSize = 36f;
+    
+    [Tooltip("Minimum font size for very long unit names")]
+    [SerializeField] private float minFontSize = 18f;
+    
+    [Tooltip("Name length at which font size starts scaling down (names this length or shorter use max font size)")]
+    [SerializeField] private int shortNameThreshold = 10;
+    
+    [Tooltip("Name length at which font size reaches minimum (names this length or longer use min font size)")]
+    [SerializeField] private int longNameThreshold = 30;
 
     [Header("References")]
     private GameManager gameManager;
@@ -1389,10 +1402,44 @@ public class ActionPanelManager : MonoBehaviour
                 // Note: userPanelRoot visibility is handled by UpdatePanelVisibility()
                 if (currentUnit.IsPlayerUnit)
                 {
-                    UnitNameText.text = currentUnit.UnitName;
+                    string displayName = currentUnit.UnitName;
+                    UnitNameText.text = displayName;
+                    UnitNameText.fontSize = CalculateFontSize(displayName);
                 }
             }
         }
+    }
+    
+    /// <summary>
+    /// Calculates the font size based on the length of the unit name
+    /// Shorter names use max font size, longer names scale down to min font size
+    /// </summary>
+    private float CalculateFontSize(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return maxFontSize;
+        
+        int nameLength = name.Length;
+        
+        // If name is at or below short threshold, use max font size
+        if (nameLength <= shortNameThreshold)
+        {
+            return maxFontSize;
+        }
+        
+        // If name is at or above long threshold, use min font size
+        if (nameLength >= longNameThreshold)
+        {
+            return minFontSize;
+        }
+        
+        // Interpolate between max and min based on name length
+        // Calculate how far along the range we are (0 = at short threshold, 1 = at long threshold)
+        float range = longNameThreshold - shortNameThreshold;
+        float position = (nameLength - shortNameThreshold) / range;
+        
+        // Lerp from max to min
+        return Mathf.Lerp(maxFontSize, minFontSize, position);
     }
     
     #endregion

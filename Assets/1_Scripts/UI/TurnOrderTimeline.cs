@@ -12,6 +12,19 @@ public class TurnOrderTimeline : MonoBehaviour
     [Tooltip("Turn order display slots (8 slots: index 0 = current turn at bottom, 7 = furthest future turn at top)")]
     public TextMeshProUGUI[] turnOrderSlots = new TextMeshProUGUI[8];
     
+    [Header("Font Size Settings")]
+    [Tooltip("Maximum font size for short unit names")]
+    [SerializeField] private float maxFontSize = 36f;
+    
+    [Tooltip("Minimum font size for very long unit names")]
+    [SerializeField] private float minFontSize = 18f;
+    
+    [Tooltip("Name length at which font size starts scaling down (names this length or shorter use max font size)")]
+    [SerializeField] private int shortNameThreshold = 10;
+    
+    [Tooltip("Name length at which font size reaches minimum (names this length or longer use min font size)")]
+    [SerializeField] private int longNameThreshold = 30;
+    
     private TurnOrder turnOrder;
     private GameManager gameManager;
     
@@ -117,6 +130,7 @@ public class TurnOrderTimeline : MonoBehaviour
             {
                 string displayName = GetDisplayNameForUnit(currentUnit, allUnits);
                 turnOrderSlots[0].text = displayName;
+                turnOrderSlots[0].fontSize = CalculateFontSize(displayName);
                 turnOrderSlots[0].color = Color.yellow; // Highlight current unit in yellow
                 turnOrderSlots[0].gameObject.SetActive(true);
             }
@@ -279,6 +293,7 @@ public class TurnOrderTimeline : MonoBehaviour
                 string displayName = GetDisplayNameForUnit(unit, allUnits);
                 
                 turnOrderSlots[slotIndex].text = displayName;
+                turnOrderSlots[slotIndex].fontSize = CalculateFontSize(displayName);
                 turnOrderSlots[slotIndex].color = Color.white;
                 turnOrderSlots[slotIndex].gameObject.SetActive(true);
                 slotIndex++;
@@ -352,5 +367,37 @@ public class TurnOrderTimeline : MonoBehaviour
         
         // No duplicates or couldn't find in list, return base name
         return baseName;
+    }
+    
+    /// <summary>
+    /// Calculates the font size based on the length of the unit name
+    /// Shorter names use max font size, longer names scale down to min font size
+    /// </summary>
+    private float CalculateFontSize(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return maxFontSize;
+        
+        int nameLength = name.Length;
+        
+        // If name is at or below short threshold, use max font size
+        if (nameLength <= shortNameThreshold)
+        {
+            return maxFontSize;
+        }
+        
+        // If name is at or above long threshold, use min font size
+        if (nameLength >= longNameThreshold)
+        {
+            return minFontSize;
+        }
+        
+        // Interpolate between max and min based on name length
+        // Calculate how far along the range we are (0 = at short threshold, 1 = at long threshold)
+        float range = longNameThreshold - shortNameThreshold;
+        float position = (nameLength - shortNameThreshold) / range;
+        
+        // Lerp from max to min
+        return Mathf.Lerp(maxFontSize, minFontSize, position);
     }
 }
