@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainMenuView : MonoBehaviour
 {
@@ -25,6 +26,10 @@ public class MainMenuView : MonoBehaviour
     [Header("Button Container")]
     [SerializeField] private GameObject buttonsContainer;
 
+    [Header("Version Text")]
+    [SerializeField] private TMP_Text versionText;
+    [SerializeField] private string versionString = "Version 1.0";
+
     private MainMenuController controller;
 
     private void Awake()
@@ -47,6 +52,12 @@ public class MainMenuView : MonoBehaviour
         // Initialize panels - hide all panels, show buttons
         ShowMainButtons();
         HideAllPanels();
+        
+        // Set version text
+        if (versionText != null)
+        {
+            versionText.text = versionString;
+        }
     }
 
     private void SetupButtonListeners()

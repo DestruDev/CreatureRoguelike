@@ -4571,7 +4571,7 @@ MonoBehaviour:
   creatureUnitData:
   - {fileID: 11400000, guid: f5a85a2104d750448bd3028ae0a6eec6, type: 2}
   - {fileID: 11400000, guid: ae0179b0bb2103b47b5ef1807ca12630, type: 2}
-  - {fileID: 11400000, guid: 84f3062d67a54bf4ebe1496234e66a23, type: 2}
+  - {fileID: 11400000, guid: f93c0078148acd74c80921a5b6f8581d, type: 2}
   enemySpawnAreas:
   - {fileID: 1593076177}
   - {fileID: 37810065}
@@ -4965,7 +4965,9 @@ MonoBehaviour:
   mapButton2: {fileID: 1836338106}
   mapButton3: {fileID: 416487793}
   levelDataList:
-  - {fileID: 11400000, guid: eaaeb3502db9e9a40aa81fa0f8e5d283, type: 2}
+  - {fileID: 11400000, guid: 0f7c48a75da02554e88458d48f204f48, type: 2}
+  - {fileID: 11400000, guid: 9e65e7b7f060ed044b69a3972d762842, type: 2}
+  - {fileID: 11400000, guid: 1bd353c99f495b2408b754462006c971, type: 2}
 --- !u!1 &444719010
 GameObject:
   m_ObjectHideFlags: 0
