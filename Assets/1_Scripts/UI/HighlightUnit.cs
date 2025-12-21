@@ -1,5 +1,6 @@
 using UnityEngine;
 using AllIn1SpriteShader;
+using UnityEngine.Rendering;
 
 public class HighlightUnit : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class HighlightUnit : MonoBehaviour
     private UnityEngine.UI.Image uiImage;
     private Renderer rendererComponent;
     private Material originalMaterial;
+    private Material originalSharedMaterial; // Store the shared material asset (for builds)
     private Material combinedMaterial; // Temporary material that combines original + highlight
     private bool isHighlighted = false;
 
@@ -21,11 +23,11 @@ public class HighlightUnit : MonoBehaviour
             Debug.LogWarning("HighlightUnit: No Unit component found on " + gameObject.name);
         }
 
-        // Find GameManager
+        // Find GameManager (retry in Update if not found, as initialization order may differ in builds)
         gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager == null)
         {
-            Debug.LogWarning("HighlightUnit: GameManager not found in scene!");
+            Debug.LogWarning("HighlightUnit: GameManager not found in scene! Will retry in Update.");
         }
 
         // Get the renderer component
@@ -33,28 +35,61 @@ public class HighlightUnit : MonoBehaviour
         uiImage = GetComponent<UnityEngine.UI.Image>();
         rendererComponent = GetComponent<Renderer>();
 
-        // Store the original material
+        // Store the original material (use sharedMaterial for builds compatibility)
         if (spriteRenderer != null)
         {
-            originalMaterial = spriteRenderer.material;
+            originalSharedMaterial = spriteRenderer.sharedMaterial;
+            // Get the current material instance (creates one if needed)
+            // In builds, this might return null initially, so we'll use sharedMaterial as fallback
+            if (spriteRenderer.material != null)
+            {
+                originalMaterial = spriteRenderer.material;
+            }
+            else if (originalSharedMaterial != null)
+            {
+                originalMaterial = originalSharedMaterial;
+            }
         }
         else if (uiImage != null)
         {
+            originalSharedMaterial = uiImage.material; // UI Image doesn't have sharedMaterial
             originalMaterial = uiImage.material;
         }
         else if (rendererComponent != null)
         {
-            originalMaterial = rendererComponent.material;
+            originalSharedMaterial = rendererComponent.sharedMaterial;
+            if (rendererComponent.material != null)
+            {
+                originalMaterial = rendererComponent.material;
+            }
+            else if (originalSharedMaterial != null)
+            {
+                originalMaterial = originalSharedMaterial;
+            }
         }
         else
         {
             Debug.LogWarning("HighlightUnit: No renderer found on " + gameObject.name + ". Need SpriteRenderer, Image, or Renderer component.");
         }
+        
+        // Ensure we have a valid material reference
+        if (originalMaterial == null && originalSharedMaterial != null)
+        {
+            originalMaterial = originalSharedMaterial;
+        }
     }
 
     void Update()
     {
-        if (unit == null || gameManager == null)
+        // Re-find GameManager if it's null (can happen in builds if initialization order is different)
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager == null)
+                return;
+        }
+        
+        if (unit == null)
             return;
 
         // Check if highlighting is enabled
@@ -88,28 +123,67 @@ public class HighlightUnit : MonoBehaviour
 
     private void ApplyHighlightMaterial()
     {
-        // Apply highlight properties onto the original material
-        if (originalMaterial != null && gameManager.highlightMaterial != null)
+        // Ensure we have valid references
+        if (gameManager == null || gameManager.highlightMaterial == null)
         {
-            // Create a new material instance from the original material to preserve it
-            combinedMaterial = new Material(originalMaterial);
+            return;
+        }
+        
+        // Always create a new material from the highlight material to ensure it uses AllIn1SpriteShader
+        // This is critical for builds - the original material might not use the correct shader
+        combinedMaterial = new Material(gameManager.highlightMaterial);
+        
+        // CRITICAL FOR BUILDS: Ensure the shader is correct for the current render pipeline
+        // If using URP and the shader doesn't match, find and use the correct variant
+        Shader correctShader = GetCorrectShaderForRenderPipeline(gameManager.highlightMaterial.shader);
+        if (correctShader != null && combinedMaterial.shader != correctShader)
+        {
+            combinedMaterial.shader = correctShader;
+        }
+        
+        // If we have an original material, try to preserve its properties (texture, color, etc.)
+        Material sourceMaterial = originalMaterial != null ? originalMaterial : originalSharedMaterial;
+        
+        if (sourceMaterial != null)
+        {
+            // Preserve the main texture from the original material if it exists
+            if (sourceMaterial.mainTexture != null && combinedMaterial.HasProperty("_MainTex"))
+            {
+                combinedMaterial.SetTexture("_MainTex", sourceMaterial.mainTexture);
+            }
             
-            // Copy highlight/outline properties from the highlight material onto the original
-            CopyHighlightProperties(gameManager.highlightMaterial, combinedMaterial);
+            // Preserve the main color from the original material if it exists
+            if (sourceMaterial.HasProperty("_Color") && combinedMaterial.HasProperty("_Color"))
+            {
+                combinedMaterial.SetColor("_Color", sourceMaterial.GetColor("_Color"));
+            }
+            // If original doesn't have _Color but spriteRenderer has a color, use that
+            else if (spriteRenderer != null && combinedMaterial.HasProperty("_Color"))
+            {
+                combinedMaterial.SetColor("_Color", spriteRenderer.color);
+            }
         }
-        else if (gameManager.highlightMaterial != null)
+        else if (spriteRenderer != null)
         {
-            // If no original material, just use the highlight material directly
-            combinedMaterial = gameManager.highlightMaterial;
+            // If no original material, use sprite texture and color directly
+            if (spriteRenderer.sprite != null && spriteRenderer.sprite.texture != null && combinedMaterial.HasProperty("_MainTex"))
+            {
+                combinedMaterial.SetTexture("_MainTex", spriteRenderer.sprite.texture);
+            }
+            
+            if (combinedMaterial.HasProperty("_Color"))
+            {
+                combinedMaterial.SetColor("_Color", spriteRenderer.color);
+            }
         }
-        else
-        {
-            return; // No materials available
-        }
+        
+        // Copy highlight/outline properties from the highlight material (this ensures outline is enabled)
+        CopyHighlightProperties(gameManager.highlightMaterial, combinedMaterial);
 
         // Apply the combined material
         if (spriteRenderer != null)
         {
+            // Use material (not sharedMaterial) to ensure we get an instance in builds
             spriteRenderer.material = combinedMaterial;
         }
         else if (uiImage != null)
@@ -118,6 +192,7 @@ public class HighlightUnit : MonoBehaviour
         }
         else if (rendererComponent != null)
         {
+            // Use material (not sharedMaterial) to ensure we get an instance in builds
             rendererComponent.material = combinedMaterial;
         }
         isHighlighted = true;
@@ -131,11 +206,31 @@ public class HighlightUnit : MonoBehaviour
     {
         if (highlightSource == null || destination == null) return;
 
-        // Ensure the destination material uses the same shader as the highlight (AllIn1SpriteShader)
-        // This is important so it supports outline properties
+        // CRITICAL: Ensure the destination material uses the same shader as the highlight (AllIn1SpriteShader)
+        // This is essential for the outline to work in builds
         if (highlightSource.shader != null)
         {
             destination.shader = highlightSource.shader;
+        }
+        
+        // Preserve the original sprite texture and color if they exist
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        {
+            // Copy main texture from sprite
+            if (destination.HasProperty("_MainTex"))
+            {
+                Texture mainTex = spriteRenderer.sprite.texture;
+                if (mainTex != null)
+                {
+                    destination.SetTexture("_MainTex", mainTex);
+                }
+            }
+            
+            // Copy main color
+            if (destination.HasProperty("_Color"))
+            {
+                destination.SetColor("_Color", spriteRenderer.color);
+            }
         }
 
         // Copy outline properties from highlight material
@@ -261,29 +356,69 @@ public class HighlightUnit : MonoBehaviour
 
     private void RevertToOriginalMaterial()
     {
-        if (originalMaterial == null)
-            return;
-
         // Clean up the combined material if we created one
-        if (combinedMaterial != null && combinedMaterial != gameManager.highlightMaterial)
+        if (combinedMaterial != null && combinedMaterial != gameManager?.highlightMaterial)
         {
             Destroy(combinedMaterial);
             combinedMaterial = null;
         }
 
+        // Use sharedMaterial for builds compatibility, or fall back to originalMaterial
+        Material materialToUse = originalSharedMaterial != null ? originalSharedMaterial : originalMaterial;
+        
+        if (materialToUse == null)
+            return;
+
         if (spriteRenderer != null)
         {
-            spriteRenderer.material = originalMaterial;
+            spriteRenderer.sharedMaterial = materialToUse;
         }
         else if (uiImage != null)
         {
-            uiImage.material = originalMaterial;
+            uiImage.material = materialToUse;
         }
         else if (rendererComponent != null)
         {
-            rendererComponent.material = originalMaterial;
+            rendererComponent.sharedMaterial = materialToUse;
         }
         isHighlighted = false;
+    }
+
+    /// <summary>
+    /// Gets the correct shader variant for the current render pipeline
+    /// This is critical for builds where shader variants must match the render pipeline
+    /// </summary>
+    private Shader GetCorrectShaderForRenderPipeline(Shader originalShader)
+    {
+        if (originalShader == null)
+            return null;
+        
+        // Check if we're using URP
+        if (GraphicsSettings.defaultRenderPipeline != null)
+        {
+            string rpType = GraphicsSettings.defaultRenderPipeline.GetType().Name;
+            
+            // If using URP, try to use SRPBatch variant if available
+            if (rpType.Contains("Universal") || rpType.Contains("URP"))
+            {
+                // Try to find the SRPBatch variant
+                Shader srpBatchShader = Shader.Find("AllIn1SpriteShader/AllIn1SpriteShaderSRPBatch");
+                if (srpBatchShader != null)
+                {
+                    return srpBatchShader;
+                }
+            }
+        }
+        
+        // Fall back to original shader or try to find the standard variant
+        Shader standardShader = Shader.Find("AllIn1SpriteShader/AllIn1SpriteShader");
+        if (standardShader != null)
+        {
+            return standardShader;
+        }
+        
+        // If all else fails, return the original shader
+        return originalShader;
     }
 
     void OnDestroy()
