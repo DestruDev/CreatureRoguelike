@@ -1544,6 +1544,7 @@ public class GameManager : MonoBehaviour
 	
 	/// <summary>
 	/// Called when all enemies are dead - opens the map panel instead of round end panel
+	/// If boss is defeated (stage 3), shows round end panel with "Zone cleared" instead
 	/// </summary>
 	public void OnAllEnemiesDead()
 	{
@@ -1557,8 +1558,25 @@ public class GameManager : MonoBehaviour
             actionPanelManager.HideForRoundEnd();
         }
 
-		// Delay showing the map panel to allow death animations to play
-		StartCoroutine(DelayedShowMapPanel());
+		// Check if boss was defeated (stage 4, since stage advances when boss is selected)
+		LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+		bool isBossDefeated = false;
+		if (levelNavigation != null)
+		{
+			int currentStage = levelNavigation.GetCurrentStage();
+			isBossDefeated = (currentStage == 4); // Stage 4 is after boss is selected and defeated
+		}
+
+		if (isBossDefeated)
+		{
+			// Boss defeated - show round end panel with "Zone cleared" instead of map panel
+			StartCoroutine(DelayedShowRoundEndPanel("Zone cleared"));
+		}
+		else
+		{
+			// Normal level - delay showing the map panel to allow death animations to play
+			StartCoroutine(DelayedShowMapPanel());
+		}
 	}
 	
 	/// <summary>
@@ -1618,11 +1636,23 @@ public class GameManager : MonoBehaviour
 				Debug.LogWarning("GameManager: roundEndMessageText is not assigned!");
 			}
 			
-			// Show/hide next level button based on whether it's game over, round won, or game won
+			// Show/hide next level button based on the message
 			if (nextLevelButton != null)
 			{
-				// Hide button on "Game Over!" or "Game Won!", show it on "Round Won!"
-				nextLevelButton.gameObject.SetActive(message == "Round Won!");
+				// Hide button on "Game Over!", "Game Won!", or "Zone cleared"
+				// Show it only on "Round Won!"
+				bool shouldShowButton = (message == "Round Won!");
+				nextLevelButton.gameObject.SetActive(shouldShowButton);
+				
+				// Also disable the button interactivity for "Zone cleared" (in case it's shown but should be disabled)
+				if (message == "Zone cleared")
+				{
+					nextLevelButton.interactable = false;
+				}
+				else if (shouldShowButton)
+				{
+					nextLevelButton.interactable = true;
+				}
 			}
 			
 			// Show the panel

@@ -28,6 +28,10 @@ public class ActionPanelManager : MonoBehaviour
     [Header("Unit Info")]
     public TextMeshProUGUI UnitNameText;
     
+    [Header("Inspect Tooltip")]
+    [Tooltip("GameObject that should sync with UI hiding/showing")]
+    public GameObject inspectTooltip;
+    
     [Header("Font Size Settings")]
     [Tooltip("Maximum font size for short unit names")]
     [SerializeField] private float maxFontSize = 36f;
@@ -260,6 +264,11 @@ public class ActionPanelManager : MonoBehaviour
             {
                 // Hide user panel root which contains all UI elements
                 gameManager.HideUserPanel();
+                // Hide inspect tooltip when game is over
+                if (inspectTooltip != null)
+                {
+                    inspectTooltip.SetActive(false);
+                }
                 panelsHiddenForGameOver = true;
             }
             return; // Don't process further if game is over
@@ -279,6 +288,11 @@ public class ActionPanelManager : MonoBehaviour
         if (currentUnit != null && currentUnit.IsEnemyUnit)
         {
             gameManager.HideUserPanel();
+            // Hide inspect tooltip during enemy turns
+            if (inspectTooltip != null)
+            {
+                inspectTooltip.SetActive(false);
+            }
             lastUnit = currentUnit;
         }
         // If it's a player unit's turn
@@ -286,6 +300,12 @@ public class ActionPanelManager : MonoBehaviour
         {
             // Show user panel root during player unit turns
             gameManager.ShowUserPanel();
+            
+            // Show inspect tooltip during player unit turns
+            if (inspectTooltip != null)
+            {
+                inspectTooltip.SetActive(true);
+            }
             
             // If this is a different unit from last frame (new turn started), reset to ActionPanel
             bool isNewTurn = lastUnit != currentUnit;
@@ -307,6 +327,11 @@ public class ActionPanelManager : MonoBehaviour
         {
             // No current unit, hide user panel and reset tracking
             gameManager.HideUserPanel();
+            // Hide inspect tooltip when no current unit
+            if (inspectTooltip != null)
+            {
+                inspectTooltip.SetActive(false);
+            }
             lastUnit = null;
         }
     }
@@ -633,6 +658,12 @@ public class ActionPanelManager : MonoBehaviour
         {
             gameManager.HideUserPanel();
         }
+        
+        // Hide inspect tooltip
+        if (inspectTooltip != null)
+        {
+            inspectTooltip.SetActive(false);
+        }
     }
     
     /// <summary>
@@ -647,6 +678,21 @@ public class ActionPanelManager : MonoBehaviour
         // This will be called in the next Update() cycle
         // We can force an update by calling UpdatePanelVisibility directly
         UpdatePanelVisibility();
+        
+        // Show inspect tooltip if it should be visible (only during player unit turns)
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        
+        if (gameManager != null)
+        {
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && currentUnit.IsPlayerUnit && inspectTooltip != null)
+            {
+                inspectTooltip.SetActive(true);
+            }
+        }
     }
     
     /// <summary>
@@ -684,6 +730,12 @@ public class ActionPanelManager : MonoBehaviour
         {
             gameManager.HideUserPanel();
         }
+        
+        // Hide inspect tooltip during round end
+        if (inspectTooltip != null)
+        {
+            inspectTooltip.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -705,6 +757,12 @@ public class ActionPanelManager : MonoBehaviour
         
         // Hide all panels and clear selection
         HideAllPanels();
+        
+        // Hide inspect tooltip when resetting
+        if (inspectTooltip != null)
+        {
+            inspectTooltip.SetActive(false);
+        }
     }
     
     #endregion
@@ -975,6 +1033,12 @@ public class ActionPanelManager : MonoBehaviour
             gameManager.HideUserPanel();
         }
         
+        // Hide inspect tooltip when entering selection mode
+        if (inspectTooltip != null)
+        {
+            inspectTooltip.SetActive(false);
+        }
+        
         // Ignore the next mouse click and keyboard confirm to prevent immediate confirmation from button activation
         ignoreNextMouseClick = true;
         ignoreNextKeyboardConfirm = true;
@@ -1029,6 +1093,12 @@ public class ActionPanelManager : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.ShowUserPanel();
+            // Show inspect tooltip if it's a player unit's turn
+            Unit currentUnit = gameManager.GetCurrentUnit();
+            if (currentUnit != null && currentUnit.IsPlayerUnit && inspectTooltip != null)
+            {
+                inspectTooltip.SetActive(true);
+            }
         }
         
         // Re-enable button selection mode
