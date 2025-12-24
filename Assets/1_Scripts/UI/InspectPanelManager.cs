@@ -419,8 +419,8 @@ public class InspectPanelManager : MonoBehaviour
             // Check if the current selection is a button
             if (selection.IsValidSelection() && selection.CurrentSelection is Button currentButton)
             {
-                // Find which button index it is (include NormalAttackButton in the array)
-                Button[] buttons = new Button[] { actionPanelManager.SkillsButton, actionPanelManager.NormalAttackButton, actionPanelManager.ItemsButton };
+                // Find which button index it is
+                Button[] buttons = new Button[] { actionPanelManager.SkillsButton, actionPanelManager.ItemsButton };
                 for (int i = 0; i < buttons.Length; i++)
                 {
                     if (buttons[i] == currentButton)
@@ -447,13 +447,7 @@ public class InspectPanelManager : MonoBehaviour
         // Wait one frame to ensure ActionPanel and buttons are fully active
         yield return null;
         
-        // Now refresh the selection markers and default to NormalAttackButton
-        if (actionPanelManager != null && 
-            actionPanelManager.ActionPanel != null && actionPanelManager.ActionPanel.activeSelf)
-        {
-            // Always default to NormalAttackButton when exiting inspect mode
-            actionPanelManager.SelectNormalAttackButton();
-        }
+        // Selection markers will be updated automatically by ActionPanelManager
     }
     
     #endregion
