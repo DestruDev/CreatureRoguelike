@@ -43,6 +43,20 @@ public class GameManager : MonoBehaviour
     [Tooltip("Name length at which font size reaches minimum (names this length or longer use min font size)")]
     [SerializeField] private int longNameThreshold = 30;
     
+    [Header("Unit Name Colors")]
+    [Tooltip("Color for ally/player unit names")]
+    [SerializeField] private Color allyColor = Color.cyan;
+    
+    [Tooltip("Color for enemy unit names")]
+    [SerializeField] private Color enemyColor = Color.red;
+    
+    // Static color storage for use in static methods
+    private static Color staticAllyColor = Color.cyan;
+    private static Color staticEnemyColor = Color.red;
+    
+    // Static instance for color access
+    private static GameManager staticInstance;
+    
     [Header("Unit UI Roots (toggle on death)")]
     [Tooltip("Root GameObjects for creature UI slots (0-2). These will be disabled when the unit dies.")]
     public GameObject[] creatureUIRoots = new GameObject[3];
@@ -143,6 +157,11 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // Set static instance and colors
+        staticInstance = this;
+        staticAllyColor = allyColor;
+        staticEnemyColor = enemyColor;
+        
         // Validate and cache references
         ValidateReferences();
         
@@ -157,6 +176,22 @@ public class GameManager : MonoBehaviour
 
         // Get the first unit that should go - delay slightly to ensure all units are initialized
         StartCoroutine(DelayedStart());
+    }
+    
+    /// <summary>
+    /// Gets the ally color for unit names (static access)
+    /// </summary>
+    public static Color GetAllyColor()
+    {
+        return staticAllyColor;
+    }
+    
+    /// <summary>
+    /// Gets the enemy color for unit names (static access)
+    /// </summary>
+    public static Color GetEnemyColor()
+    {
+        return staticEnemyColor;
     }
 
     private System.Collections.IEnumerator DelayedStart()
@@ -581,8 +616,8 @@ public class GameManager : MonoBehaviour
 		HideActionUI();
 		
 		// Log skill usage immediately (before starting coroutine for instant display)
-		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
-		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		string casterName = EventLogPanel.GetColoredDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetColoredDisplayNameForUnit(target) : "self";
 		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
 		
 		// Start coroutine for delayed effects
@@ -604,8 +639,8 @@ public class GameManager : MonoBehaviour
 		HideActionUI();
 		
 		// Log skill usage immediately (before starting coroutine for instant display)
-		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
-		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		string casterName = EventLogPanel.GetColoredDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetColoredDisplayNameForUnit(target) : "self";
 		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
 		
 		// Start coroutine for delayed effects
@@ -630,8 +665,8 @@ public class GameManager : MonoBehaviour
 		caster.SetSkillCooldown(skillIndex, skill.cooldownTurns);
 		
 		// Log skill usage immediately
-		string casterName = EventLogPanel.GetDisplayNameForUnit(caster);
-		string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+		string casterName = EventLogPanel.GetColoredDisplayNameForUnit(caster);
+		string targetName = target != null ? EventLogPanel.GetColoredDisplayNameForUnit(target) : "self";
 		EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
 		
 		// Use shared coroutine for skill execution
@@ -1168,6 +1203,7 @@ public class GameManager : MonoBehaviour
 			string displayName = EventLogPanel.GetDisplayNameForUnit(unit);
 			creatureNameTexts[creatureIndex].text = displayName;
 			creatureNameTexts[creatureIndex].fontSize = CalculateFontSize(displayName);
+			creatureNameTexts[creatureIndex].color = allyColor;
 			creatureNameTexts[creatureIndex].gameObject.SetActive(true);
 		}
 		
@@ -1202,6 +1238,7 @@ public class GameManager : MonoBehaviour
 			string displayName = EventLogPanel.GetDisplayNameForUnit(unit);
 			enemyNameTexts[enemyIndex].text = displayName;
 			enemyNameTexts[enemyIndex].fontSize = CalculateFontSize(displayName);
+			enemyNameTexts[enemyIndex].color = enemyColor;
 			enemyNameTexts[enemyIndex].gameObject.SetActive(true);
 		}
 		

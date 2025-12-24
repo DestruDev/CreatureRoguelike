@@ -132,6 +132,28 @@ public class EventLogPanel : MonoBehaviour
     }
     
     /// <summary>
+    /// Gets a colored display name for a unit for use in event log messages
+    /// Wraps the unit name in color tags based on whether it's an ally or enemy
+    /// Colors are retrieved from GameManager
+    /// </summary>
+    public static string GetColoredDisplayNameForUnit(Unit unit)
+    {
+        string displayName = GetDisplayNameForUnit(unit);
+        
+        if (unit == null)
+        {
+            return $"<color=white>{displayName}</color>";
+        }
+        
+        // Get colors from GameManager
+        Color unitColor = unit.IsPlayerUnit ? GameManager.GetAllyColor() : GameManager.GetEnemyColor();
+        
+        // Convert Color to hex string for TextMeshPro rich text
+        string colorHex = ColorUtility.ToHtmlStringRGBA(unitColor);
+        return $"<color=#{colorHex}>{displayName}</color>";
+    }
+    
+    /// <summary>
     /// Adds a message to the event log
     /// </summary>
     private void AddLogMessage(string message)

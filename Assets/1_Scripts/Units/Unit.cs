@@ -164,7 +164,7 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage! HP: " + currentHP + "/" + MaxHP);
         
         // Log to event panel
-        string displayName = EventLogPanel.GetDisplayNameForUnit(this);
+        string displayName = EventLogPanel.GetColoredDisplayNameForUnit(this);
         EventLogPanel.LogEvent($"{displayName} takes {actualDamage} damage! ({currentHP}/{MaxHP} HP)");
         
         if (currentHP <= 0)
@@ -192,7 +192,7 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " takes " + actualDamage + " damage (ignoring defense)! HP: " + currentHP + "/" + MaxHP);
         
         // Log to event panel
-        string displayName = EventLogPanel.GetDisplayNameForUnit(this);
+        string displayName = EventLogPanel.GetColoredDisplayNameForUnit(this);
         EventLogPanel.LogEvent($"{displayName} takes {actualDamage} damage (ignoring defense)! ({currentHP}/{MaxHP} HP)");
         
         if (currentHP <= 0)
@@ -226,8 +226,8 @@ public class Unit : MonoBehaviour
         // Debug.Log(gameObject.name + " attacks " + target.gameObject.name + " for " + AttackDamage + " damage!");
         
         // Log attack to event panel
-        string attackerName = EventLogPanel.GetDisplayNameForUnit(this);
-        string targetName = EventLogPanel.GetDisplayNameForUnit(target);
+        string attackerName = EventLogPanel.GetColoredDisplayNameForUnit(this);
+        string targetName = EventLogPanel.GetColoredDisplayNameForUnit(target);
         EventLogPanel.LogEvent($"{attackerName} attacks {targetName}!");
         
         // target.TakeDamage(AttackDamage);
@@ -256,8 +256,8 @@ public class Unit : MonoBehaviour
         Debug.Log(gameObject.name + " uses " + skill.skillName + "!");
         
         // Log skill usage to event panel
-        string casterName = EventLogPanel.GetDisplayNameForUnit(this);
-        string targetName = target != null ? EventLogPanel.GetDisplayNameForUnit(target) : "self";
+        string casterName = EventLogPanel.GetColoredDisplayNameForUnit(this);
+        string targetName = target != null ? EventLogPanel.GetColoredDisplayNameForUnit(target) : "self";
         EventLogPanel.LogEvent($"{casterName} uses {skill.skillName} on {targetName}!");
         
         // Apply skill effects immediately (for backwards compatibility)

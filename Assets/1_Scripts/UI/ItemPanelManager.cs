@@ -1337,7 +1337,7 @@ public class ItemPanelManager : MonoBehaviour
                         int healedAmount = target.CurrentHP - oldHP;
                         
                         // Log to event panel (Unit.Heal already logs, but we want to show item usage)
-                        string targetName = EventLogPanel.GetDisplayNameForUnit(target);
+                        string targetName = EventLogPanel.GetColoredDisplayNameForUnit(target);
                         EventLogPanel.LogEvent($"{targetName} uses {item.itemName} and heals for {healedAmount} HP! ({target.CurrentHP}/{target.MaxHP} HP)");
                     }
                     break;
