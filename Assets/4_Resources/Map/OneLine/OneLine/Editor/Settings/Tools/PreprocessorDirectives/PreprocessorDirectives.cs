@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Build;
 
 namespace OneLine.Settings {
     public class PreprocessorDirectives {
@@ -32,7 +33,7 @@ namespace OneLine.Settings {
                 return;
             }
 
-            var currentDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
+            var currentDefines = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(target));
             var resultDefines = new List<string>();
             foreach (var define in currentDefines.Split(';')) {
                 if (!string.IsNullOrEmpty(define)) {
@@ -49,7 +50,7 @@ namespace OneLine.Settings {
                 }
             }
 
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(target, string.Join(";", resultDefines.ToArray()));
+            PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(target), string.Join(";", resultDefines.ToArray()));
         }
     }
 }
