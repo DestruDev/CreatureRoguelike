@@ -2,12 +2,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using Map;
 
 public class LevelMap : MonoBehaviour
 {
-    [Header("Map Panel")]
-    [Tooltip("The map panel GameObject that will be shown when a stage is completed")]
-    public GameObject mapPanel;
+    [Header("Map System")]
+    [Tooltip("Reference to MapManager for the new map system")]
+    public MapManager mapManager;
     
     [Header("Map Buttons B1")]
     [Tooltip("First button on the map panel")]
@@ -89,14 +90,22 @@ public class LevelMap : MonoBehaviour
     #region Initialization Helpers
     
     /// <summary>
-    /// Shows the map panel at start
+    /// Shows the map at start using MapView/MapManager system
+    /// MapManager may have already shown it in Start(), so we just ensure it's visible
     /// </summary>
     private void ShowMapOnStart()
     {
-        if (mapPanel != null)
-        {
-            mapPanel.SetActive(true);
-        }
+        // Wait a frame to ensure MapManager has initialized
+        StartCoroutine(ShowMapViewDelayed());
+    }
+    
+    /// <summary>
+    /// Coroutine to show map view after MapManager has initialized
+    /// </summary>
+    private IEnumerator ShowMapViewDelayed()
+    {
+        yield return null; // Wait one frame for MapManager.Start() to complete
+        ShowMapView();
     }
     
     /// <summary>
@@ -283,20 +292,14 @@ public class LevelMap : MonoBehaviour
     #region Public Methods
     
     /// <summary>
-    /// Shows the map panel when a stage is completed or when choosing a stage to navigate to
+    /// Shows the map when a stage is completed or when choosing a stage to navigate to
+    /// Uses the MapView/MapManager system instead of the old mapPanel
     /// </summary>
     public void ShowMapPanel()
     {
-        if (mapPanel != null)
-        {
-            mapPanel.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning("LevelMap: mapPanel is not assigned!");
-        }
+        ShowMapView();
         
-        // Hide all UI when map panel opens
+        // Hide all UI when map opens
         GameManager gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager != null)
         {
@@ -311,13 +314,64 @@ public class LevelMap : MonoBehaviour
     }
     
     /// <summary>
-    /// Hides the map panel
+    /// Hides the map
     /// </summary>
     public void HideMapPanel()
     {
-        if (mapPanel != null)
+        HideMapView();
+    }
+    
+    /// <summary>
+    /// Shows the MapView map system
+    /// </summary>
+    private void ShowMapView()
+    {
+        // Find MapManager if not assigned
+        if (mapManager == null)
         {
-            mapPanel.SetActive(false);
+            mapManager = FindFirstObjectByType<MapManager>();
+        }
+        
+        if (mapManager != null && mapManager.view != null)
+        {
+            // Ensure MapView GameObject is active
+            if (!mapManager.view.gameObject.activeSelf)
+            {
+                mapManager.view.gameObject.SetActive(true);
+            }
+            
+            // If map hasn't been shown yet, show it
+            if (mapManager.CurrentMap != null)
+            {
+                mapManager.view.ShowMap(mapManager.CurrentMap);
+            }
+            else
+            {
+                // Generate a new map if none exists
+                mapManager.GenerateNewMap();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("LevelMap: MapManager or MapView not found! Cannot show map.");
+        }
+    }
+    
+    /// <summary>
+    /// Hides the MapView map system
+    /// </summary>
+    private void HideMapView()
+    {
+        // Find MapManager if not assigned
+        if (mapManager == null)
+        {
+            mapManager = FindFirstObjectByType<MapManager>();
+        }
+        
+        if (mapManager != null && mapManager.view != null)
+        {
+            // Hide the MapView GameObject
+            mapManager.view.gameObject.SetActive(false);
         }
     }
     
@@ -407,7 +461,7 @@ public class LevelMap : MonoBehaviour
             levelNavigation.AdvanceToNextStage();
         }
         
-        // Hide the map panel
+        // Hide the map
         HideMapPanel();
         
         // Show all UI elements (unhide everything for the first round)

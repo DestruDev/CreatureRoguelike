@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -31,6 +31,8 @@ namespace Map
         public Color32 backgroundColor = Color.white;
         public float xSize;
         public float yOffset;
+        [Tooltip("Sorting order for the background sprite renderer")]
+        public int backgroundSortingOrder = 0;
         [Header("Line Settings")]
         public GameObject linePrefab;
         [Tooltip("Line point count should be > 2 to get smooth color gradients")]
@@ -119,6 +121,7 @@ namespace Map
             sr.drawMode = SpriteDrawMode.Sliced;
             sr.sprite = background;
             sr.size = new Vector2(xSize, span + yOffset * 2f);
+            sr.sortingOrder = backgroundSortingOrder;
         }
 
         protected virtual void CreateMapParent()
