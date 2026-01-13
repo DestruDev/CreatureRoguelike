@@ -1595,13 +1595,19 @@ public class GameManager : MonoBehaviour
             actionPanelManager.HideForRoundEnd();
         }
 
-		// Check if boss was defeated (stage 4, since stage advances when boss is selected)
-		LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+		// Check if the last completed node was a Boss node type
 		bool isBossDefeated = false;
-		if (levelNavigation != null)
+		Map.MapManager mapManager = FindFirstObjectByType<Map.MapManager>();
+		if (mapManager != null && mapManager.CurrentMap != null && mapManager.CurrentMap.path.Count > 0)
 		{
-			int currentStage = levelNavigation.GetCurrentStage();
-			isBossDefeated = (currentStage == 4); // Stage 4 is after boss is selected and defeated
+			// Get the last node in the path (the one that was just completed)
+			Vector2Int lastNodePoint = mapManager.CurrentMap.path[mapManager.CurrentMap.path.Count - 1];
+			Map.Node lastNode = mapManager.CurrentMap.GetNode(lastNodePoint);
+			
+			if (lastNode != null && lastNode.nodeType == Map.NodeType.Boss)
+			{
+				isBossDefeated = true;
+			}
 		}
 
 		if (isBossDefeated)

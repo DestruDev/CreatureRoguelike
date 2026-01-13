@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using DG.Tweening;
 using UnityEngine;
@@ -49,42 +49,69 @@ namespace Map
 
         private void SendPlayerToNode(MapNode mapNode)
         {
-            Locked = lockAfterSelecting;
+            // Lock node selection immediately to prevent selecting multiple nodes in quick succession
+            Locked = true;
             mapManager.CurrentMap.path.Add(mapNode.Node.point);
             mapManager.SaveMap();
             view.SetAttainableNodes();
             view.SetLineColors();
             mapNode.ShowSwirlAnimation();
 
-            DOTween.Sequence().AppendInterval(enterNodeDelay).OnComplete(() => EnterNode(mapNode));
+            // Hide map after delay, then enter node
+            DOTween.Sequence()
+                .AppendInterval(enterNodeDelay)
+                .OnComplete(() =>
+                {
+                    // Hide the map before entering the node
+                    HideMap();
+                    EnterNode(mapNode);
+                });
+        }
+        
+        /// <summary>
+        /// Hides the map view by hiding the OuterMapParent
+        /// </summary>
+        private void HideMap()
+        {
+            // Hide the OuterMapParent that contains all map visuals
+            if (view != null)
+            {
+                view.HideMap();
+            }
+            else
+            {
+                Debug.LogWarning("MapPlayerTracker: MapView not found! Cannot hide map.");
+            }
         }
 
-        private static void EnterNode(MapNode mapNode)
+        private void EnterNode(MapNode mapNode)
         {
             // we have access to blueprint name here as well
             Debug.Log("Entering node: " + mapNode.Node.blueprintName + " of type: " + mapNode.Node.nodeType);
-            // load appropriate scene with context based on nodeType:
-            // or show appropriate GUI over the map: 
-            // if you choose to show GUI in some of these cases, do not forget to set "Locked" in MapPlayerTracker back to false
-            switch (mapNode.Node.nodeType)
+            
+            // Find LevelMap and start the appropriate level
+            LevelMap levelMap = FindFirstObjectByType<LevelMap>();
+            if (levelMap != null)
             {
-                case NodeType.MinorEnemy:
-                    break;
-                case NodeType.EliteEnemy:
-                    break;
-                case NodeType.RestSite:
-                    break;
-                case NodeType.Treasure:
-                    break;
-                case NodeType.Store:
-                    break;
-                case NodeType.Boss:
-                    break;
-                case NodeType.Mystery:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                // Start level based on node type
+                levelMap.StartLevelFromNodeType(mapNode.Node.nodeType);
+                
+                // Keep locked until map is shown again - unlock will happen in ShowMapView()
             }
+            else
+            {
+                Debug.LogWarning("MapPlayerTracker: LevelMap not found! Cannot start level.");
+                // Unlock anyway so player isn't stuck if LevelMap is missing
+                Locked = false;
+            }
+        }
+        
+        /// <summary>
+        /// Unlocks node selection. Called when the map is shown again after completing a level.
+        /// </summary>
+        public void UnlockNodeSelection()
+        {
+            Locked = false;
         }
 
         private void PlayWarningThatNodeCannotBeAccessed()

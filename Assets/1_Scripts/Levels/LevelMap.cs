@@ -355,6 +355,13 @@ public class LevelMap : MonoBehaviour
         {
             Debug.LogWarning("LevelMap: MapManager or MapView not found! Cannot show map.");
         }
+        
+        // Unlock node selection when map is shown again (after completing a level)
+        Map.MapPlayerTracker playerTracker = FindFirstObjectByType<Map.MapPlayerTracker>();
+        if (playerTracker != null)
+        {
+            playerTracker.UnlockNodeSelection();
+        }
     }
     
     /// <summary>
@@ -372,6 +379,90 @@ public class LevelMap : MonoBehaviour
         {
             // Hide the MapView GameObject
             mapManager.view.gameObject.SetActive(false);
+        }
+    }
+    
+    #endregion
+    
+    #region Public Level Start Methods
+    
+    /// <summary>
+    /// Starts a level based on the node type from the map system
+    /// Maps node types to appropriate level data lists based on current stage
+    /// </summary>
+    public void StartLevelFromNodeType(NodeType nodeType)
+    {
+        // Get current stage to determine which level list to use
+        LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+        int currentStage = 0;
+        if (levelNavigation != null)
+        {
+            currentStage = levelNavigation.GetCurrentStage();
+        }
+        
+        LevelData selectedLevel = null;
+        
+        // Map node types to level data lists
+        switch (nodeType)
+        {
+            case NodeType.Boss:
+                // Boss always uses bossLevelData
+                selectedLevel = bossLevelData;
+                break;
+                
+            case NodeType.MinorEnemy:
+            case NodeType.EliteEnemy:
+            case NodeType.Mystery:
+            case NodeType.RestSite:
+            case NodeType.Treasure:
+            case NodeType.Store:
+                // All other node types use stage-appropriate level lists
+                List<LevelData> levelList = GetLevelListForStage(currentStage);
+                if (levelList != null && levelList.Count > 0)
+                {
+                    List<LevelData> validLevels = GetValidLevels(levelList);
+                    if (validLevels.Count > 0)
+                    {
+                        // Select a random level from the list
+                        selectedLevel = validLevels[Random.Range(0, validLevels.Count)];
+                    }
+                }
+                break;
+                
+            default:
+                Debug.LogWarning($"LevelMap: Unknown node type: {nodeType}");
+                break;
+        }
+        
+        if (selectedLevel != null)
+        {
+            Debug.Log($"LevelMap: Starting level from node type {nodeType}: {selectedLevel.levelID}");
+            StartLevel(selectedLevel);
+        }
+        else
+        {
+            Debug.LogWarning($"LevelMap: Could not find a level for node type {nodeType} at stage {currentStage}");
+        }
+    }
+    
+    /// <summary>
+    /// Gets the appropriate level list for the current stage
+    /// </summary>
+    private List<LevelData> GetLevelListForStage(int stage)
+    {
+        // Stage 0 = before B1 (use B1 list)
+        // Stage 1 = after B1 (use B2 list)
+        // Stage 2 = after B2 (use B3 list)
+        // Stage 3+ = after B3 (use B3 list as fallback, or could use boss)
+        switch (stage)
+        {
+            case 0:
+                return levelDataList;
+            case 1:
+                return levelDataListB2;
+            case 2:
+            default:
+                return levelDataListB3;
         }
     }
     

@@ -346,5 +346,27 @@ namespace Map
             MapConfig config = GetConfig(mapManager.CurrentMap.configName);
             return config.nodeBlueprints.FirstOrDefault(n => n.name == blueprintName);
         }
+        
+        /// <summary>
+        /// Hides the map by hiding the OuterMapParent GameObject that contains all map visuals
+        /// </summary>
+        public void HideMap()
+        {
+            if (firstParent != null)
+            {
+                firstParent.SetActive(false);
+            }
+        }
+        
+        /// <summary>
+        /// Shows the map by showing the OuterMapParent GameObject
+        /// </summary>
+        public void ShowMap()
+        {
+            if (firstParent != null)
+            {
+                firstParent.SetActive(true);
+            }
+        }
     }
 }
