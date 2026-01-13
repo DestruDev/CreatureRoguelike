@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using OneLine;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Map
@@ -13,9 +12,7 @@ namespace Map
             {NodeType.Mystery, NodeType.Store, NodeType.Treasure, NodeType.MinorEnemy, NodeType.RestSite};
         public int GridWidth => Mathf.Max(numOfPreBossNodes.max, numOfStartingNodes.max);
 
-        [OneLineWithHeader]
         public IntMinMax numOfPreBossNodes;
-        [OneLineWithHeader]
         public IntMinMax numOfStartingNodes;
 
         [Tooltip("Increase this number to generate more paths")]
