@@ -725,6 +725,12 @@ public class SkillPanelManager : MonoBehaviour
         // Activate selected button with Enter or Space
         if (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.Space].wasPressedThisFrame))
         {
+            // Block input if settings panel is open
+            if (InGameMenu.IsSettingsPanelActiveStatic())
+            {
+                return;
+            }
+            
             // Block input during skill execution
             if (IsInputBlockedByExecution())
             {

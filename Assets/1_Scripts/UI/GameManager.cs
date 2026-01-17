@@ -9,6 +9,9 @@ public class GameManager : MonoBehaviour
 {
     [Header("References")]
     public TurnOrder turnOrder;
+    
+    [Tooltip("Reference to the Inventory component for currency tracking")]
+    private Inventory inventory;
 
 	[Header("Creature Status UI (3 units)")]
     [Tooltip("Creature name text displays (index 0-2 correspond to creature 1-3)")]
@@ -79,6 +82,9 @@ public class GameManager : MonoBehaviour
 	public Transform enemySpawnArea;
 	
 	[Header("UI Panels")]
+	[Tooltip("The main gameplay UI parent that contains statusDisplayPanel, turnOrderTimeline, eventPanel, infoPanel, and playerInfo - will be hidden at start")]
+	public GameObject gameplayUI;
+	
 	[Tooltip("The TurnOrderTimeline GameObject")]
 	public GameObject turnOrderTimeline;
 	
@@ -88,10 +94,25 @@ public class GameManager : MonoBehaviour
 	[Tooltip("The InfoPanel GameObject")]
 	public GameObject infoPanel;
 	
-	[Header("Other UI Elements")]
+	[Header("PlayerInfo")]
+	[Tooltip("The PlayerInfo GameObject parent that contains currentLevelText and currentGoldText - will be hidden at start")]
+	public GameObject playerInfo;
+	
 	[Tooltip("The current level text GameObject - will be hidden at start")]
 	public GameObject currentLevelText;
 	
+	[Tooltip("Text that displays the current gold/currency amount")]
+	public TextMeshProUGUI currentGoldText;
+	
+	[Tooltip("Starting gold/currency amount (used when no saved data exists)")]
+	[SerializeField] private int startingGold = 0;
+	
+	/// <summary>
+	/// Gets the starting gold amount (used by Inventory)
+	/// </summary>
+	public int StartingGold => startingGold;
+	
+	[Header("Other UI Elements")]
 	[Tooltip("The settings button GameObject - will be hidden at start")]
 	public GameObject settingsButton;
 	
@@ -168,6 +189,9 @@ public class GameManager : MonoBehaviour
         // Set up button listeners
         SetupButtonListeners();
         
+        // Set up inventory and currency display
+        SetupInventory();
+        
         // Hide round end panel at start
         if (roundEndPanel != null)
         {
@@ -208,6 +232,17 @@ public class GameManager : MonoBehaviour
         // Initialize gauges and select first unit
         yield return StartCoroutine(InitializeGaugesAndSelectFirstUnit());
     }
+    
+    /// <summary>
+    /// Cleanup: Unsubscribe from events when destroyed
+    /// </summary>
+    private void OnDestroy()
+    {
+        if (inventory != null)
+        {
+            inventory.OnCurrencyChanged -= UpdateGoldText;
+        }
+    }
 
     // Update is called once per frame
     void Update()
@@ -241,6 +276,41 @@ public class GameManager : MonoBehaviour
         if (actionPanelManager == null)
         {
             actionPanelManager = FindFirstObjectByType<ActionPanelManager>();
+        }
+    }
+    
+    /// <summary>
+    /// Sets up inventory reference and subscribes to currency changes
+    /// </summary>
+    private void SetupInventory()
+    {
+        // Find Inventory component
+        if (inventory == null)
+        {
+            inventory = FindFirstObjectByType<Inventory>();
+        }
+        
+        // Subscribe to currency changes
+        if (inventory != null)
+        {
+            inventory.OnCurrencyChanged += UpdateGoldText;
+            // Initialize gold text with current currency
+            UpdateGoldText(inventory.Currency);
+        }
+        else
+        {
+            Debug.LogWarning("GameManager: Inventory component not found! Gold text will not update.");
+        }
+    }
+    
+    /// <summary>
+    /// Updates the gold text display with the current currency amount
+    /// </summary>
+    private void UpdateGoldText(int currencyAmount)
+    {
+        if (currentGoldText != null)
+        {
+            currentGoldText.text = currencyAmount.ToString();
         }
     }
     
@@ -854,21 +924,22 @@ public class GameManager : MonoBehaviour
 			return true;
 		};
 		
-		// Hide status display panel (this will hide creature and enemy UI roots as children)
-		if (statusDisplayPanel != null)
+		// Hide gameplay UI parent (contains statusDisplayPanel, turnOrderTimeline, eventPanel, infoPanel, playerInfo)
+		if (gameplayUI != null)
 		{
-			if (canSafelyHide(statusDisplayPanel))
+			if (canSafelyHide(gameplayUI))
 			{
-				statusDisplayPanel.SetActive(false);
-				Debug.Log($"GameManager: Hid statusDisplayPanel: {statusDisplayPanel.name}");
+				gameplayUI.SetActive(false);
+				Debug.Log($"GameManager: Hid gameplayUI: {gameplayUI.name}");
 			}
 			else
 			{
-				Debug.LogWarning($"GameManager: Cannot hide statusDisplayPanel: {statusDisplayPanel.name} - safety check failed");
+				Debug.LogWarning($"GameManager: Cannot hide gameplayUI: {gameplayUI.name} - safety check failed");
 			}
 		}
 		
 		// Hide user panel (this will hide ActionPanel and other child panels)
+		// Keep separate because it needs to be shown/hidden during turns
 		if (userPanelRoot != null)
 		{
 			if (canSafelyHide(userPanelRoot))
@@ -910,63 +981,7 @@ public class GameManager : MonoBehaviour
 			}
 		}
 		
-		// Hide turn order timeline
-		if (turnOrderTimeline != null)
-		{
-			if (canSafelyHide(turnOrderTimeline))
-			{
-				turnOrderTimeline.SetActive(false);
-				Debug.Log($"GameManager: Hid turnOrderTimeline: {turnOrderTimeline.name}");
-			}
-			else
-			{
-				Debug.LogWarning($"GameManager: Cannot hide turnOrderTimeline: {turnOrderTimeline.name} - safety check failed");
-			}
-		}
-		
-		// Hide event panel
-		if (eventPanel != null)
-		{
-			if (canSafelyHide(eventPanel))
-			{
-				eventPanel.SetActive(false);
-				Debug.Log($"GameManager: Hid eventPanel: {eventPanel.name}");
-			}
-			else
-			{
-				Debug.LogWarning($"GameManager: Cannot hide eventPanel: {eventPanel.name} - safety check failed");
-			}
-		}
-		
-		// Hide info panel
-		if (infoPanel != null)
-		{
-			if (canSafelyHide(infoPanel))
-			{
-				infoPanel.SetActive(false);
-				Debug.Log($"GameManager: Hid infoPanel: {infoPanel.name}");
-			}
-			else
-			{
-				Debug.LogWarning($"GameManager: Cannot hide infoPanel: {infoPanel.name} - safety check failed");
-			}
-		}
-		
-		// Hide current level text
-		if (currentLevelText != null)
-		{
-			if (canSafelyHide(currentLevelText))
-			{
-				currentLevelText.SetActive(false);
-				Debug.Log($"GameManager: Hid currentLevelText: {currentLevelText.name}");
-			}
-			else
-			{
-				Debug.LogWarning($"GameManager: Cannot hide currentLevelText: {currentLevelText.name} - safety check failed");
-			}
-		}
-		
-		// Hide settings button
+		// Hide settings button (keep separate if you want it to persist, or move it into gameplayUI if it should hide)
 		if (settingsButton != null)
 		{
 			if (canSafelyHide(settingsButton))
@@ -989,21 +1004,23 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Shows all UI elements that were hidden at start: status display panel, user panel, turn order timeline, event panel, info panel, current level text, settings button, and spawn areas
+	/// Shows all UI elements that were hidden at start: status display panel, user panel, turn order timeline, event panel, info panel, current level text, current gold text, settings button, and spawn areas
 	/// </summary>
 	/// <param name="showTurnOrderTimeline">Whether to show the turn order timeline immediately (set to false to delay showing until after initialization)</param>
 	/// <param name="showStatusDisplayPanel">Whether to show the status display panel immediately (set to false to delay showing until after initialization)</param>
 	/// <param name="showEventPanel">Whether to show the event panel immediately (set to false to delay showing until after initialization)</param>
 	/// <param name="showCurrentLevelText">Whether to show the current level text immediately (set to false to delay showing until after initialization)</param>
+	/// <param name="showCurrentGoldText">Whether to show the current gold text immediately (set to false to delay showing until after initialization)</param>
 	/// <param name="showSettingsButton">Whether to show the settings button immediately (set to false to delay showing until after initialization)</param>
 	/// <param name="showSpawnAreas">Whether to show the spawn areas immediately (set to false to delay showing until after initialization)</param>
-	public void ShowAllUI(bool showTurnOrderTimeline = true, bool showStatusDisplayPanel = true, bool showEventPanel = true, bool showCurrentLevelText = true, bool showSettingsButton = true, bool showSpawnAreas = true)
+	public void ShowAllUI(bool showTurnOrderTimeline = true, bool showStatusDisplayPanel = true, bool showEventPanel = true, bool showCurrentLevelText = true, bool showCurrentGoldText = true, bool showSettingsButton = true, bool showSpawnAreas = true)
 	{
-		// Show status display panel (only if requested - can be delayed until after initialization)
-		if (showStatusDisplayPanel && statusDisplayPanel != null)
+		// Show gameplay UI parent (contains statusDisplayPanel, turnOrderTimeline, eventPanel, infoPanel, playerInfo)
+		// Show if any of the individual components are requested
+		if ((showStatusDisplayPanel || showTurnOrderTimeline || showEventPanel || showCurrentLevelText || showCurrentGoldText) && gameplayUI != null)
 		{
-			statusDisplayPanel.SetActive(true);
-			Debug.Log($"GameManager: Showed statusDisplayPanel: {statusDisplayPanel.name}");
+			gameplayUI.SetActive(true);
+			Debug.Log($"GameManager: Showed gameplayUI: {gameplayUI.name}");
 		}
 		
 		// Show user panel
@@ -1011,34 +1028,6 @@ public class GameManager : MonoBehaviour
 		{
 			userPanelRoot.SetActive(true);
 			Debug.Log($"GameManager: Showed userPanelRoot: {userPanelRoot.name}");
-		}
-		
-		// Show turn order timeline (only if requested - can be delayed until after initialization)
-		if (showTurnOrderTimeline && turnOrderTimeline != null)
-		{
-			turnOrderTimeline.SetActive(true);
-			Debug.Log($"GameManager: Showed turnOrderTimeline: {turnOrderTimeline.name}");
-		}
-		
-		// Show event panel (only if requested - can be delayed until after initialization)
-		if (showEventPanel && eventPanel != null)
-		{
-			eventPanel.SetActive(true);
-			Debug.Log($"GameManager: Showed eventPanel: {eventPanel.name}");
-		}
-		
-		// Show info panel
-		if (infoPanel != null)
-		{
-			infoPanel.SetActive(true);
-			Debug.Log($"GameManager: Showed infoPanel: {infoPanel.name}");
-		}
-		
-		// Show current level text (only if requested - can be delayed until after initialization)
-		if (showCurrentLevelText && currentLevelText != null)
-		{
-			currentLevelText.SetActive(true);
-			Debug.Log($"GameManager: Showed currentLevelText: {currentLevelText.name}");
 		}
 		
 		// Show settings button (only if requested - can be delayed until after initialization)
@@ -1065,37 +1054,40 @@ public class GameManager : MonoBehaviour
 	
 	/// <summary>
 	/// Shows the turn order timeline (used after game initialization to prevent showing incorrect information)
+	/// Shows the gameplayUI parent which contains this element
 	/// </summary>
 	public void ShowTurnOrderTimeline()
 	{
-		if (turnOrderTimeline != null)
+		if (gameplayUI != null)
 		{
-			turnOrderTimeline.SetActive(true);
-			Debug.Log($"GameManager: Showed turnOrderTimeline: {turnOrderTimeline.name}");
+			gameplayUI.SetActive(true);
+			Debug.Log($"GameManager: Showed gameplayUI (turnOrderTimeline): {gameplayUI.name}");
 		}
 	}
 	
 	/// <summary>
 	/// Shows the status display panel (used after game initialization to prevent showing incorrect information)
+	/// Shows the gameplayUI parent which contains this element
 	/// </summary>
 	public void ShowStatusDisplayPanel()
 	{
-		if (statusDisplayPanel != null)
+		if (gameplayUI != null)
 		{
-			statusDisplayPanel.SetActive(true);
-			Debug.Log($"GameManager: Showed statusDisplayPanel: {statusDisplayPanel.name}");
+			gameplayUI.SetActive(true);
+			Debug.Log($"GameManager: Showed gameplayUI (statusDisplayPanel): {gameplayUI.name}");
 		}
 	}
 	
 	/// <summary>
 	/// Shows the event panel (used after game initialization to prevent showing incorrect information)
+	/// Shows the gameplayUI parent which contains this element
 	/// </summary>
 	public void ShowEventPanel()
 	{
-		if (eventPanel != null)
+		if (gameplayUI != null)
 		{
-			eventPanel.SetActive(true);
-			Debug.Log($"GameManager: Showed eventPanel: {eventPanel.name}");
+			gameplayUI.SetActive(true);
+			Debug.Log($"GameManager: Showed gameplayUI (eventPanel): {gameplayUI.name}");
 		}
 	}
 	
@@ -1104,10 +1096,47 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void ShowCurrentLevelText()
 	{
-		if (currentLevelText != null)
+		if (playerInfo != null)
 		{
-			currentLevelText.SetActive(true);
-			Debug.Log($"GameManager: Showed currentLevelText: {currentLevelText.name}");
+			playerInfo.SetActive(true);
+			Debug.Log($"GameManager: Showed playerInfo (currentLevelText): {playerInfo.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the current gold text (used after game initialization to prevent showing incorrect information)
+	/// </summary>
+	public void ShowCurrentGoldText()
+	{
+		if (playerInfo != null)
+		{
+			playerInfo.SetActive(true);
+			Debug.Log($"GameManager: Showed playerInfo (currentGoldText): {playerInfo.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the player info panel (contains both currentLevelText and currentGoldText)
+	/// Shows the gameplayUI parent which contains this element
+	/// </summary>
+	public void ShowPlayerInfo()
+	{
+		if (gameplayUI != null)
+		{
+			gameplayUI.SetActive(true);
+			Debug.Log($"GameManager: Showed gameplayUI (playerInfo): {gameplayUI.name}");
+		}
+	}
+	
+	/// <summary>
+	/// Shows the gameplay UI parent (contains statusDisplayPanel, turnOrderTimeline, eventPanel, infoPanel, playerInfo)
+	/// </summary>
+	public void ShowGameplayUI()
+	{
+		if (gameplayUI != null)
+		{
+			gameplayUI.SetActive(true);
+			Debug.Log($"GameManager: Showed gameplayUI: {gameplayUI.name}");
 		}
 	}
 	
@@ -1669,6 +1698,17 @@ public class GameManager : MonoBehaviour
 	{
 		if (roundEndPanel != null)
 		{
+			// Hide UserPanel and GameplayUI when "Zone cleared" message is shown
+			if (message == "Zone cleared")
+			{
+				HideUserPanel();
+				if (gameplayUI != null)
+				{
+					gameplayUI.SetActive(false);
+					Debug.Log($"GameManager: Hid gameplayUI for Zone cleared message");
+				}
+			}
+			
 			// Update the message text
 			if (roundEndMessageText != null)
 			{

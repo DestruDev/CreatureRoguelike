@@ -561,7 +561,7 @@ public class LevelMap : MonoBehaviour
         GameManager gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager != null)
         {
-            gameManager.ShowAllUI(showTurnOrderTimeline: false, showStatusDisplayPanel: false, showEventPanel: false, showCurrentLevelText: false, showSettingsButton: false, showSpawnAreas: false);
+            gameManager.ShowAllUI(showTurnOrderTimeline: false, showStatusDisplayPanel: false, showEventPanel: false, showCurrentLevelText: false, showCurrentGoldText: false, showSettingsButton: false, showSpawnAreas: false);
         }
         
         // Start coroutine to handle level start with proper timing
@@ -734,8 +734,8 @@ public class LevelMap : MonoBehaviour
             gameManager.UpdateAllUnitUI();
             // Show event panel (log is already cleared, so it will be empty)
             gameManager.ShowEventPanel();
-            // Show current level text and settings button
-            gameManager.ShowCurrentLevelText();
+            // Show player info panel (contains current level text and current gold text) and settings button
+            gameManager.ShowPlayerInfo();
             gameManager.ShowSettingsButton();
             // Then show turn order timeline
             gameManager.ShowTurnOrderTimeline();
