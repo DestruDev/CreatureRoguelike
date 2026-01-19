@@ -12,6 +12,7 @@ public class InGameMenu : MonoBehaviour
 
     [Header("Main Menu")]
     [SerializeField] private Button backToMainMenuButton;
+    [SerializeField] private Button abandonRunButton;
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     private ActionPanelManager actionPanelManager;
@@ -231,6 +232,9 @@ public class InGameMenu : MonoBehaviour
 
         if (backToMainMenuButton != null)
             backToMainMenuButton.onClick.AddListener(OnBackToMainMenuButtonClicked);
+            
+        if (abandonRunButton != null)
+            abandonRunButton.onClick.AddListener(OnAbandonRunButtonClicked);
     }
 
     public void OnSettingsBackButtonClicked()
@@ -241,6 +245,31 @@ public class InGameMenu : MonoBehaviour
 
     public void OnBackToMainMenuButtonClicked()
     {
+        LoadMainMenuScene();
+    }
+    
+    /// <summary>
+    /// Called when the abandon run button is clicked - deletes map save data and returns to main menu
+    /// </summary>
+    public void OnAbandonRunButtonClicked()
+    {
+        AbandonRun();
+    }
+    
+    /// <summary>
+    /// Deletes the map save data and loads the main menu scene
+    /// </summary>
+    private void AbandonRun()
+    {
+        // Delete map save data
+        if (PlayerPrefs.HasKey("Map"))
+        {
+            PlayerPrefs.DeleteKey("Map");
+            PlayerPrefs.Save();
+            Debug.Log("Abandon Run: Map save data deleted.");
+        }
+        
+        // Load main menu
         LoadMainMenuScene();
     }
 

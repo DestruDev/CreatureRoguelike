@@ -10,45 +10,6 @@ public class LevelMap : MonoBehaviour
     [Tooltip("Reference to MapManager for the new map system")]
     public MapManager mapManager;
     
-    [Header("Map Buttons B1")]
-    [Tooltip("First button on the map panel")]
-    public Button mapButton1;
-    
-    [Tooltip("Second button on the map panel")]
-    public Button mapButton2;
-    
-    [Tooltip("Third button on the map panel")]
-    public Button mapButton3;
-    
-    [Header("Map Buttons B2")]
-    [Tooltip("First B2 button on the map panel")]
-    public Button mapButtonB2_1;
-    
-    [Tooltip("Second B2 button on the map panel")]
-    public Button mapButtonB2_2;
-    
-    [Tooltip("Third B2 button on the map panel")]
-    public Button mapButtonB2_3;
-    
-    [Header("Map Buttons B3")]
-    [Tooltip("First B3 button on the map panel")]
-    public Button mapButtonB3_1;
-    
-    [Tooltip("Second B3 button on the map panel")]
-    public Button mapButtonB3_2;
-    
-    [Tooltip("Third B3 button on the map panel")]
-    public Button mapButtonB3_3;
-    
-    [Header("Map Button Boss")]
-    [Tooltip("Boss button on the map panel")]
-    public Button mapButtonBoss;
-    
-    [Header("Image Settings")]
-    [Tooltip("Unavailable brightness for button image components (0-1 range)")]
-    [Range(0f, 1f)]
-    public float unavailableBrightness = 0.5f;
-    
     [Header("Level Data B1")]
     [Tooltip("List of LevelData ScriptableObjects that can be selected from the map")]
     public List<LevelData> levelDataList = new List<LevelData>();
@@ -75,12 +36,6 @@ public class LevelMap : MonoBehaviour
         // Hide all UI when map is open - use coroutine to ensure GameManager is ready
         StartCoroutine(HideAllUIWhenReady());
         
-        // Set up button listeners
-        SetupButtonListeners();
-        
-        // Set button availability based on current stage
-        UpdateButtonAvailability();
-        
         // Disable TurnOrder selection until a level is selected
         DisableTurnSelectionUntilChoice();
     }
@@ -106,151 +61,6 @@ public class LevelMap : MonoBehaviour
     {
         yield return null; // Wait one frame for MapManager.Start() to complete
         ShowMapView();
-    }
-    
-    /// <summary>
-    /// Sets button availability and brightness based on current stage
-    /// Stage 0: B1 available, B2/B3/Boss unavailable
-    /// Stage 1: B2 available, B1/B3/Boss unavailable
-    /// Stage 2: B3 available, B1/B2/Boss unavailable
-    /// Stage 3: Boss available, B1/B2/B3 unavailable
-    /// </summary>
-    private void UpdateButtonAvailability()
-    {
-        // Get current stage from LevelNavigation
-        LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
-        int currentStage = 0;
-        if (levelNavigation != null)
-        {
-            currentStage = levelNavigation.GetCurrentStage();
-        }
-        
-        // Determine which stage buttons should be available
-        // Stage 0 = before B1 (B1 available)
-        // Stage 1 = after B1 win (B2 available)
-        // Stage 2 = after B2 win (B3 available)
-        // Stage 3 = after B3 win (Boss available)
-        int availableStage = currentStage;
-        
-        // B1 buttons
-        SetButtonGroupAvailability(
-            new Button[] { mapButton1, mapButton2, mapButton3 },
-            availableStage == 0
-        );
-        
-        // B2 buttons
-        SetButtonGroupAvailability(
-            new Button[] { mapButtonB2_1, mapButtonB2_2, mapButtonB2_3 },
-            availableStage == 1
-        );
-        
-        // B3 buttons
-        SetButtonGroupAvailability(
-            new Button[] { mapButtonB3_1, mapButtonB3_2, mapButtonB3_3 },
-            availableStage == 2
-        );
-        
-        // Boss button - available after B3 (stage 3)
-        SetButtonGroupAvailability(
-            new Button[] { mapButtonBoss },
-            availableStage == 3
-        );
-    }
-    
-    /// <summary>
-    /// Sets availability and brightness for a group of buttons
-    /// </summary>
-    private void SetButtonGroupAvailability(Button[] buttons, bool isAvailable)
-    {
-        foreach (Button button in buttons)
-        {
-            if (button != null)
-            {
-                // Enable/disable button
-                button.interactable = isAvailable;
-                
-                // Set brightness based on availability
-                Image image = button.GetComponent<Image>();
-                if (image != null)
-                {
-                    // Get current color
-                    Color currentColor = image.color;
-                    
-                    // Convert RGB to HSV
-                    float h, s, v;
-                    Color.RGBToHSV(currentColor, out h, out s, out v);
-                    
-                    // Set V value based on availability
-                    if (isAvailable)
-                    {
-                        // Restore full brightness (1.0)
-                        v = 1f;
-                    }
-                    else
-                    {
-                        // Set to unavailable brightness
-                        v = unavailableBrightness;
-                    }
-                    
-                    // Convert back to RGB and apply
-                    image.color = Color.HSVToRGB(h, s, v);
-                }
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Sets up button listeners for map buttons
-    /// </summary>
-    private void SetupButtonListeners()
-    {
-        // B1 buttons
-        if (mapButton1 != null)
-        {
-            mapButton1.onClick.AddListener(() => OnMapButtonClicked(levelDataList));
-        }
-        if (mapButton2 != null)
-        {
-            mapButton2.onClick.AddListener(() => OnMapButtonClicked(levelDataList));
-        }
-        if (mapButton3 != null)
-        {
-            mapButton3.onClick.AddListener(() => OnMapButtonClicked(levelDataList));
-        }
-        
-        // B2 buttons
-        if (mapButtonB2_1 != null)
-        {
-            mapButtonB2_1.onClick.AddListener(() => OnMapButtonClicked(levelDataListB2));
-        }
-        if (mapButtonB2_2 != null)
-        {
-            mapButtonB2_2.onClick.AddListener(() => OnMapButtonClicked(levelDataListB2));
-        }
-        if (mapButtonB2_3 != null)
-        {
-            mapButtonB2_3.onClick.AddListener(() => OnMapButtonClicked(levelDataListB2));
-        }
-        
-        // B3 buttons
-        if (mapButtonB3_1 != null)
-        {
-            mapButtonB3_1.onClick.AddListener(() => OnMapButtonClicked(levelDataListB3));
-        }
-        if (mapButtonB3_2 != null)
-        {
-            mapButtonB3_2.onClick.AddListener(() => OnMapButtonClicked(levelDataListB3));
-        }
-        if (mapButtonB3_3 != null)
-        {
-            mapButtonB3_3.onClick.AddListener(() => OnMapButtonClicked(levelDataListB3));
-        }
-        
-        // Boss button
-        if (mapButtonBoss != null)
-        {
-            mapButtonBoss.onClick.AddListener(() => OnBossButtonClicked());
-        }
     }
     
     /// <summary>
@@ -305,9 +115,6 @@ public class LevelMap : MonoBehaviour
         {
             gameManager.HideAllUI();
         }
-        
-        // Update button availability based on current stage
-        UpdateButtonAvailability();
         
         // Don't advance stage here - stage advances after selecting from the map
         // This ensures the map shows the current stage (B1, B2, B3) before selection
@@ -469,53 +276,6 @@ public class LevelMap : MonoBehaviour
     #endregion
     
     #region Level Selection
-    
-    /// <summary>
-    /// Called when any map button is clicked - selects a random level and starts it
-    /// </summary>
-    private void OnMapButtonClicked(List<LevelData> levelList)
-    {
-        // Select a random LevelData from the list
-        if (levelList == null || levelList.Count == 0)
-        {
-            Debug.LogWarning("LevelMap: levelDataList is empty! Cannot select a level.");
-            return;
-        }
-        
-        // Filter out null entries
-        List<LevelData> validLevels = GetValidLevels(levelList);
-        
-        if (validLevels.Count == 0)
-        {
-            Debug.LogWarning("LevelMap: No valid LevelData in levelDataList! Cannot select a level.");
-            return;
-        }
-        
-        // Select a random level
-        LevelData selectedLevel = validLevels[Random.Range(0, validLevels.Count)];
-        
-        Debug.Log($"LevelMap: Selected random level: {selectedLevel.levelID}");
-        
-        // Start the level
-        StartLevel(selectedLevel);
-    }
-    
-    /// <summary>
-    /// Called when boss button is clicked - starts the boss level
-    /// </summary>
-    private void OnBossButtonClicked()
-    {
-        if (bossLevelData == null)
-        {
-            Debug.LogWarning("LevelMap: bossLevelData is not assigned! Cannot start boss level.");
-            return;
-        }
-        
-        Debug.Log($"LevelMap: Starting boss level: {bossLevelData.levelID}");
-        
-        // Start the boss level
-        StartLevel(bossLevelData);
-    }
     
     /// <summary>
     /// Gets valid (non-null) levels from the level data list

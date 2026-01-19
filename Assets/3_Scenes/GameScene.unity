@@ -4125,7 +4125,7 @@ MonoBehaviour:
     quantity: 5
   - item: {fileID: 11400000, guid: a6b7c88e2c3c1f840a039f36aeaf3b55, type: 2}
     quantity: 3
-  currency: 0
+  currentGold: 0
 --- !u!114 &427498661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4175,6 +4175,7 @@ MonoBehaviour:
   settingsButton: {fileID: 790993338}
   settingsBackButton: {fileID: 228298908}
   backToMainMenuButton: {fileID: 1006764030}
+  abandonRunButton: {fileID: 1765361839}
   mainMenuSceneName: MainMenu
 --- !u!114 &427498665
 MonoBehaviour:
