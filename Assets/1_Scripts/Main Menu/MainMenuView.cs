@@ -29,6 +29,9 @@ public class MainMenuView : MonoBehaviour
     [Header("Version Text")]
     [SerializeField] private TMP_Text versionText;
     [SerializeField] private string versionString = "Version 1.0";
+    
+    [Header("Save Status")]
+    [SerializeField] private TextMeshProUGUI saveStatusText;
 
     private MainMenuController controller;
 
@@ -40,6 +43,7 @@ public class MainMenuView : MonoBehaviour
     private void OnEnable()
     {
         SetupButtonListeners();
+        UpdateSaveStatus();
     }
 
     private void OnDisable()
@@ -57,6 +61,26 @@ public class MainMenuView : MonoBehaviour
         if (versionText != null)
         {
             versionText.text = versionString;
+        }
+        
+        // Update save status
+        UpdateSaveStatus();
+    }
+    
+    /// <summary>
+    /// Updates the save status text to show YES if save exists, NO if it doesn't
+    /// Green for YES, Red for NO
+    /// </summary>
+    public void UpdateSaveStatus()
+    {
+        if (saveStatusText != null)
+        {
+            // Check if map save data exists
+            bool hasSave = PlayerPrefs.HasKey("Map");
+            saveStatusText.text = hasSave ? "YES" : "NO";
+            
+            // Set color: Green for YES, Red for NO
+            saveStatusText.color = hasSave ? Color.green : Color.red;
         }
     }
 
