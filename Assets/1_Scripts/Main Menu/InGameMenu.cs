@@ -257,7 +257,7 @@ public class InGameMenu : MonoBehaviour
     }
     
     /// <summary>
-    /// Deletes the map save data and loads the main menu scene
+    /// Deletes the map save data, resets gold to starting value, and loads the main menu scene
     /// </summary>
     private void AbandonRun()
     {
@@ -265,12 +265,57 @@ public class InGameMenu : MonoBehaviour
         if (PlayerPrefs.HasKey("Map"))
         {
             PlayerPrefs.DeleteKey("Map");
-            PlayerPrefs.Save();
             Debug.Log("Abandon Run: Map save data deleted.");
         }
         
+        // Reset gold to starting value
+        ResetGoldToStartingValue();
+        
+        // Save all changes
+        PlayerPrefs.Save();
+        
         // Load main menu
         LoadMainMenuScene();
+    }
+    
+    /// <summary>
+    /// Resets the player's gold to the starting gold value from GameManager
+    /// </summary>
+    private void ResetGoldToStartingValue()
+    {
+        // Find Inventory component
+        Inventory inventory = FindFirstObjectByType<Inventory>();
+        if (inventory == null)
+        {
+            Debug.LogWarning("InGameMenu: Inventory component not found! Cannot reset gold.");
+            return;
+        }
+        
+        // Get starting gold from GameManager
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        int startingGold = 0;
+        if (gameManager != null)
+        {
+            startingGold = gameManager.StartingGold;
+        }
+        else
+        {
+            Debug.LogWarning("InGameMenu: GameManager not found! Using default starting gold of 0.");
+        }
+        
+        // Reset gold to starting value
+        inventory.SetCurrency(startingGold);
+        
+        // Delete saved currency from PlayerPrefs so it doesn't reload the old value
+        if (PlayerPrefs.HasKey("PlayerCurrency"))
+        {
+            PlayerPrefs.DeleteKey("PlayerCurrency");
+            Debug.Log($"Abandon Run: Currency save data deleted. Gold reset to starting value: {startingGold}");
+        }
+        else
+        {
+            Debug.Log($"Abandon Run: Gold reset to starting value: {startingGold}");
+        }
     }
 
     private void LoadMainMenuScene()

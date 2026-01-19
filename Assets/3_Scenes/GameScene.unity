@@ -4203,17 +4203,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelMap
   mapManager: {fileID: 1768567292}
-  mapButton1: {fileID: 0}
-  mapButton2: {fileID: 0}
-  mapButton3: {fileID: 0}
-  mapButtonB2_1: {fileID: 0}
-  mapButtonB2_2: {fileID: 0}
-  mapButtonB2_3: {fileID: 0}
-  mapButtonB3_1: {fileID: 0}
-  mapButtonB3_2: {fileID: 0}
-  mapButtonB3_3: {fileID: 0}
-  mapButtonBoss: {fileID: 0}
-  unavailableBrightness: 0.5
   levelDataList:
   - {fileID: 11400000, guid: 0f7c48a75da02554e88458d48f204f48, type: 2}
   levelDataListB2:
