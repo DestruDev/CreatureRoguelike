@@ -104,8 +104,17 @@ public class GameManager : MonoBehaviour
 	[Tooltip("Text that displays the current gold/currency amount")]
 	public TextMeshProUGUI currentGoldText;
 	
+	[Tooltip("Text that displays the current class")]
+	public TextMeshProUGUI currentClassText;
+	
+	[Tooltip("Text that displays the player name")]
+	public TextMeshProUGUI playerNameText;
+	
 	[Tooltip("Starting gold/currency amount (used when no saved data exists)")]
 	[SerializeField] private int startingGold = 0;
+	
+	[Tooltip("Gold amount awarded after completing each floor (boss defeated)")]
+	[SerializeField] private int goldPerWin = 0;
 	
 	/// <summary>
 	/// Gets the starting gold amount (used by Inventory)
@@ -294,12 +303,26 @@ public class GameManager : MonoBehaviour
         if (inventory != null)
         {
             inventory.OnCurrencyChanged += UpdateGoldText;
-            // Initialize gold text with current currency
-            UpdateGoldText(inventory.Currency);
+            // Initialize gold text with current currency - use coroutine to ensure Inventory has loaded
+            StartCoroutine(DelayedUpdateGoldText());
         }
         else
         {
             Debug.LogWarning("GameManager: Inventory component not found! Gold text will not update.");
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to update gold text after Inventory has loaded (ensures starting gold is displayed)
+    /// </summary>
+    private System.Collections.IEnumerator DelayedUpdateGoldText()
+    {
+        // Wait a frame to ensure Inventory.Start() has been called and currency is loaded
+        yield return null;
+        
+        if (inventory != null)
+        {
+            UpdateGoldText(inventory.CurrentGold);
         }
     }
     
@@ -311,6 +334,31 @@ public class GameManager : MonoBehaviour
         if (currentGoldText != null)
         {
             currentGoldText.text = currencyAmount.ToString();
+        }
+    }
+    
+    /// <summary>
+    /// Awards gold when a round is won (every round win)
+    /// </summary>
+    private void AwardFloorCompletionGold()
+    {
+        if (goldPerWin > 0)
+        {
+            // Ensure inventory reference is set
+            if (inventory == null)
+            {
+                inventory = FindFirstObjectByType<Inventory>();
+            }
+            
+            if (inventory != null)
+            {
+                inventory.AddCurrency(goldPerWin);
+                Debug.Log($"Awarded {goldPerWin} gold for winning round. New total: {inventory.CurrentGold}");
+            }
+            else
+            {
+                Debug.LogWarning("GameManager: Cannot award gold - Inventory component not found!");
+            }
         }
     }
     
@@ -1639,6 +1687,9 @@ public class GameManager : MonoBehaviour
 			}
 		}
 
+		// Award gold for winning the round (every round win, not just boss defeats)
+		AwardFloorCompletionGold();
+		
 		if (isBossDefeated)
 		{
 			// Boss defeated - show round end panel with "Zone cleared" instead of map panel

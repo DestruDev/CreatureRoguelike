@@ -24,8 +24,8 @@ public class Inventory : MonoBehaviour
     [SerializeField] private EquipmentSlots equipment = new EquipmentSlots();
     
     [Header("Currency")]
-    [Tooltip("Player's current currency amount")]
-    [SerializeField] private int currency = 0;
+    [Tooltip("Player's current gold amount")]
+    [SerializeField] private int currentGold = 0;
     
     [Tooltip("PlayerPrefs key for saving currency")]
     private const string CURRENCY_PREFS_KEY = "PlayerCurrency";
@@ -35,7 +35,7 @@ public class Inventory : MonoBehaviour
     public List<CreatureUnitData> Creatures => new List<CreatureUnitData>(creatures);
     public List<ItemEntry> Items => new List<ItemEntry>(items);
     public EquipmentSlots Equipment => equipment;
-    public int Currency => currency;
+    public int CurrentGold => currentGold;
     
     // Event for currency changes (allows UI to update automatically)
     public event Action<int> OnCurrencyChanged;
@@ -74,10 +74,10 @@ public class Inventory : MonoBehaviour
             return false;
         }
         
-        currency += amount;
+        currentGold += amount;
         SaveCurrency();
-        OnCurrencyChanged?.Invoke(currency);
-        Debug.Log($"Added {amount} currency. New total: {currency}");
+        OnCurrencyChanged?.Invoke(currentGold);
+        Debug.Log($"Added {amount} currency. New total: {currentGold}");
         return true;
     }
     
@@ -94,16 +94,16 @@ public class Inventory : MonoBehaviour
             return false;
         }
         
-        if (currency < amount)
+        if (currentGold < amount)
         {
-            Debug.LogWarning($"Insufficient currency: Have {currency}, need {amount}");
+            Debug.LogWarning($"Insufficient currency: Have {currentGold}, need {amount}");
             return false;
         }
         
-        currency -= amount;
+        currentGold -= amount;
         SaveCurrency();
-        OnCurrencyChanged?.Invoke(currency);
-        Debug.Log($"Removed {amount} currency. New total: {currency}");
+        OnCurrencyChanged?.Invoke(currentGold);
+        Debug.Log($"Removed {amount} currency. New total: {currentGold}");
         return true;
     }
     
@@ -120,10 +120,10 @@ public class Inventory : MonoBehaviour
             return false;
         }
         
-        currency = amount;
+        currentGold = amount;
         SaveCurrency();
-        OnCurrencyChanged?.Invoke(currency);
-        Debug.Log($"Currency set to {currency}");
+        OnCurrencyChanged?.Invoke(currentGold);
+        Debug.Log($"Currency set to {currentGold}");
         return true;
     }
     
@@ -134,7 +134,7 @@ public class Inventory : MonoBehaviour
     /// <returns>True if player has enough currency, false otherwise</returns>
     public bool HasEnoughCurrency(int amount)
     {
-        return currency >= amount;
+        return currentGold >= amount;
     }
     
     /// <summary>
@@ -154,8 +154,8 @@ public class Inventory : MonoBehaviour
     {
         if (PlayerPrefs.HasKey(CURRENCY_PREFS_KEY))
         {
-            currency = PlayerPrefs.GetInt(CURRENCY_PREFS_KEY);
-            Debug.Log($"Loaded currency from save: {currency}");
+            currentGold = PlayerPrefs.GetInt(CURRENCY_PREFS_KEY);
+            Debug.Log($"Loaded currency from save: {currentGold}");
         }
         else
         {
@@ -171,18 +171,18 @@ public class Inventory : MonoBehaviour
                 Debug.LogWarning("Inventory: GameManager not found! Using default starting currency of 0.");
             }
             
-            currency = startingCurrency;
-            Debug.Log($"No saved currency found. Using starting currency from GameManager: {currency}");
+            currentGold = startingCurrency;
+            Debug.Log($"No saved currency found. Using starting currency from GameManager: {currentGold}");
         }
         
         // Ensure currency is non-negative
-        if (currency < 0)
+        if (currentGold < 0)
         {
-            Debug.LogWarning($"Loaded currency was negative ({currency}). Resetting to 0.");
-            currency = 0;
+            Debug.LogWarning($"Loaded currency was negative ({currentGold}). Resetting to 0.");
+            currentGold = 0;
         }
         
-        OnCurrencyChanged?.Invoke(currency);
+        OnCurrencyChanged?.Invoke(currentGold);
     }
     
     /// <summary>
@@ -190,7 +190,7 @@ public class Inventory : MonoBehaviour
     /// </summary>
     private void SaveCurrency()
     {
-        PlayerPrefs.SetInt(CURRENCY_PREFS_KEY, currency);
+        PlayerPrefs.SetInt(CURRENCY_PREFS_KEY, currentGold);
         PlayerPrefs.Save();
     }
     
@@ -403,7 +403,7 @@ public class Inventory : MonoBehaviour
         summary.AppendLine($"Creatures: {CreatureCount}");
         summary.AppendLine($"Items: {items.Count} different types");
         summary.AppendLine($"Total item quantity: {items.Sum(e => e.quantity)}");
-        summary.AppendLine($"Currency: {currency}");
+        summary.AppendLine($"Currency: {currentGold}");
         return summary.ToString();
     }
     
