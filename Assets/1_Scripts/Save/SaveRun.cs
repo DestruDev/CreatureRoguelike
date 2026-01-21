@@ -10,6 +10,10 @@ public class SaveRun : MonoBehaviour
     public const string MapKey = "Map";
     public const string CurrencyKey = "PlayerCurrency";
 
+    // Battle resume keys (when player is mid-run inside a battle)
+    public const string ActiveBattleLevelIdKey = "ActiveBattleLevelId";
+    public const string ActiveBattleStageKey = "ActiveBattleStage";
+
     // --------------------
     // Map
     // --------------------
@@ -82,5 +86,37 @@ public class SaveRun : MonoBehaviour
     public static void Commit()
     {
         PlayerPrefs.Save();
+    }
+
+    // --------------------
+    // Active battle (resume at beginning of battle)
+    // --------------------
+
+    public static bool HasActiveBattle()
+    {
+        return PlayerPrefs.HasKey(ActiveBattleLevelIdKey);
+    }
+
+    public static void SetActiveBattle(string levelId, int stage)
+    {
+        if (string.IsNullOrWhiteSpace(levelId)) return;
+
+        PlayerPrefs.SetString(ActiveBattleLevelIdKey, levelId);
+        PlayerPrefs.SetInt(ActiveBattleStageKey, stage);
+        PlayerPrefs.Save();
+    }
+
+    public static (string levelId, int stage) LoadActiveBattle()
+    {
+        if (!HasActiveBattle()) return (null, 0);
+        string levelId = PlayerPrefs.GetString(ActiveBattleLevelIdKey);
+        int stage = PlayerPrefs.GetInt(ActiveBattleStageKey, 0);
+        return (levelId, stage);
+    }
+
+    public static void ClearActiveBattle()
+    {
+        if (PlayerPrefs.HasKey(ActiveBattleLevelIdKey)) PlayerPrefs.DeleteKey(ActiveBattleLevelIdKey);
+        if (PlayerPrefs.HasKey(ActiveBattleStageKey)) PlayerPrefs.DeleteKey(ActiveBattleStageKey);
     }
 }

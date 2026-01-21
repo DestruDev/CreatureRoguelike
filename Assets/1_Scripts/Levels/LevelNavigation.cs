@@ -82,6 +82,15 @@ public class LevelNavigation : MonoBehaviour
     }
     
     /// <summary>
+    /// Sets the current stage number (used for resume/loading).
+    /// </summary>
+    public void SetCurrentStage(int stage)
+    {
+        currentStage = Mathf.Max(0, stage);
+        UpdateLevelDisplay();
+    }
+    
+    /// <summary>
     /// Gets the next level after the current one
     /// Returns null if there is no next level
     /// </summary>

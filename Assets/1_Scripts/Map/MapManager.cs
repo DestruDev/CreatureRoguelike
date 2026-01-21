@@ -12,6 +12,7 @@ namespace Map
 
         private void Start()
         {
+            bool isResumingBattle = SaveRun.HasActiveBattle();
             if (SaveRun.HasMap())
             {
                 Map map = SaveRun.LoadMap();
@@ -25,8 +26,28 @@ namespace Map
                 {
                     CurrentMap = map;
                     // player has not reached the boss yet, load the current map
-                    if (map != null) view.ShowMap(map);
-                    else GenerateNewMap();
+                    if (map != null)
+                    {
+                        // If we are resuming directly into a battle, do not show the map UI on start.
+                        // LevelMap will kick off the battle and hide map visuals.
+                        if (!isResumingBattle)
+                        {
+                            view.ShowMap(map);
+                        }
+                        else
+                        {
+                            // Ensure map visuals are hidden even if something else tries to show them.
+                            if (view != null)
+                            {
+                                view.HideMap();
+                                view.gameObject.SetActive(false);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        GenerateNewMap();
+                    }
                 }
             }
             else

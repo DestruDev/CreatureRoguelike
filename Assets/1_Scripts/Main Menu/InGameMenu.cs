@@ -261,6 +261,12 @@ public class InGameMenu : MonoBehaviour
     /// </summary>
     private void AbandonRun()
     {
+        // Clear any in-progress battle resume marker so "Start" won't resume into combat
+        if (SaveRun.HasActiveBattle())
+        {
+            SaveRun.ClearActiveBattle();
+        }
+
         // Delete map save data
         if (SaveRun.HasMap())
         {

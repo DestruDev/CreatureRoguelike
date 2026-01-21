@@ -30,14 +30,23 @@ public class LevelMap : MonoBehaviour
     
     void Start()
     {
-        // Show map panel at start
-        ShowMapOnStart();
-        
-        // Hide all UI when map is open - use coroutine to ensure GameManager is ready
-        StartCoroutine(HideAllUIWhenReady());
-        
-        // Disable TurnOrder selection until a level is selected
-        DisableTurnSelectionUntilChoice();
+        // If we have an active battle save, resume directly into that battle (at the beginning),
+        // otherwise show the map as usual.
+        if (SaveRun.HasActiveBattle())
+        {
+            StartCoroutine(ResumeActiveBattleOnStart());
+        }
+        else
+        {
+            // Show map panel at start
+            ShowMapOnStart();
+
+            // Hide all UI when map is open - use coroutine to ensure GameManager is ready
+            StartCoroutine(HideAllUIWhenReady());
+
+            // Disable TurnOrder selection until a level is selected
+            DisableTurnSelectionUntilChoice();
+        }
     }
     
     #endregion
@@ -107,6 +116,8 @@ public class LevelMap : MonoBehaviour
     /// </summary>
     public void ShowMapPanel()
     {
+        // Returning to map means we're no longer "in battle" for resume purposes.
+        SaveRun.ClearActiveBattle();
         ShowMapView();
         
         // Hide all UI when map opens
@@ -298,19 +309,39 @@ public class LevelMap : MonoBehaviour
     /// </summary>
     private void StartLevel(LevelData levelData)
     {
+        StartLevelInternal(levelData, isResume: false, resumeStage: 0);
+    }
+
+    private void StartLevelInternal(LevelData levelData, bool isResume, int resumeStage)
+    {
         if (levelData == null)
         {
             Debug.LogWarning("LevelMap: Cannot start level - LevelData is null!");
             return;
         }
         
-        // Advance to next stage when selecting from the map (B1 -> B2 -> B3, etc.)
-        // This happens BEFORE starting the level so the display shows the correct stage
         LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
-        if (levelNavigation != null)
+        if (!isResume)
         {
-            levelNavigation.AdvanceToNextStage();
+            // Advance to next stage when selecting from the map (B1 -> B2 -> B3, etc.)
+            // This happens BEFORE starting the level so the display shows the correct stage
+            if (levelNavigation != null)
+            {
+                levelNavigation.AdvanceToNextStage();
+            }
         }
+        else
+        {
+            // On resume we restore stage instead of advancing it again.
+            if (levelNavigation != null)
+            {
+                levelNavigation.SetCurrentStage(resumeStage);
+            }
+        }
+
+        // Mark this as an active battle so Main Menu "Start" resumes here next time.
+        int stageForSave = levelNavigation != null ? levelNavigation.GetCurrentStage() : (isResume ? resumeStage : 0);
+        SaveRun.SetActiveBattle(levelData.levelID, stageForSave);
         
         // Hide the map
         HideMapPanel();
@@ -326,6 +357,56 @@ public class LevelMap : MonoBehaviour
         
         // Start coroutine to handle level start with proper timing
         StartCoroutine(StartLevelCoroutine(levelData));
+    }
+
+    /// <summary>
+    /// Resumes the last active battle at the beginning of that battle (re-spawns units and re-initializes turn order).
+    /// </summary>
+    private IEnumerator ResumeActiveBattleOnStart()
+    {
+        // Wait one frame so MapManager/LevelNavigation can initialize
+        yield return null;
+
+        var (levelId, stage) = SaveRun.LoadActiveBattle();
+        if (string.IsNullOrWhiteSpace(levelId))
+        {
+            // Bad save data - fall back to normal map flow
+            SaveRun.ClearActiveBattle();
+            ShowMapOnStart();
+            StartCoroutine(HideAllUIWhenReady());
+            DisableTurnSelectionUntilChoice();
+            yield break;
+        }
+
+        LevelData levelData = FindLevelDataById(levelId);
+        if (levelData == null)
+        {
+            Debug.LogWarning($"LevelMap: Active battle levelID '{levelId}' not found. Falling back to map.");
+            SaveRun.ClearActiveBattle();
+            ShowMapOnStart();
+            StartCoroutine(HideAllUIWhenReady());
+            DisableTurnSelectionUntilChoice();
+            yield break;
+        }
+
+        // Start the saved level without advancing stage again.
+        StartLevelInternal(levelData, isResume: true, resumeStage: stage);
+    }
+
+    private LevelData FindLevelDataById(string levelId)
+    {
+        if (string.IsNullOrWhiteSpace(levelId)) return null;
+
+        // Search all configured lists plus boss.
+        foreach (var ld in levelDataList)
+            if (ld != null && ld.levelID == levelId) return ld;
+        foreach (var ld in levelDataListB2)
+            if (ld != null && ld.levelID == levelId) return ld;
+        foreach (var ld in levelDataListB3)
+            if (ld != null && ld.levelID == levelId) return ld;
+        if (bossLevelData != null && bossLevelData.levelID == levelId) return bossLevelData;
+
+        return null;
     }
     
     #endregion
