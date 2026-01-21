@@ -27,9 +27,6 @@ public class Inventory : MonoBehaviour
     [Tooltip("Player's current gold amount")]
     [SerializeField] private int currentGold = 0;
     
-    [Tooltip("PlayerPrefs key for saving currency")]
-    private const string CURRENCY_PREFS_KEY = "PlayerCurrency";
-    
     // Properties
     public int CreatureCount => creatures.Count;
     public List<CreatureUnitData> Creatures => new List<CreatureUnitData>(creatures);
@@ -152,9 +149,9 @@ public class Inventory : MonoBehaviour
     /// </summary>
     private void LoadCurrency()
     {
-        if (PlayerPrefs.HasKey(CURRENCY_PREFS_KEY))
+        if (SaveRun.HasCurrency())
         {
-            currentGold = PlayerPrefs.GetInt(CURRENCY_PREFS_KEY);
+            currentGold = SaveRun.LoadCurrency();
             Debug.Log($"Loaded currency from save: {currentGold}");
         }
         else
@@ -190,8 +187,7 @@ public class Inventory : MonoBehaviour
     /// </summary>
     private void SaveCurrency()
     {
-        PlayerPrefs.SetInt(CURRENCY_PREFS_KEY, currentGold);
-        PlayerPrefs.Save();
+        SaveRun.SaveCurrency(currentGold);
     }
     
     #endregion

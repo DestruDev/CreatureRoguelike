@@ -3777,6 +3777,7 @@ GameObject:
   - component: {fileID: 427498663}
   - component: {fileID: 427498665}
   - component: {fileID: 427498666}
+  - component: {fileID: 427498667}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4210,6 +4211,18 @@ MonoBehaviour:
   levelDataListB3:
   - {fileID: 11400000, guid: 1bd353c99f495b2408b754462006c971, type: 2}
   bossLevelData: {fileID: 11400000, guid: eaaeb3502db9e9a40aa81fa0f8e5d283, type: 2}
+--- !u!114 &427498667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427498647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c894e895eb31e724394dde7cd65cb259, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveRun
 --- !u!1 &444719010
 GameObject:
   m_ObjectHideFlags: 0

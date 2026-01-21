@@ -262,9 +262,9 @@ public class InGameMenu : MonoBehaviour
     private void AbandonRun()
     {
         // Delete map save data
-        if (PlayerPrefs.HasKey("Map"))
+        if (SaveRun.HasMap())
         {
-            PlayerPrefs.DeleteKey("Map");
+            SaveRun.DeleteMap();
             Debug.Log("Abandon Run: Map save data deleted.");
         }
         
@@ -272,7 +272,7 @@ public class InGameMenu : MonoBehaviour
         ResetGoldToStartingValue();
         
         // Save all changes
-        PlayerPrefs.Save();
+        SaveRun.Commit();
         
         // Load main menu
         LoadMainMenuScene();
@@ -307,9 +307,9 @@ public class InGameMenu : MonoBehaviour
         inventory.SetCurrency(startingGold);
         
         // Delete saved currency from PlayerPrefs so it doesn't reload the old value
-        if (PlayerPrefs.HasKey("PlayerCurrency"))
+        if (SaveRun.HasCurrency())
         {
-            PlayerPrefs.DeleteKey("PlayerCurrency");
+            SaveRun.DeleteCurrency();
             Debug.Log($"Abandon Run: Currency save data deleted. Gold reset to starting value: {startingGold}");
         }
         else
