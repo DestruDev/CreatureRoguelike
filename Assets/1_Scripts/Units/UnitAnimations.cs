@@ -9,6 +9,7 @@ public class UnitAnimations : MonoBehaviour
 {
     private Animator animator;
     private Unit unit;
+    private SpriteRenderer spriteRenderer;
     
     // Animation state names (these should match the state names in your Animator Controller)
     private const string STATE_IDLE = "Idle";
@@ -18,6 +19,7 @@ public class UnitAnimations : MonoBehaviour
     
     private bool shouldReturnToIdle = false;
     private string currentAnimationState = STATE_IDLE;
+    private bool isFadingOut = false; // Track if we're already fading out to prevent multiple calls
     
     void Start()
     {
@@ -30,6 +32,13 @@ public class UnitAnimations : MonoBehaviour
         
         // Get Unit component for state tracking
         unit = GetComponent<Unit>();
+        
+        // Get SpriteRenderer component for fade out effect
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogWarning($"UnitAnimations on {gameObject.name}: No SpriteRenderer component found. Fade out on death will not work.");
+        }
         
         // Initialize animation state to Idle
         if (animator != null)
@@ -50,6 +59,13 @@ public class UnitAnimations : MonoBehaviour
             // Freeze the animator on the last frame of Dead animation
             animator.speed = 0f;
             shouldReturnToIdle = false;
+            
+            // Start fade out coroutine if not already started
+            if (!isFadingOut)
+            {
+                StartCoroutine(FadeOutAndDestroy());
+            }
+            
             return;
         }
         
@@ -260,5 +276,53 @@ public class UnitAnimations : MonoBehaviour
                 yield return null;
             }
         }
+    }
+    
+    /// <summary>
+    /// Fades out the sprite over the configured duration, then destroys the GameObject
+    /// </summary>
+    private IEnumerator FadeOutAndDestroy()
+    {
+        isFadingOut = true;
+        
+        if (spriteRenderer == null)
+        {
+            // If no sprite renderer, just destroy immediately
+            Destroy(gameObject);
+            yield break;
+        }
+        
+        // Get fade duration from GameManager, with fallback to 2 seconds
+        float fadeDuration = 2.0f;
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
+        {
+            fadeDuration = gameManager.deathFadeOutDuration;
+        }
+        
+        // Get initial alpha value
+        Color currentColor = spriteRenderer.color;
+        float startAlpha = currentColor.a;
+        float elapsedTime = 0f;
+        
+        // Fade out over 2 seconds
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float alpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / fadeDuration);
+            
+            // Update sprite color with new alpha
+            currentColor.a = alpha;
+            spriteRenderer.color = currentColor;
+            
+            yield return null;
+        }
+        
+        // Ensure alpha is exactly 0
+        currentColor.a = 0f;
+        spriteRenderer.color = currentColor;
+        
+        // Destroy the GameObject after fade completes
+        Destroy(gameObject);
     }
 }

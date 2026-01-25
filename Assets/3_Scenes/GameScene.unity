@@ -3909,6 +3909,7 @@ MonoBehaviour:
   postAttackAnimationDelay: 0.5
   hitAnimationDelay: 1
   roundEndScreenDelay: 1
+  deathFadeOutDuration: 0.75
 --- !u!114 &427498651
 MonoBehaviour:
   m_ObjectHideFlags: 0

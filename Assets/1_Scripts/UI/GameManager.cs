@@ -181,6 +181,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("Additional delay in seconds before showing round won/game over screen (added on top of postAttackAnimationDelay)")]
     [Range(0f, 5f)]
     public float roundEndScreenDelay = 0.5f;
+    
+    [Tooltip("Duration in seconds for unit sprite fade out after death animation completes")]
+    [Range(0f, 10f)]
+    public float deathFadeOutDuration = 2f;
 
     #region Lifecycle Methods
     
