@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Centralized run save/load helpers (PlayerPrefs-backed).
@@ -12,6 +13,7 @@ public class SaveRun : MonoBehaviour
     private const string CurrencyKeyBase = "PlayerCurrency";
     private const string ActiveBattleLevelIdKeyBase = "ActiveBattleLevelId";
     private const string ActiveBattleStageKeyBase = "ActiveBattleStage";
+    private const string AllyHPKeyBase = "AllyHP";
 
     /// <summary>
     /// Gets a profile-scoped key by appending the active profile index to the base key.
@@ -150,5 +152,84 @@ public class SaveRun : MonoBehaviour
         string stageKey = GetProfileScopedKey(ActiveBattleStageKeyBase);
         if (PlayerPrefs.HasKey(levelIdKey)) PlayerPrefs.DeleteKey(levelIdKey);
         if (PlayerPrefs.HasKey(stageKey)) PlayerPrefs.DeleteKey(stageKey);
+    }
+
+    // --------------------
+    // Ally HP (persistent across floors/rounds)
+    // --------------------
+
+    public static bool HasAllyHP()
+    {
+        string key = GetProfileScopedKey(AllyHPKeyBase);
+        return PlayerPrefs.HasKey(key);
+    }
+
+    /// <summary>
+    /// Saves ally HP data. Dictionary key is unitID, value is current HP.
+    /// </summary>
+    public static void SaveAllyHP(Dictionary<string, int> allyHPData)
+    {
+        if (allyHPData == null) return;
+
+        string json = JsonConvert.SerializeObject(allyHPData, Formatting.None);
+        string key = GetProfileScopedKey(AllyHPKeyBase);
+        PlayerPrefs.SetString(key, json);
+        PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// Loads ally HP data. Returns dictionary with unitID as key and current HP as value.
+    /// Returns empty dictionary if no save data exists.
+    /// </summary>
+    public static Dictionary<string, int> LoadAllyHP()
+    {
+        if (!HasAllyHP()) return new Dictionary<string, int>();
+
+        string key = GetProfileScopedKey(AllyHPKeyBase);
+        string json = PlayerPrefs.GetString(key);
+        if (string.IsNullOrWhiteSpace(json)) return new Dictionary<string, int>();
+
+        try
+        {
+            return JsonConvert.DeserializeObject<Dictionary<string, int>>(json) ?? new Dictionary<string, int>();
+        }
+        catch
+        {
+            Debug.LogWarning("Failed to deserialize ally HP data. Returning empty dictionary.");
+            return new Dictionary<string, int>();
+        }
+    }
+
+    /// <summary>
+    /// Saves a single ally's HP by unitID
+    /// </summary>
+    public static void SaveAllyHP(string unitID, int currentHP)
+    {
+        if (string.IsNullOrEmpty(unitID)) return;
+
+        Dictionary<string, int> allyHPData = LoadAllyHP();
+        allyHPData[unitID] = currentHP;
+        SaveAllyHP(allyHPData);
+    }
+
+    /// <summary>
+    /// Loads a single ally's HP by unitID. Returns -1 if not found.
+    /// </summary>
+    public static int LoadAllyHP(string unitID)
+    {
+        if (string.IsNullOrEmpty(unitID)) return -1;
+
+        Dictionary<string, int> allyHPData = LoadAllyHP();
+        return allyHPData.TryGetValue(unitID, out int hp) ? hp : -1;
+    }
+
+    /// <summary>
+    /// Deletes all saved ally HP data
+    /// </summary>
+    public static void DeleteAllyHP()
+    {
+        if (!HasAllyHP()) return;
+        string key = GetProfileScopedKey(AllyHPKeyBase);
+        PlayerPrefs.DeleteKey(key);
     }
 }

@@ -134,8 +134,27 @@ public class Unit : MonoBehaviour
             }
         }
         
-        // Initialize HP
-        currentHP = MaxHP;
+        // Initialize HP - for ally units, try to load saved HP
+        if (IsPlayerUnit && !string.IsNullOrEmpty(UnitID))
+        {
+            int savedHP = SaveRun.LoadAllyHP(UnitID);
+            if (savedHP > 0 && savedHP <= MaxHP)
+            {
+                // Use saved HP if valid (greater than 0 and not exceeding max)
+                currentHP = savedHP;
+            }
+            else
+            {
+                // No saved HP or invalid, use max HP
+                currentHP = MaxHP;
+            }
+        }
+        else
+        {
+            // Enemy units always start at max HP
+            currentHP = MaxHP;
+        }
+        
         UpdateHealthUI();
         
         // Initialize skill cooldowns

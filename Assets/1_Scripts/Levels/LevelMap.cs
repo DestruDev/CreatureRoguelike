@@ -537,12 +537,32 @@ public class LevelMap : MonoBehaviour
     {
         if (spawning != null)
         {
+            // Save ally HP before clearing units
+            SaveAllyHPBeforeClearing();
+            
             // Clear all existing units (both enemies and allies)
             spawning.ClearAllSpawnedUnits();
             
             // Spawn allies and enemies at the same time
             spawning.SpawnCreaturesOnly();
             spawning.SpawnEnemiesForLevel(levelData);
+        }
+    }
+    
+    /// <summary>
+    /// Saves all ally units' HP before clearing them
+    /// </summary>
+    private void SaveAllyHPBeforeClearing()
+    {
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null) return;
+        
+        foreach (Unit unit in allUnits)
+        {
+            if (unit != null && unit.IsPlayerUnit && !string.IsNullOrEmpty(unit.UnitID))
+            {
+                SaveRun.SaveAllyHP(unit.UnitID, unit.CurrentHP);
+            }
         }
     }
     

@@ -1708,6 +1708,9 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void OnAllEnemiesDead()
 	{
+        // Save ally HP when transitioning between floors/rounds
+        SaveAllAllyHP();
+        
         // Hide action UI during round end
         if (actionPanelManager == null)
         {
@@ -1745,6 +1748,23 @@ public class GameManager : MonoBehaviour
 		{
 			// Normal level - delay showing the map panel to allow death animations to play
 			StartCoroutine(DelayedShowMapPanel());
+		}
+	}
+	
+	/// <summary>
+	/// Saves all ally units' HP to persistent storage
+	/// </summary>
+	private void SaveAllAllyHP()
+	{
+		Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+		if (allUnits == null) return;
+		
+		foreach (Unit unit in allUnits)
+		{
+			if (unit != null && unit.IsPlayerUnit && !string.IsNullOrEmpty(unit.UnitID))
+			{
+				SaveRun.SaveAllyHP(unit.UnitID, unit.CurrentHP);
+			}
 		}
 	}
 	

@@ -235,6 +235,9 @@ public class LevelNavigation : MonoBehaviour
     {
         if (spawning != null)
         {
+            // Save ally HP before transitioning to next level (allies are not cleared, but save for safety)
+            SaveAllAllyHP();
+            
             // Clear only enemy spawn areas
             for (int i = 0; i < spawning.enemySpawnAreas.Length; i++)
             {
@@ -250,6 +253,23 @@ public class LevelNavigation : MonoBehaviour
             
             // Spawn enemies for the next level
             spawning.SpawnEnemiesForLevel(nextLevel);
+        }
+    }
+    
+    /// <summary>
+    /// Saves all ally units' HP to persistent storage
+    /// </summary>
+    private void SaveAllAllyHP()
+    {
+        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (allUnits == null) return;
+        
+        foreach (Unit unit in allUnits)
+        {
+            if (unit != null && unit.IsPlayerUnit && !string.IsNullOrEmpty(unit.UnitID))
+            {
+                SaveRun.SaveAllyHP(unit.UnitID, unit.CurrentHP);
+            }
         }
     }
     
