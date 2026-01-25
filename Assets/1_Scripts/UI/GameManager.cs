@@ -191,6 +191,28 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // Hide UI elements immediately to prevent placeholder text from showing before initialization
+        if (gameplayUI != null)
+        {
+            gameplayUI.SetActive(false);
+        }
+        
+        if (userPanelRoot != null)
+        {
+            userPanelRoot.SetActive(false);
+        }
+        
+        // Hide spawn areas immediately to prevent them from showing before initialization
+        if (creatureSpawnArea != null && creatureSpawnArea.gameObject != null)
+        {
+            creatureSpawnArea.gameObject.SetActive(false);
+        }
+        
+        if (enemySpawnArea != null && enemySpawnArea.gameObject != null)
+        {
+            enemySpawnArea.gameObject.SetActive(false);
+        }
+        
         // Set static instance and colors
         staticInstance = this;
         staticAllyColor = allyColor;

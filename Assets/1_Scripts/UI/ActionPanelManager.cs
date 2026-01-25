@@ -59,6 +59,36 @@ public class ActionPanelManager : MonoBehaviour
     // Track if we're in button selection mode
     private bool isButtonSelectionMode = false;
 
+    private void Awake()
+    {
+        // Hide all UI elements immediately to prevent them from showing before userPanelRoot is hidden
+        // This runs before Start() to ensure they're hidden as early as possible
+        if (ActionPanel != null)
+        {
+            ActionPanel.SetActive(false);
+        }
+        
+        if (EndTurnButton != null)
+        {
+            EndTurnButton.gameObject.SetActive(false);
+        }
+        
+        if (UnitNameText != null)
+        {
+            UnitNameText.gameObject.SetActive(false);
+        }
+        
+        if (SkillsPanel != null)
+        {
+            SkillsPanel.SetActive(false);
+        }
+        
+        if (ItemsPanel != null)
+        {
+            ItemsPanel.SetActive(false);
+        }
+    }
+
     private void Start()
     {
         // Find GameManager
@@ -72,6 +102,12 @@ public class ActionPanelManager : MonoBehaviour
         
         // Find Selection
         selection = FindFirstObjectByType<Selection>();
+
+        // Clear unit name text to prevent showing placeholder before initialization
+        if (UnitNameText != null)
+        {
+            UnitNameText.text = "";
+        }
 
         // Don't show ActionPanel on start - UI should be hidden when map is open
         // ActionPanel will be shown when a level starts and a player unit's turn begins
@@ -258,6 +294,15 @@ public class ActionPanelManager : MonoBehaviour
             {
                 ShowActionPanel();
             }
+            // If ActionPanel is already active, ensure EndTurnButton is also shown
+            else if (ActionPanel != null && ActionPanel.activeSelf)
+            {
+                if (EndTurnButton != null)
+                {
+                    EndTurnButton.gameObject.SetActive(true);
+                    EndTurnButton.interactable = true;
+                }
+            }
         }
         else
         {
@@ -280,11 +325,17 @@ public class ActionPanelManager : MonoBehaviour
             return;
         }
         
-        // Update unit name BEFORE showing the panel to prevent flickering
+        // Ensure userPanelRoot is shown BEFORE showing ActionPanel and EndTurnButton
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
         }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
+        }
+        
+        // Update unit name BEFORE showing the panel to prevent flickering
         if (gameManager != null)
         {
             Unit currentUnit = gameManager.GetCurrentUnit();
@@ -338,6 +389,16 @@ public class ActionPanelManager : MonoBehaviour
             return;
         }
         
+        // Ensure userPanelRoot is shown BEFORE showing SkillsPanel
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
+        }
+        
         // Disable button selection mode when leaving ActionPanel
         DisableButtonSelectionMode();
         
@@ -376,6 +437,16 @@ public class ActionPanelManager : MonoBehaviour
         if (ItemsPanel != null && ItemsPanel.activeSelf)
         {
             return;
+        }
+        
+        // Ensure userPanelRoot is shown BEFORE showing ItemsPanel
+        if (gameManager == null)
+        {
+            gameManager = FindFirstObjectByType<GameManager>();
+        }
+        if (gameManager != null)
+        {
+            gameManager.ShowUserPanel();
         }
         
         // Disable button selection mode when leaving ActionPanel
@@ -1047,6 +1118,16 @@ public class ActionPanelManager : MonoBehaviour
                     UnitNameText.text = displayName;
                     UnitNameText.fontSize = CalculateFontSize(displayName);
                 }
+                else
+                {
+                    // Clear text for non-player units (shouldn't be visible anyway)
+                    UnitNameText.text = "";
+                }
+            }
+            else
+            {
+                // Clear text when no current unit
+                UnitNameText.text = "";
             }
         }
     }

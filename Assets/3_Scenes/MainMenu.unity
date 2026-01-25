@@ -7261,12 +7261,6 @@ MonoBehaviour:
   - {fileID: 1856321598}
   - {fileID: 300313970}
   - {fileID: 121401957}
-  profileSlotEmptyIndicators:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!114 &2061954211
 MonoBehaviour:
   m_ObjectHideFlags: 0

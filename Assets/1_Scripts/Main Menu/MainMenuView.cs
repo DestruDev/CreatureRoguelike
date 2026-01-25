@@ -55,7 +55,6 @@ public class MainMenuView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI[] profileSlotNames = new TextMeshProUGUI[5];
     [SerializeField] private Button[] profileSlotSelectButtons = new Button[5];
     [SerializeField] private Button[] profileSlotDeleteButtons = new Button[5];
-    [SerializeField] private GameObject[] profileSlotEmptyIndicators = new GameObject[5];
 
     private MainMenuController controller;
 
@@ -550,12 +549,6 @@ public class MainMenuView : MonoBehaviour
                     profileSlotNames[i].text = "Empty Slot";
                     profileSlotNames[i].color = Color.gray;
                 }
-            }
-            
-            // Show/hide empty indicator
-            if (profileSlotEmptyIndicators != null && i < profileSlotEmptyIndicators.Length && profileSlotEmptyIndicators[i] != null)
-            {
-                profileSlotEmptyIndicators[i].SetActive(!hasProfile);
             }
             
             // Enable select button for both existing profiles and empty slots (empty slots trigger creation)

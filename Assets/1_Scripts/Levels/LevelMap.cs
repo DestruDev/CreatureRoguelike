@@ -430,13 +430,16 @@ public class LevelMap : MonoBehaviour
         // Reset all managers (GameManager, TurnOrder, EventLogPanel, ActionPanelManager)
         ResetManagers(refs);
         
-        // Clear existing units and spawn new ones
+        // Clear existing units and spawn new ones (spawn areas are hidden, so units will be inactive)
         ClearAndSpawnUnits(refs.spawning, levelData);
         
         // Update level display
         UpdateLevelDisplay(refs.levelNavigation, levelData);
         
-        // Reinitialize gauges and select first unit
+        // Show remaining UI elements together (spawn areas shown first, then other UI)
+        ShowRemainingUIElements(refs.gameManager);
+        
+        // Reinitialize gauges and select first unit (after spawn areas are shown so units are active)
         if (refs.gameManager != null)
         {
             yield return StartCoroutine(ReinitializeGaugesAndSelectFirstUnit(refs.gameManager, refs.turnOrder));
@@ -444,9 +447,6 @@ public class LevelMap : MonoBehaviour
 
         // Resume turn selection after reinitialization
         ResumeTurnSelection(refs.turnOrder);
-        
-        // Show remaining UI elements together after initialization is complete
-        ShowRemainingUIElements(refs.gameManager);
     }
     
     /// <summary>
@@ -569,6 +569,10 @@ public class LevelMap : MonoBehaviour
     {
         if (gameManager != null)
         {
+            // Show spawn areas first so units are active and can be found by UpdateAllUnitUI
+            // This must happen before UpdateAllUnitUI, otherwise FindObjectsByType won't find inactive units
+            gameManager.ShowSpawnAreas();
+            
             // Show status display panel (contains creature and enemy UI roots)
             gameManager.ShowStatusDisplayPanel();
             // Update all unit UI to ensure correct information is displayed
@@ -596,14 +600,10 @@ public class LevelMap : MonoBehaviour
         yield return null;
         yield return null;
         
-        // Show spawn areas first so units are active and can be found
-        // This must happen before initializing gauges, otherwise FindObjectsByType won't find inactive units
-        if (gameManager != null)
-        {
-            gameManager.ShowSpawnAreas();
-        }
+        // Note: Spawn areas are already shown before units were spawned, so units are active
+        // They will be shown again (redundantly) in ShowRemainingUIElements() to ensure visual sync with other UI
         
-        // Wait one more frame to ensure units are active
+        // Wait one more frame to ensure units are ready
         yield return null;
         
         // Update all unit UI
@@ -641,6 +641,9 @@ public class LevelMap : MonoBehaviour
                 Debug.LogWarning("LevelMap: No first unit found after level start! All units may have gauge < 100.");
             }
         }
+        
+        // Note: Spawn areas remain shown after gauge initialization
+        // They will be shown again (redundantly) in ShowRemainingUIElements() to ensure visual sync with other UI
     }
     
     /// <summary>
