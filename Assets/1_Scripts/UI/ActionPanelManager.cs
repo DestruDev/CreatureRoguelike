@@ -224,6 +224,19 @@ public class ActionPanelManager : MonoBehaviour
             if (gameManager == null) return;
         }
         
+        // Check if panels were hidden for round end (transition to map phase)
+        // This must be checked BEFORE IsGameEnded() to prevent tooltip from showing during transition
+        if (panelsHiddenForGameOver)
+        {
+            // Ensure tooltip stays hidden during round end transition
+            if (inspectTooltip != null)
+            {
+                inspectTooltip.SetActive(false);
+            }
+            // Don't process further if panels are hidden for round end
+            return;
+        }
+        
         // Check if game is over and hide all panels
         if (turnOrder == null)
         {
@@ -676,6 +689,12 @@ public class ActionPanelManager : MonoBehaviour
         UpdatePanelVisibility();
         
         // Show inspect tooltip if it should be visible (only during player unit turns)
+        // Don't show if panels are hidden for round end (transition to map phase)
+        if (panelsHiddenForGameOver)
+        {
+            return;
+        }
+        
         if (gameManager == null)
         {
             gameManager = FindFirstObjectByType<GameManager>();
