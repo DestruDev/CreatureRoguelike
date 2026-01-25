@@ -201,6 +201,9 @@ public class GameManager : MonoBehaviour
         // Set up inventory and currency display
         SetupInventory();
         
+        // Update player name text with current profile name
+        UpdatePlayerNameText();
+        
         // Hide round end panel at start
         if (roundEndPanel != null)
         {
@@ -334,6 +337,23 @@ public class GameManager : MonoBehaviour
         if (currentGoldText != null)
         {
             currentGoldText.text = currencyAmount.ToString();
+        }
+    }
+    
+    /// <summary>
+    /// Updates the player name text display with the current profile name
+    /// </summary>
+    private void UpdatePlayerNameText()
+    {
+        if (playerNameText != null)
+        {
+            string profileName = SaveProfiles.ProfileName;
+            // If no profile name exists, use "guest" as fallback
+            if (string.IsNullOrEmpty(profileName))
+            {
+                profileName = "guest";
+            }
+            playerNameText.text = profileName;
         }
     }
     

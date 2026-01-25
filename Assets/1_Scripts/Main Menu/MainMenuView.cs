@@ -138,7 +138,7 @@ public class MainMenuView : MonoBehaviour
         {
             // Check if map save data exists
             bool hasSave = PlayerPrefs.HasKey("Map");
-            saveStatusText.text = hasSave ? "YES" : "NO";
+            saveStatusText.text = hasSave ? "Existing Save : YES" : "Existing Save : NO";
             
             // Set color: Green for YES, Red for NO
             saveStatusText.color = hasSave ? Color.green : Color.red;
