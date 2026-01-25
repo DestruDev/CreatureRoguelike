@@ -131,13 +131,14 @@ public class MainMenuView : MonoBehaviour
     /// <summary>
     /// Updates the save status text to show YES if save exists, NO if it doesn't
     /// Green for YES, Red for NO
+    /// Uses SaveRun.HasMap() to check for profile-scoped save data
     /// </summary>
     public void UpdateSaveStatus()
     {
         if (saveStatusText != null)
         {
-            // Check if map save data exists
-            bool hasSave = PlayerPrefs.HasKey("Map");
+            // Check if map save data exists for the current active profile
+            bool hasSave = SaveRun.HasMap();
             saveStatusText.text = hasSave ? "Existing Save : YES" : "Existing Save : NO";
             
             // Set color: Green for YES, Red for NO

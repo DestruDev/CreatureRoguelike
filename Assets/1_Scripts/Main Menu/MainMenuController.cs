@@ -56,6 +56,7 @@ public class MainMenuController : MonoBehaviour
                         view.HideNameInputPanel();
                         view.UpdateNameDisplay();
                         view.UpdateProfileList();
+                        view.UpdateSaveStatus(); // Update save status for the new profile
                     }
                 }
                 else
@@ -80,6 +81,7 @@ public class MainMenuController : MonoBehaviour
                     view.HideNameInputPanel();
                     view.UpdateNameDisplay(); // Update the name display after setting profile name
                     view.UpdateProfileList(); // Update profile list if panel is visible
+                    view.UpdateSaveStatus(); // Update save status for the new/selected profile
                 }
             }
         }
@@ -185,6 +187,7 @@ public class MainMenuController : MonoBehaviour
             {
                 view.UpdateNameDisplay();
                 view.UpdateProfileList();
+                view.UpdateSaveStatus(); // Update save status to reflect the new profile's save state
             }
         }
         else
@@ -210,6 +213,7 @@ public class MainMenuController : MonoBehaviour
             {
                 view.UpdateNameDisplay();
                 view.UpdateProfileList();
+                view.UpdateSaveStatus(); // Update save status after profile deletion
             }
         }
     }
