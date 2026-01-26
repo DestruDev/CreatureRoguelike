@@ -113,9 +113,6 @@ public class GameManager : MonoBehaviour
 	[Tooltip("Starting gold/currency amount (used when no saved data exists)")]
 	[SerializeField] private int startingGold = 0;
 	
-	[Tooltip("Gold amount awarded after completing each floor (boss defeated)")]
-	[SerializeField] private int goldPerWin = 0;
-	
 	/// <summary>
 	/// Gets the starting gold amount (used by Inventory)
 	/// </summary>
@@ -137,6 +134,10 @@ public class GameManager : MonoBehaviour
 	
 	[Tooltip("Button on the round end panel that restarts the round (reloads scene)")]
 	public Button restartRoundButton;
+	
+	[Header("Loot Screen")]
+	[Tooltip("Loot screen component that appears after defeating all enemies on a floor (before map screen). Can be attached to GameManager or a separate GameObject.")]
+	public LootScreen lootScreen;
 	
 	[Header("Level Navigation")]
 	[Tooltip("Button to advance to the next level")]
@@ -234,6 +235,12 @@ public class GameManager : MonoBehaviour
         if (roundEndPanel != null)
         {
             roundEndPanel.SetActive(false);
+        }
+        
+        // Hide loot screen at start
+        if (lootScreen != null)
+        {
+            lootScreen.Hide();
         }
 
         // Get the first unit that should go - delay slightly to ensure all units are initialized
@@ -380,31 +387,6 @@ public class GameManager : MonoBehaviour
                 profileName = "guest";
             }
             playerNameText.text = profileName;
-        }
-    }
-    
-    /// <summary>
-    /// Awards gold when a round is won (every round win)
-    /// </summary>
-    private void AwardFloorCompletionGold()
-    {
-        if (goldPerWin > 0)
-        {
-            // Ensure inventory reference is set
-            if (inventory == null)
-            {
-                inventory = FindFirstObjectByType<Inventory>();
-            }
-            
-            if (inventory != null)
-            {
-                inventory.AddCurrency(goldPerWin);
-                Debug.Log($"Awarded {goldPerWin} gold for winning round. New total: {inventory.CurrentGold}");
-            }
-            else
-            {
-                Debug.LogWarning("GameManager: Cannot award gold - Inventory component not found!");
-            }
         }
     }
     
@@ -1024,7 +1006,7 @@ public class GameManager : MonoBehaviour
 			if (canSafelyHide(gameplayUI))
 			{
 				gameplayUI.SetActive(false);
-				Debug.Log($"GameManager: Hid gameplayUI: {gameplayUI.name}");
+				// Debug.Log($"GameManager: Hid gameplayUI: {gameplayUI.name}");
 			}
 			else
 			{
@@ -1039,7 +1021,7 @@ public class GameManager : MonoBehaviour
 			if (canSafelyHide(userPanelRoot))
 			{
 				userPanelRoot.SetActive(false);
-				Debug.Log($"GameManager: Hid userPanelRoot: {userPanelRoot.name}");
+				// Debug.Log($"GameManager: Hid userPanelRoot: {userPanelRoot.name}");
 			}
 			else
 			{
@@ -1053,7 +1035,7 @@ public class GameManager : MonoBehaviour
 			if (canSafelyHide(creatureSpawnArea.gameObject))
 			{
 				creatureSpawnArea.gameObject.SetActive(false);
-				Debug.Log($"GameManager: Hid creatureSpawnArea: {creatureSpawnArea.name}");
+				// Debug.Log($"GameManager: Hid creatureSpawnArea: {creatureSpawnArea.name}");
 			}
 			else
 			{
@@ -1067,7 +1049,7 @@ public class GameManager : MonoBehaviour
 			if (canSafelyHide(enemySpawnArea.gameObject))
 			{
 				enemySpawnArea.gameObject.SetActive(false);
-				Debug.Log($"GameManager: Hid enemySpawnArea: {enemySpawnArea.name}");
+				// Debug.Log($"GameManager: Hid enemySpawnArea: {enemySpawnArea.name}");
 			}
 			else
 			{
@@ -1081,11 +1063,25 @@ public class GameManager : MonoBehaviour
 			if (canSafelyHide(settingsButton))
 			{
 				settingsButton.SetActive(false);
-				Debug.Log($"GameManager: Hid settingsButton: {settingsButton.name}");
+				// Debug.Log($"GameManager: Hid settingsButton: {settingsButton.name}");
 			}
 			else
 			{
 				Debug.LogWarning($"GameManager: Cannot hide settingsButton: {settingsButton.name} - safety check failed");
+			}
+		}
+		
+		// Hide loot screen (only if assigned - it's optional)
+		if (lootScreen != null)
+		{
+			try
+			{
+				lootScreen.Hide();
+				// Debug.Log($"GameManager: Hid lootScreen");
+			}
+			catch (System.Exception e)
+			{
+				Debug.LogWarning($"GameManager: Error hiding lootScreen: {e.Message}");
 			}
 		}
 		
@@ -1736,9 +1732,6 @@ public class GameManager : MonoBehaviour
 			}
 		}
 
-		// Award gold for winning the round (every round win, not just boss defeats)
-		AwardFloorCompletionGold();
-		
 		if (isBossDefeated)
 		{
 			// Boss defeated - show round end panel with "Zone cleared" instead of map panel
@@ -1780,7 +1773,8 @@ public class GameManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Coroutine to delay showing the map panel to allow death animations to play
+	/// Coroutine to delay showing the loot screen to allow death animations to play
+	/// The loot screen will then show the map when confirmed
 	/// </summary>
 	private System.Collections.IEnumerator DelayedShowMapPanel()
 	{
@@ -1788,23 +1782,50 @@ public class GameManager : MonoBehaviour
 		float totalDelay = postAttackAnimationDelay + roundEndScreenDelay;
 		yield return new WaitForSeconds(totalDelay);
 		
-		// Find LevelMap and show the map panel
-		LevelMap levelMap = FindFirstObjectByType<LevelMap>();
-		if (levelMap != null)
+		// Show loot screen instead of directly showing map
+		// The loot screen will handle showing the map when confirmed
+		bool lootScreenShown = false;
+		if (lootScreen != null)
 		{
-			levelMap.ShowMapPanel();
+			try
+			{
+				// Debug.Log("GameManager: Attempting to show loot screen...");
+				lootScreen.Show();
+				lootScreenShown = true;
+				// Debug.Log("GameManager: Loot screen shown successfully.");
+			}
+			catch (System.Exception e)
+			{
+				Debug.LogWarning($"GameManager: Error showing lootScreen: {e.Message}. Falling back to map.");
+				lootScreenShown = false;
+			}
 		}
 		else
 		{
-			Debug.LogWarning("GameManager: LevelMap not found! Falling back to round end panel.");
-			// Fallback to old behavior if LevelMap not found
-			string message = "Round Won!";
-			LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
-			if (levelNavigation != null && levelNavigation.GetCurrentLevel() == "B1-3")
+			Debug.LogWarning("GameManager: lootScreen component is not assigned! Falling back to map.");
+		}
+		
+		// If loot screen is null or failed to show, fall back to directly showing map
+		if (!lootScreenShown)
+		{
+			// Fallback to old behavior - show map directly
+			LevelMap levelMap = FindFirstObjectByType<LevelMap>();
+			if (levelMap != null)
 			{
-				message = "Game Won!";
+				levelMap.ShowMapPanel();
 			}
-			ShowRoundEndPanel(message);
+			else
+			{
+				Debug.LogWarning("GameManager: LevelMap not found! Falling back to round end panel.");
+				// Fallback to old behavior if LevelMap not found
+				string message = "Round Won!";
+				LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
+				if (levelNavigation != null && levelNavigation.GetCurrentLevel() == "B1-3")
+				{
+					message = "Game Won!";
+				}
+				ShowRoundEndPanel(message);
+			}
 		}
 	}
 	

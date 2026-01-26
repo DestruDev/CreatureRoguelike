@@ -152,7 +152,7 @@ public class Inventory : MonoBehaviour
         if (SaveRun.HasCurrency())
         {
             currentGold = SaveRun.LoadCurrency();
-            Debug.Log($"Loaded currency from save: {currentGold}");
+            // Debug.Log($"Loaded currency from save: {currentGold}");
         }
         else
         {
