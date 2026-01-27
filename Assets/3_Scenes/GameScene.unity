@@ -4377,8 +4377,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LootScreen
   lootScreenPanel: {fileID: 1963061356}
   confirmButton: {fileID: 869104135}
-  goldPerWin: 25
-  floorMultiplier: 5
+  lootTable: {fileID: 11400000, guid: 46a4fb479318fa9459ad1e8c59502782, type: 2}
 --- !u!1 &444719010
 GameObject:
   m_ObjectHideFlags: 0

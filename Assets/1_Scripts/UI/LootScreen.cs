@@ -14,12 +14,9 @@ public class LootScreen : MonoBehaviour
     [Tooltip("Button that confirms and advances to the map screen")]
     public Button confirmButton;
     
-    [Header("Gold Reward")]
-    [Tooltip("Base gold amount awarded after completing each floor")]
-    [SerializeField] private int goldPerWin = 0;
-    
-    [Tooltip("Gold multiplier per floor (gold = goldPerWin + floorNumber * floorMultiplier)")]
-    [SerializeField] private int floorMultiplier = 0;
+    [Header("Loot Table")]
+    [Tooltip("The LootTable ScriptableObject that contains gold reward settings")]
+    public LootTable lootTable;
     
     private GameManager gameManager;
     private LevelMap levelMap;
@@ -81,11 +78,18 @@ public class LootScreen : MonoBehaviour
     
     /// <summary>
     /// Awards gold when a round is won (every round win)
-    /// Gold = goldPerWin + (floorNumber * floorMultiplier)
+    /// Gold is calculated from the LootTable ScriptableObject
     /// </summary>
     private void AwardFloorCompletionGold()
     {
-        // Calculate total gold: base + (floor number * multiplier)
+        // Check if loot table is assigned
+        if (lootTable == null)
+        {
+            Debug.LogWarning("LootScreen: Cannot award gold - LootTable is not assigned!");
+            return;
+        }
+        
+        // Get floor number
         int floorNumber = 0;
         if (levelNavigation == null)
         {
@@ -97,7 +101,8 @@ public class LootScreen : MonoBehaviour
             floorNumber = levelNavigation.GetCurrentStage();
         }
         
-        int totalGold = goldPerWin + (floorNumber * floorMultiplier);
+        // Calculate gold from loot table
+        int totalGold = lootTable.CalculateGoldReward(floorNumber);
         
         if (totalGold > 0)
         {
@@ -110,7 +115,7 @@ public class LootScreen : MonoBehaviour
             if (inventory != null)
             {
                 inventory.AddCurrency(totalGold);
-                Debug.Log($"Awarded {totalGold} gold for winning round (base: {goldPerWin}, floor {floorNumber} * {floorMultiplier} = {floorNumber * floorMultiplier}). New total: {inventory.CurrentGold}");
+                Debug.Log($"Awarded {totalGold} gold for winning round (base: {lootTable.goldPerWin}, floor {floorNumber} * {lootTable.floorMultiplier} = {floorNumber * lootTable.floorMultiplier}). New total: {inventory.CurrentGold}");
             }
             else
             {
