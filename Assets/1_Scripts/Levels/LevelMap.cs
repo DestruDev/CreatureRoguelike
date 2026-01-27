@@ -26,6 +26,11 @@ public class LevelMap : MonoBehaviour
     [Tooltip("Boss LevelData ScriptableObject")]
     public LevelData bossLevelData;
     
+    /// <summary>
+    /// The current NodeBlueprint for the active level (used for loot table access)
+    /// </summary>
+    private NodeBlueprint currentNodeBlueprint;
+    
     #region Lifecycle Methods
     
     void Start()
@@ -208,8 +213,13 @@ public class LevelMap : MonoBehaviour
     /// Starts a level based on the node type from the map system
     /// Maps node types to appropriate level data lists based on current stage
     /// </summary>
-    public void StartLevelFromNodeType(NodeType nodeType)
+    /// <param name="nodeType">The type of node being entered</param>
+    /// <param name="blueprint">The NodeBlueprint for this node (used for loot table access)</param>
+    public void StartLevelFromNodeType(NodeType nodeType, NodeBlueprint blueprint = null)
     {
+        // Store the blueprint for loot table access
+        currentNodeBlueprint = blueprint;
+        
         // Get current stage to determine which level list to use
         LevelNavigation levelNavigation = FindFirstObjectByType<LevelNavigation>();
         int currentStage = 0;
@@ -261,6 +271,14 @@ public class LevelMap : MonoBehaviour
         {
             Debug.LogWarning($"LevelMap: Could not find a level for node type {nodeType} at stage {currentStage}");
         }
+    }
+    
+    /// <summary>
+    /// Gets the current NodeBlueprint (for loot table access)
+    /// </summary>
+    public NodeBlueprint GetCurrentNodeBlueprint()
+    {
+        return currentNodeBlueprint;
     }
     
     /// <summary>

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Map
 {
@@ -21,5 +21,9 @@ namespace Map
     {
         public Sprite sprite;
         public NodeType nodeType;
+        
+        [Header("Loot")]
+        [Tooltip("LootTable that defines gold rewards and item drops for this node type")]
+        public LootTable lootTable;
     }
 }

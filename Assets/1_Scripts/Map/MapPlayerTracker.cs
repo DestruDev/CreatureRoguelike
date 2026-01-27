@@ -93,8 +93,8 @@ namespace Map
             LevelMap levelMap = FindFirstObjectByType<LevelMap>();
             if (levelMap != null)
             {
-                // Start level based on node type
-                levelMap.StartLevelFromNodeType(mapNode.Node.nodeType);
+                // Start level based on node type and pass the blueprint for loot table access
+                levelMap.StartLevelFromNodeType(mapNode.Node.nodeType, mapNode.Blueprint);
                 
                 // Keep locked until map is shown again - unlock will happen in ShowMapView()
             }

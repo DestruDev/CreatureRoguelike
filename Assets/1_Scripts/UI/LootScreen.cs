@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Map;
 
 /// <summary>
 /// Manages the loot screen that appears after defeating all enemies on a floor
@@ -13,10 +14,6 @@ public class LootScreen : MonoBehaviour
     
     [Tooltip("Button that confirms and advances to the map screen")]
     public Button confirmButton;
-    
-    [Header("Loot Table")]
-    [Tooltip("The LootTable ScriptableObject that contains gold reward settings")]
-    public LootTable lootTable;
     
     private GameManager gameManager;
     private LevelMap levelMap;
@@ -78,14 +75,35 @@ public class LootScreen : MonoBehaviour
     
     /// <summary>
     /// Awards gold when a round is won (every round win)
-    /// Gold is calculated from the LootTable ScriptableObject
+    /// Gold is calculated from the LootTable in the current NodeBlueprint
     /// </summary>
     private void AwardFloorCompletionGold()
     {
-        // Check if loot table is assigned
+        // Get LevelMap to access current NodeBlueprint
+        if (levelMap == null)
+        {
+            levelMap = FindFirstObjectByType<LevelMap>();
+        }
+        
+        if (levelMap == null)
+        {
+            Debug.LogWarning("LootScreen: Cannot award gold - LevelMap not found!");
+            return;
+        }
+        
+        // Get the current NodeBlueprint from LevelMap
+        NodeBlueprint currentNodeBlueprint = levelMap.GetCurrentNodeBlueprint();
+        if (currentNodeBlueprint == null)
+        {
+            Debug.LogWarning("LootScreen: Cannot award gold - Current NodeBlueprint is null!");
+            return;
+        }
+        
+        // Get the loot table from the blueprint
+        LootTable lootTable = currentNodeBlueprint.lootTable;
         if (lootTable == null)
         {
-            Debug.LogWarning("LootScreen: Cannot award gold - LootTable is not assigned!");
+            Debug.LogWarning($"LootScreen: Cannot award gold - LootTable is not assigned to NodeBlueprint '{currentNodeBlueprint.name}'!");
             return;
         }
         

@@ -10,7 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5f491b607b1cd948b5bc856850b2616, type: 3}
-  m_Name: Elite Enemy
+  m_Name: Spider Boss
   m_EditorClassIdentifier: 
-  sprite: {fileID: 21300000, guid: 41a67887632d04949917f3d951dcb57b, type: 3}
-  nodeType: 1
+  sprite: {fileID: 21300000, guid: a075b601154b8b84c8efd858de216b2e, type: 3}
+  nodeType: 5
+  lootTable: {fileID: 11400000, guid: 46a4fb479318fa9459ad1e8c59502782, type: 2}
