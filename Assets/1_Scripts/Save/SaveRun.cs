@@ -232,4 +232,18 @@ public class SaveRun : MonoBehaviour
         string key = GetProfileScopedKey(AllyHPKeyBase);
         PlayerPrefs.DeleteKey(key);
     }
+
+    /// <summary>
+    /// Deletes all run-related data (map, currency, ally HP, active battle) for the current profile.
+    /// Safe to call even if no data exists yet.
+    /// </summary>
+    public static void DeleteAllRunDataForCurrentProfile()
+    {
+        // All of these methods are already profile-scoped via GetProfileScopedKey
+        DeleteMap();
+        DeleteCurrency();
+        DeleteAllyHP();
+        ClearActiveBattle();
+        Commit();
+    }
 }

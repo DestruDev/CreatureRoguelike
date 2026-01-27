@@ -173,6 +173,9 @@ public class ProfileListManager : MonoBehaviour
         
         // Automatically select the newly created profile
         SelectProfile(availableSlot);
+
+        // Ensure the new profile starts with a clean slate (no leftover saves from this slot)
+        SaveRun.DeleteAllRunDataForCurrentProfile();
         
         return availableSlot;
     }
@@ -215,6 +218,9 @@ public class ProfileListManager : MonoBehaviour
         
         // Automatically select the newly created profile
         SelectProfile(index);
+
+        // Ensure the new profile at this slot does not inherit any old run data
+        SaveRun.DeleteAllRunDataForCurrentProfile();
         
         return true;
     }
