@@ -15,10 +15,13 @@ MonoBehaviour:
   commonItems:
   - {fileID: 11400000, guid: 03adf7812f2b76648834a7d980d0e2c8, type: 2}
   uncommonItems:
+  - {fileID: 11400000, guid: 35e2317701337864bbe489159950cf8d, type: 2}
+  rareItems:
+  - {fileID: 11400000, guid: f93f93a50ee80f34fb5ca43162de46c0, type: 2}
+  epicItems:
   - {fileID: 11400000, guid: a6b7c88e2c3c1f840a039f36aeaf3b55, type: 2}
-  rareItems: []
-  epicItems: []
-  legendaryItems: []
+  legendaryItems:
+  - {fileID: 11400000, guid: 31f600d1b0f0fe944b9b4299ad2e395e, type: 2}
   commonChance: 60
   uncommonChance: 25
   rareChance: 10

@@ -342,7 +342,7 @@ public class Inventory : MonoBehaviour
     /// </summary>
     public bool EquipItem(Item item)
     {
-        if (item == null || item.itemType != ItemType.Equipment)
+        if (item == null || item.itemType != ItemType.Accessories)
         {
             Debug.LogWarning("Cannot equip: Item is null or not equipment type");
             return false;

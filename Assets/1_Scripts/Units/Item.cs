@@ -72,7 +72,7 @@ public class Item : ScriptableObject
 public enum ItemType
 {
     Consumable,     // Single-use items (potions, food, etc.)
-    Equipment,       // Equipment items (weapons, armor, etc.)
+    Accessories,     // Accessories items (weapons, armor, etc.)
     Material,       // Crafting materials
     Quest,          // Quest items
     Key,            // Key items

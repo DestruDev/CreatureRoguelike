@@ -7232,7 +7232,7 @@ MonoBehaviour:
   startGameButton: {fileID: 599723478}
   buttonsContainer: {fileID: 89950482}
   versionText: {fileID: 1174218292}
-  versionString: '[Prototype V5] (12-13-2025)'
+  versionString: '[Prototype V6] (01-27-2026)'
   saveStatusText: {fileID: 1599042139}
   nameDisplayText: {fileID: 1179581955}
   nameInputPanel: {fileID: 2123593103}

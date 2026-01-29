@@ -14,10 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Item
   itemName: Healing Potion
   itemID: 1
-  itemDescription: 'A healing potion.
-
-'
-  icon: {fileID: -420898700, guid: ae2c6821683db024e9aaaa3c70f68f6a, type: 3}
+  itemDescription: A healing potion.
+  icon: {fileID: 159363099, guid: ae2c6821683db024e9aaaa3c70f68f6a, type: 3}
   itemType: 0
   consumableSubtype: 0
   healAmount: 50
