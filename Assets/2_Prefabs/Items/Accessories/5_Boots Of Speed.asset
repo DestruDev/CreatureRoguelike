@@ -9,14 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fc035a6e25d2e14c83858eeae172353, type: 3}
+  m_Script: {fileID: 11500000, guid: 4554472608db1974d84894701c6ea693, type: 3}
   m_Name: 5_Boots Of Speed
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  itemName: Boots of Speed
-  itemID: 1
-  itemDescription: Leather boots.
+  itemName: 5_Boots Of Speed
+  itemID: 5
+  itemDescription: Item description
   icon: {fileID: -700688601, guid: 7b779a8e6c8a20b479211d7667e889ad, type: 3}
   itemType: 1
   consumableSubtype: 0
   healAmount: 10
   targetType: 1
+  accessoryEffectType: 0
+  accessoryEffect: {fileID: 0}
+  statModifierDirection: 0
+  statModifierValueType: 0
+  statModifierStat: 0
+  statModifierAmount: 5

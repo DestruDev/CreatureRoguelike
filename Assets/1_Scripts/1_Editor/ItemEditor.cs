@@ -13,7 +13,13 @@ public class ItemEditor : Editor
     private SerializedProperty consumableSubtypeProperty;
     private SerializedProperty healAmountProperty;
     private SerializedProperty targetTypeProperty;
-    
+    private SerializedProperty accessoryEffectTypeProperty;
+    private SerializedProperty accessoryEffectProperty;
+    private SerializedProperty statModifierDirectionProperty;
+    private SerializedProperty statModifierValueTypeProperty;
+    private SerializedProperty statModifierStatProperty;
+    private SerializedProperty statModifierAmountProperty;
+
     private void OnEnable()
     {
         itemNameProperty = serializedObject.FindProperty("itemName");
@@ -24,6 +30,12 @@ public class ItemEditor : Editor
         consumableSubtypeProperty = serializedObject.FindProperty("consumableSubtype");
         healAmountProperty = serializedObject.FindProperty("healAmount");
         targetTypeProperty = serializedObject.FindProperty("targetType");
+        accessoryEffectTypeProperty = serializedObject.FindProperty("accessoryEffectType");
+        accessoryEffectProperty = serializedObject.FindProperty("accessoryEffect");
+        statModifierDirectionProperty = serializedObject.FindProperty("statModifierDirection");
+        statModifierValueTypeProperty = serializedObject.FindProperty("statModifierValueType");
+        statModifierStatProperty = serializedObject.FindProperty("statModifierStat");
+        statModifierAmountProperty = serializedObject.FindProperty("statModifierAmount");
     }
     
     public override void OnInspectorGUI()
@@ -79,7 +91,29 @@ public class ItemEditor : Editor
             }
             EditorGUI.EndDisabledGroup();
         }
-        
+        else if (item.itemType == ItemType.Accessories)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Accessory Effect Type", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(accessoryEffectTypeProperty);
+
+            if (item.accessoryEffectType == AccessoryEffectType.StatModifier)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Stat Modifier", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(statModifierDirectionProperty, new GUIContent("Direction", "Increase or decrease the stat"));
+                EditorGUILayout.PropertyField(statModifierValueTypeProperty, new GUIContent("Value Type", "Flat amount or percentage"));
+                EditorGUILayout.PropertyField(statModifierStatProperty, new GUIContent("Stat", "ATK, DEF, SPD, or HP"));
+                EditorGUILayout.PropertyField(statModifierAmountProperty, new GUIContent("Amount", "Flat value (e.g. 5) or percentage as decimal (e.g. 0.1 = 10%)"));
+            }
+            else
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Effect", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(accessoryEffectProperty);
+            }
+        }
+
         serializedObject.ApplyModifiedProperties();
     }
 }

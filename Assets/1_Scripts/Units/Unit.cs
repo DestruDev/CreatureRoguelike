@@ -24,7 +24,7 @@ public class Unit : MonoBehaviour
     // Current stats (cached from ScriptableObject)
     public int CurrentHP => currentHP;
     public int MaxHP => creatureUnitData != null ? creatureUnitData.maxHP : 0;
-    //public int AttackDamage => creatureUnitData != null ? creatureUnitData.attackDamage : 0;
+    public int AttackPower => creatureUnitData != null ? creatureUnitData.attack : 0;
     public int Defense => creatureUnitData != null ? creatureUnitData.defense : 0;
     public int Speed => creatureUnitData != null ? creatureUnitData.speed : 0;
     public Skill[] Skills => creatureUnitData != null ? creatureUnitData.skills : new Skill[0];

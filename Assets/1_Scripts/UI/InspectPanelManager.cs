@@ -23,6 +23,7 @@ public class InspectPanelManager : MonoBehaviour
     [Header("Inspect Info")]
     public TextMeshProUGUI InspectName;
     public TextMeshProUGUI InspectHP;
+    public TextMeshProUGUI InspectAttack;
     public TextMeshProUGUI InspectDefense;
     public TextMeshProUGUI InspectSpeed;
     
@@ -286,6 +287,7 @@ public class InspectPanelManager : MonoBehaviour
     {
         if (InspectName != null) InspectName.text = "";
         if (InspectHP != null) InspectHP.text = "";
+        if (InspectAttack != null) InspectAttack.text = "";
         if (InspectDefense != null) InspectDefense.text = "";
         if (InspectSpeed != null) InspectSpeed.text = "";
     }
@@ -306,13 +308,19 @@ public class InspectPanelManager : MonoBehaviour
         {
             InspectHP.text = $"HP: {unit.MaxHP}";
         }
-        
+
+        // Update Attack
+        if (InspectAttack != null)
+        {
+            InspectAttack.text = $"Attack: {unit.AttackPower}";
+        }
+
         // Update Defense
         if (InspectDefense != null)
         {
             InspectDefense.text = $"Defense: {unit.Defense}";
         }
-        
+
         // Update Speed
         if (InspectSpeed != null)
         {

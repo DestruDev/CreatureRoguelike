@@ -28,7 +28,19 @@ public class Item : ScriptableObject
     [Header("Targeting")]
     [Tooltip("Target type for consumable items (auto-set based on subtype)")]
     public SkillTargetType targetType = SkillTargetType.Ally;
-    
+
+    [Header("Accessory")]
+    [Tooltip("Category of effect (only used when itemType == Accessories)")]
+    public AccessoryEffectType accessoryEffectType = AccessoryEffectType.StatModifier;
+    [Tooltip("Effect applied when equipped (only for non-StatModifier types; StatModifier uses inline fields below)")]
+    public AccessoryEffect accessoryEffect;
+
+    [Header("Stat Modifier (inline, when Accessory Effect Type = Stat Modifier)")]
+    public StatModifierDirection statModifierDirection = StatModifierDirection.Increase;
+    public StatModifierValueType statModifierValueType = StatModifierValueType.Flat;
+    public StatType statModifierStat = StatType.Atk;
+    public float statModifierAmount = 5f;
+
 #if UNITY_EDITOR
     // Auto-set itemName to asset name if it's empty or still at default value
     private void OnValidate()

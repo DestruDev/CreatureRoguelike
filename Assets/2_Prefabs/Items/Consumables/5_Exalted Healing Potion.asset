@@ -18,5 +18,7 @@ MonoBehaviour:
   icon: {fileID: -314748207, guid: ae2c6821683db024e9aaaa3c70f68f6a, type: 3}
   itemType: 0
   consumableSubtype: 0
-  healAmount: 100
+  healAmount: 800
   targetType: 1
+  accessoryEffectType: 0
+  accessoryEffect: {fileID: 0}
