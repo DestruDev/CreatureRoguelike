@@ -300,15 +300,7 @@ public class ItemPanelManager : MonoBehaviour
     /// </summary>
     public string GetItemUnusableReason(Item item, Unit currentUnit)
     {
-        if (item == null || currentUnit == null) return "";
-        
-        // Check if healing item can be used
-        if (item.itemType == ItemType.Consumable && item.consumableSubtype == ConsumableSubtype.Heal && !CanUseHealingItem(item, currentUnit))
-        {
-            return "All allies are at full HP";
-        }
-        
-        return "";
+        return ItemSystem.GetItemUnusableReason(item, currentUnit);
     }
     
     /// <summary>
@@ -482,7 +474,7 @@ public class ItemPanelManager : MonoBehaviour
         currentCastingUnit = currentUnit;
 
         // Convert SkillTargetType to UnitTargetType
-        UnitTargetType targetType = ConvertTargetType(item.targetType);
+        UnitTargetType targetType = ItemSystem.ConvertTargetType(item.targetType);
 
         // Setup unit selection (will automatically restore previously selected unit based on target type)
         selection.SetupUnitSelection(targetType, currentUnit, null, item);
@@ -807,7 +799,7 @@ public class ItemPanelManager : MonoBehaviour
         UpdateItemQuantity(index, quantity);
 
         // Check if item is unusable (healing items when all allies are at full HP)
-        bool isUnusable = itemUsedThisTurn || !CanUseHealingItem(item, currentUnit);
+        bool isUnusable = itemUsedThisTurn || !ItemSystem.CanUseHealingItem(item, currentUnit);
         
         // Update brightness based on item usage or unusability
         UpdateItemBrightness(index, isUnusable);
@@ -1058,64 +1050,6 @@ public class ItemPanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Checks if a healing item can be used (at least one valid target needs healing)
-    /// </summary>
-    private bool CanUseHealingItem(Item item, Unit currentUnit)
-    {
-        if (item == null || currentUnit == null) return true; // Default to usable if we can't check
-        
-        // Only check healing consumables
-        if (item.itemType != ItemType.Consumable || item.consumableSubtype != ConsumableSubtype.Heal)
-        {
-            return true; // Non-healing items are always usable (if not used this turn)
-        }
-        
-        Unit[] allUnits = FindObjectsByType<Unit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        if (allUnits == null) return true;
-        
-        // Check if any valid target needs healing
-        foreach (Unit unit in allUnits)
-        {
-            if (unit == null || !unit.IsAlive()) continue;
-            
-            // Check if this unit is a valid target for the item (based on targetType)
-            bool isValidTarget = IsValidItemTarget(unit, currentUnit, item.targetType);
-            
-            if (isValidTarget)
-            {
-                // If target needs healing (not at full HP), item can be used
-                if (unit.CurrentHP < unit.MaxHP)
-                {
-                    return true;
-                }
-            }
-        }
-        
-        // No valid targets need healing
-        return false;
-    }
-    
-    /// <summary>
-    /// Checks if a unit is a valid target for an item based on target type
-    /// </summary>
-    private bool IsValidItemTarget(Unit unit, Unit currentUnit, SkillTargetType targetType)
-    {
-        switch (targetType)
-        {
-            case SkillTargetType.Self:
-                return unit == currentUnit;
-            case SkillTargetType.Ally:
-                return currentUnit.IsPlayerUnit == unit.IsPlayerUnit;
-            case SkillTargetType.Enemy:
-                return currentUnit.IsPlayerUnit != unit.IsPlayerUnit;
-            case SkillTargetType.Any:
-                return true;
-            default:
-                return true;
-        }
-    }
-    
-    /// <summary>
     /// Checks if skill execution is in progress
     /// </summary>
     private bool IsSkillExecuting()
@@ -1299,26 +1233,6 @@ public class ItemPanelManager : MonoBehaviour
     #region Helper Methods
     
     /// <summary>
-    /// Converts SkillTargetType to UnitTargetType
-    /// </summary>
-    private UnitTargetType ConvertTargetType(SkillTargetType skillTargetType)
-    {
-        switch (skillTargetType)
-        {
-            case SkillTargetType.Self:
-                return UnitTargetType.Self;
-            case SkillTargetType.Ally:
-                return UnitTargetType.AllAllies; // Use AllAllies to include self
-            case SkillTargetType.Enemy:
-                return UnitTargetType.AllEnemies;
-            case SkillTargetType.Any:
-                return UnitTargetType.Any;
-            default:
-                return UnitTargetType.Any;
-        }
-    }
-    
-    /// <summary>
     /// Called when selection changes (for visual feedback, etc.)
     /// </summary>
     private void OnSelectionChanged(object selectedItem)
@@ -1332,49 +1246,20 @@ public class ItemPanelManager : MonoBehaviour
     private void UseItemOnTarget(Item item, int itemIndex, Unit target)
     {
         if (item == null || target == null || inventory == null)
-        {
             return;
-        }
-        
-        // Apply item effects based on subtype
-        if (item.itemType == ItemType.Consumable)
+
+        ApplyConsumableResult result = ItemSystem.ApplyConsumableEffect(item, target);
+
+        if (result.healedAmount > 0)
         {
-            switch (item.consumableSubtype)
-            {
-                case ConsumableSubtype.Heal:
-                    if (target.IsAlive() && item.healAmount > 0)
-                    {
-                        int oldHP = target.CurrentHP;
-                        target.Heal(item.healAmount);
-                        int healedAmount = target.CurrentHP - oldHP;
-                        
-                        // Log to event panel (Unit.Heal already logs, but we want to show item usage)
-                        string targetName = EventLogPanel.GetColoredDisplayNameForUnit(target);
-                        EventLogPanel.LogEvent($"{targetName} uses {item.itemName} and heals for {healedAmount} HP! ({target.CurrentHP}/{target.MaxHP} HP)");
-                    }
-                    break;
-                    
-                case ConsumableSubtype.Damage:
-                    // TODO: Implement damage consumables
-                    Debug.Log($"Damage consumable not yet implemented: {item.itemName}");
-                    break;
-                    
-                case ConsumableSubtype.Status:
-                    // TODO: Implement status consumables
-                    Debug.Log($"Status consumable not yet implemented: {item.itemName}");
-                    break;
-            }
+            string targetName = EventLogPanel.GetColoredDisplayNameForUnit(target);
+            EventLogPanel.LogEvent($"{targetName} uses {item.itemName} and heals for {result.healedAmount} HP! ({target.CurrentHP}/{target.MaxHP} HP)");
         }
-        
-        // Remove item from inventory
+
         inventory.RemoveItem(item, 1);
-        
-        // Mark item as used this turn
         itemUsedThisTurn = true;
-        
-        // Update item display (will dim all items)
         UpdateItems();
-        
+
         Debug.Log($"Used {item.itemName} on {target.UnitName}");
     }
     
